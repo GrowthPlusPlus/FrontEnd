@@ -1,7 +1,7 @@
 // 최초 작성자: 김채영
 
 import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
+import 'features/challenge/create/challenge_create_page.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -9,7 +9,8 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      // theme: ,
+      // theme:,
+      home: ChallengeCreatePage(),
     );
     // MaterialApp
   }
