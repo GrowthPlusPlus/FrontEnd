@@ -1,8 +1,10 @@
+// 최초 작성자 : 김채영
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
+// -- 챌린지 생성 화면의 탭화면의 공통 헤더 --
 class BottomSheetHeader extends StatelessWidget {
   final String title;
 

@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 
+// -- 챌린지 생성 화면 --
 class ChallengeCreatePage extends StatefulWidget {
   const ChallengeCreatePage({super.key});
 
@@ -52,6 +53,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
   // 선택된 태그들을 담을 리스트
   final List<String> _selectedTags = [];
 
+  // 상태 초기화
   @override
   void initState() {
     super.initState();
@@ -70,9 +72,9 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     setState(() {});
   }
 
+  // 리스너 제거 및 해제
   @override
   void dispose() {
-    // 리스너 제거 및 해제
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _descriptionController.dispose();
@@ -80,9 +82,9 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     super.dispose();
   }
 
-  // ✨ 챌린지 생성 데이터 제출 준비 로직
+  // 챌린지 생성 데이터 제출 준비 로직
   void _submitChallenge() {
-    // 1. 선택된 값들을 백엔드 전송용 데이터로 가공
+    // 선택된 값들을 백엔드 전송용 데이터로 가공
     final String title = _nameController.text.trim();
     final String startDate = _selectedDay != null
         ? "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}"
@@ -97,7 +99,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     final String description = _descriptionController.text.trim();
     final String authType = selectedType == 1 ? "PHOTO" : "FREE";
 
-    // 2. 콘솔에 예쁘게 출력 (백엔드에게 줄 데이터 미리보기)
+    // 콘솔에 예쁘게 출력 (백엔드에게 줄 데이터 미리보기)
     print("====================================");
     print("🚀 [챌린지 생성 요청 데이터]");
     print("제목: $title");
@@ -109,7 +111,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     print("인증방식: $authType");
     print("====================================");
 
-    // 3. 성공 팝업 띄우기
+    // 성공 팝업 띄우기
     showDialog(
       context: context,
       barrierColor: const Color(0x7F1A1D1B),
@@ -139,7 +141,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
       builder: (context) {
         return CustomBottomSheet(
           title: "챌린지 시작일",
-          heightFactor: 0.55,
+          heightFactor: 0.59,
           child: StatefulBuilder(
             // 시트 내의 상태 변화를 위해 사용
             builder: (context, setBottomState) {
@@ -148,177 +150,170 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                   _focusedDay.year == _today.year &&
                   _focusedDay.month == _today.month;
 
-              // // 간격 소폭 축소
-              //const SizedBox(height: 10);
+              // Transform.translate로 전체 내용을 위로 이동
+              return Transform.translate(
+                offset: const Offset(0, 0), // 0, -20 == 위로 20픽셀 이동
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  // 달력 위젯
+                  child: TableCalendar(
+                    locale: 'ko_KR', // 한국어 설정
+                    firstDay: DateTime(_today.year, _today.month, 1),
+                    lastDay: DateTime(_today.year + 5, 12, 31), // 향후 5년까지 선택 가능
+                    focusedDay: _focusedDay,
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                // 달력 위젯
-                child: TableCalendar(
-                  locale: 'ko_KR', // 한국어 설정
-                  firstDay: DateTime(_today.year, _today.month, 1),
-                  lastDay: DateTime(_today.year + 5, 12, 31), // 향후 5년까지 선택 가능
-                  focusedDay: _focusedDay,
-
-                  // 간격 및 높이 정밀 조정
-                  rowHeight: 45, // 행 간격 축소 (숫자 사이 간격 약 11px 확보)
-                  daysOfWeekHeight: 30, // 요일 라벨 높이 확보 (가려짐 방지)
-                  // ✨ 1. 커스텀 빌더 추가 (정사각형 효과의 핵심)
-                  calendarBuilders: CalendarBuilders(
-                    selectedBuilder: (context, date, events) {
-                      return Center(
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: AppColors.selected,
-                            borderRadius: BorderRadius.circular(8),
-                            shape: BoxShape.rectangle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${date.day}',
-                              style: AppTypography.b1.copyWith(
-                                color: AppColors.primaryAble,
-                                fontWeight: FontWeight.w500,
+                    // 간격 및 높이 정밀 조정
+                    rowHeight: 45, // 행 간격 축소 (숫자 사이 간격 확보)
+                    daysOfWeekHeight: 33, // 요일 라벨 높이 확보 (가려짐 방지)
+                    // 커스텀 빌더
+                    calendarBuilders: CalendarBuilders(
+                      selectedBuilder: (context, date, events) {
+                        return Center(
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.selected,
+                              borderRadius: BorderRadius.circular(8),
+                              shape: BoxShape.rectangle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${date.day}',
+                                style: AppTypography.b1.copyWith(
+                                  color: AppColors.primaryAble,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        );
+                      },
+                    ),
+
+                    // 과거 날짜 선택 차단
+                    enabledDayPredicate: (day) {
+                      return !day.isBefore(
+                        DateTime(_today.year, _today.month, _today.day),
                       );
                     },
-                  ),
 
-                  // 과거 날짜 선택 차단
-                  enabledDayPredicate: (day) {
-                    // 오늘 날짜를 포함하여 그 이후만 선택 가능
-                    return !day.isBefore(
-                      DateTime(_today.year, _today.month, _today.day),
-                    );
-                  },
-
-                  // 요일 텍스트 스타일
-                  daysOfWeekStyle: DaysOfWeekStyle(
-                    weekdayStyle: AppTypography.b2.copyWith(
-                      color: AppColors.gray2, // 평일 색상
-                    ),
-                    weekendStyle: AppTypography.b2.copyWith(
-                      color: AppColors.gray2, // 주말 색상
-                    ),
-                  ),
-
-                  // 달이 바뀔 때마다 상태를 업데이트하여 tab_previous.svg 아이콘 색상을 바꿈
-                  onPageChanged: (focusedDay) {
-                    setBottomState(() {
-                      _focusedDay = focusedDay;
-                    });
-                  },
-
-                  headerStyle: HeaderStyle(
-                    headerPadding: const EdgeInsets.only(top: 0, bottom: 10),
-                    formatButtonVisible: false,
-                    titleCentered: true,
-                    titleTextStyle: AppTypography.h3.copyWith(
-                      color: AppColors.black,
-                    ),
-
-                    // 이전 달 이동 아이콘 커스텀
-                    leftChevronIcon: SvgPicture.asset(
-                      'assets/images/icons/tab_previous.svg',
-                      width: 22,
-                      height: 22,
-                      colorFilter: ColorFilter.mode(
-                        isFirstMonth ? AppColors.gray3 : AppColors.black,
-                        BlendMode.srcIn,
+                    // 요일 텍스트 스타일
+                    daysOfWeekStyle: DaysOfWeekStyle(
+                      weekdayStyle: AppTypography.b2.copyWith(
+                        color: AppColors.gray2,
+                      ),
+                      weekendStyle: AppTypography.b2.copyWith(
+                        color: AppColors.gray2,
                       ),
                     ),
-                    leftChevronMargin: const EdgeInsets.only(left: 50),
 
-                    // 다음 달 이동 아이콘 커스텀
-                    rightChevronIcon: SvgPicture.asset(
-                      'assets/images/icons/tab_next.svg',
-                      width: 22,
-                      height: 22,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.black,
-                        BlendMode.srcIn,
+                    // 달 변경 시 상태 업데이트
+                    onPageChanged: (focusedDay) {
+                      setBottomState(() {
+                        _focusedDay = focusedDay;
+                      });
+                    },
+
+                    headerStyle: HeaderStyle(
+                      headerPadding: const EdgeInsets.only(top: 0, bottom: 5),
+                      headerMargin: EdgeInsets.zero, // 헤더 자체 마진 제거
+                      formatButtonVisible: false,
+                      titleCentered: true,
+                      titleTextStyle: AppTypography.h3.copyWith(
+                        color: AppColors.black,
+                      ),
+
+                      // 이전 달 이동 아이콘
+                      leftChevronIcon: SvgPicture.asset(
+                        'assets/images/icons/tab_previous.svg',
+                        width: 22,
+                        height: 22,
+                        colorFilter: ColorFilter.mode(
+                          isFirstMonth ? AppColors.gray3 : AppColors.black,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      leftChevronMargin: const EdgeInsets.only(left: 50),
+
+                      // 다음 달 이동 아이콘
+                      rightChevronIcon: SvgPicture.asset(
+                        'assets/images/icons/tab_next.svg',
+                        width: 22,
+                        height: 22,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.black,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      rightChevronMargin: const EdgeInsets.only(right: 50),
+                    ),
+
+                    calendarStyle: CalendarStyle(
+                      // 비활성화된 날짜 스타일
+                      disabledTextStyle: AppTypography.b1.copyWith(
+                        color: AppColors.gray3,
+                      ),
+                      disabledDecoration: const BoxDecoration(
+                        shape: BoxShape.rectangle,
+                      ),
+
+                      // 오늘 날짜 효과 제거
+                      todayDecoration: const BoxDecoration(
+                        color: Colors.transparent,
+                        shape: BoxShape.rectangle,
+                      ),
+                      todayTextStyle: AppTypography.b1.copyWith(
+                        color: AppColors.black,
+                      ),
+
+                      // 선택된 날짜 효과
+                      selectedDecoration: BoxDecoration(
+                        color: AppColors.selected,
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      selectedTextStyle: AppTypography.b1.copyWith(
+                        color: AppColors.primaryAble,
+                      ),
+
+                      // 일반 날짜 스타일
+                      defaultTextStyle: AppTypography.b1.copyWith(
+                        color: AppColors.black,
+                      ),
+                      weekendTextStyle: AppTypography.b1.copyWith(
+                        color: AppColors.black,
+                      ),
+
+                      // 이번 달 외 날짜 스타일
+                      outsideDaysVisible: true,
+                      outsideTextStyle: AppTypography.b1.copyWith(
+                        color: AppColors.gray3,
+                      ),
+                      outsideDecoration: const BoxDecoration(
+                        shape: BoxShape.rectangle,
                       ),
                     ),
-                    rightChevronMargin: const EdgeInsets.only(right: 50),
+
+                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+
+                    onDaySelected: (selectedDay, focusedDay) {
+                      setBottomState(() {
+                        _selectedDay = selectedDay;
+                        _focusedDay = focusedDay;
+                      });
+
+                      setState(() {
+                        _selectedDay = selectedDay;
+                        _dateHintText =
+                            "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
+                      });
+
+                      Future.delayed(const Duration(milliseconds: 150), () {
+                        Navigator.pop(context);
+                      });
+                    },
                   ),
-
-                  calendarStyle: CalendarStyle(
-                    // 비활성화된(과거) 날짜 스타일
-                    disabledTextStyle: AppTypography.b1.copyWith(
-                      color: AppColors.gray3,
-                    ),
-                    disabledDecoration: const BoxDecoration(
-                      shape: BoxShape.rectangle,
-                    ),
-
-                    // 오늘 날짜 효과 제거
-                    todayDecoration: const BoxDecoration(
-                      color: Colors.transparent, // 배경 투명하게
-                      shape: BoxShape.rectangle,
-                    ),
-                    todayTextStyle: AppTypography.b1.copyWith(
-                      color: AppColors.black, // 오늘 날짜 글자색을 일반 날짜와 동일하게
-                    ),
-
-                    // 오늘 날짜에 대한 효과
-                    // todayDecoration: BoxDecoration(
-                    //   color: AppColors.primaryAble.withAlpha(120),
-                    //   shape: BoxShape.circle,
-                    // ),
-
-                    // 선택된 날짜 효과
-                    selectedDecoration: BoxDecoration(
-                      color: AppColors.selected,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    selectedTextStyle: AppTypography.b1.copyWith(
-                      color: AppColors.primaryAble, // 오늘 날짜 글자색을 일반 날짜와 동일하게
-                    ),
-
-                    // 일반 날짜 텍스트 스타일
-                    defaultTextStyle: AppTypography.b1.copyWith(
-                      color: AppColors.black, // 오늘 날짜 글자색을 일반 날짜와 동일하게
-                    ),
-
-                    // 주말 색상 스타일
-                    weekendTextStyle: AppTypography.b1.copyWith(
-                      color: AppColors.black,
-                    ),
-
-                    // 이번 달 외 날짜 스타일
-                    outsideDaysVisible: true,
-                    outsideTextStyle: AppTypography.b1.copyWith(
-                      color: AppColors.gray3,
-                    ),
-                    outsideDecoration: const BoxDecoration(
-                      shape: BoxShape.rectangle,
-                    ),
-                  ),
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-
-                  onDaySelected: (selectedDay, focusedDay) {
-                    // 시트 내부 UI 업데이트
-                    setBottomState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-
-                    // 메인 페이지 UI 업데이트 및 닫기
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _dateHintText =
-                          "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
-                    });
-                    Future.delayed(const Duration(milliseconds: 150), () {
-                      Navigator.pop(context);
-                    });
-                  },
                 ),
               );
             },
@@ -367,9 +362,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                           setBottomState(() => _selectedDuration = item);
                           setState(() => _selectedDuration = item);
                           Future.delayed(
-                            const Duration(
-                              milliseconds: 150,
-                            ), // 150ms가 가장 자연스럽습니다.
+                            const Duration(milliseconds: 150),
                             () => Navigator.pop(context),
                           );
                         },
@@ -400,13 +393,12 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // ✨ 문구 위치 조정: 줄은 맞추되 가운데 배치
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start, // 불렛 줄 맞춤
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             '• 1일 이상의 기간을 입력해주세요',
@@ -435,7 +427,6 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                                   ),
                                   const SizedBox(height: 8),
 
-                                  // 디자인 코드의 밑줄 스타일 입력창 구현
                                   Container(
                                     decoration: const BoxDecoration(
                                       border: Border(
@@ -488,7 +479,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                                         : null,
                                     child: Container(
                                       width: double.infinity,
-                                      height: 44, // 디자인 코드 수치
+                                      height: 44,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         color: isButtonEnabled
@@ -569,7 +560,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
       child: Container(
         width: double.infinity,
         height: 54,
-        // ✨ 텍스트를 위한 내부 패딩 추가! (배경색은 이 패딩 바깥까지 칠해집니다)
+        // 텍스트를 위한 내부 패딩 추가
         //padding: const EdgeInsets.symmetric(horizontal: 16.0),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.selected : Colors.transparent,
@@ -586,7 +577,8 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     );
   }
 
-  void _showChallengeTagBottomSheet() {
+  // 챌린지 태그 선택 시트
+  void showChallengeTagBottomSheet() {
     // 바텀 시트 내에서 사용할 태그 데이터
     final Map<String, List<String>> tagCategories = {
       '연령/상태': ['10대', '20대', '30대', '고3', '편준생', 'n수생'],
@@ -625,7 +617,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // 2. 카테고리별 태그 리스트 (스크롤 영역)
+                  // 카테고리별 태그 리스트 (스크롤 영역)
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -651,7 +643,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                                     final isSelected = _selectedTags.contains(
                                       tag,
                                     );
-                                    return _buildTagChip(
+                                    return buildTagChip(
                                       label: tag,
                                       isSelected: isSelected,
                                       onTap: () {
@@ -680,11 +672,11 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                   Container(
                     width: double.infinity,
                     color: Colors.white,
-                    // ✨ 완료 버튼 기준 위(12), 아래(12) 여백 설정
+                    // 완료 버튼 기준 위(12), 아래(12) 여백 설정
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                     child: SafeArea(
-                      top: false, // 위쪽은 무시하고
-                      bottom: false, // 아래쪽 홈 바 영역만 자동으로 감지
+                      top: false,
+                      bottom: false,
                       child: GestureDetector(
                         onTap: isButtonEnabled
                             ? () {
@@ -722,7 +714,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
   }
 
   // 태그
-  Widget _buildTagChip({
+  Widget buildTagChip({
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
@@ -762,7 +754,8 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     );
   }
 
-  Widget _buildSelectedTags() {
+  // 선택된 챌린지 태그 목록 표시
+  Widget buildSelectedTags() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -830,7 +823,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
             children: [
               const ChallengeLabel(label: '챌린지 이름'),
               ChallengeInputBox(
-                controller: _nameController, // ✨ 연결
+                controller: _nameController, // 연결
                 hintText: '챌린지 이름을 입력하세요',
               ),
 
@@ -878,8 +871,8 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
               ChallengeInputBox(
                 hintText: '태그를 선택하세요',
                 iconPath: 'assets/images/icons/down.svg',
-                onTap: _showChallengeTagBottomSheet,
-                tag: _selectedTags.isEmpty ? null : _buildSelectedTags(),
+                onTap: showChallengeTagBottomSheet,
+                tag: _selectedTags.isEmpty ? null : buildSelectedTags(),
               ),
 
               const SizedBox(height: 16),
@@ -905,7 +898,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                         selectedType = 1;
                       });
 
-                      // 3. 화면 하단으로 부드럽게 스크롤
+                      // 화면 하단으로 스크롤
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         _scrollController.animateTo(
                           _scrollController.position.maxScrollExtent, // 가장 아래로
@@ -971,7 +964,7 @@ class ChallengeInputBox extends StatelessWidget {
   final String hintText;
   final double height;
   final String? iconPath; // SVG 아이콘 경로 (선택)
-  final String? leadingIconPath; // 캘린더 svg를 위해...
+  final String? leadingIconPath; // 캘린더 svg
   final VoidCallback? onTap; // 클릭 시 동작 (선택)
   final TextEditingController? controller; // 입력용 컨트롤러
   final Widget? tag; // 태그 넣기
@@ -1097,6 +1090,7 @@ class ButtonTypesExample extends StatelessWidget {
   }
 }
 
+// 버튼 타입별 디자인 가이드 점검 및 활성 상태(enabled) 테스트를 위한 컴포넌트 그룹
 class ButtonTypesGroup extends StatelessWidget {
   const ButtonTypesGroup({super.key, required this.enabled});
 
@@ -1186,7 +1180,7 @@ class PlusButton extends StatelessWidget {
                     'assets/images/icons/plus.svg',
                     width: 20,
                     height: 20,
-                    // 아이콘 색상도 텍스트와 맞춰 white로 변경 (필요 시)
+                    // 아이콘 색상도 텍스트와 맞춰 white로 변경
                     colorFilter: const ColorFilter.mode(
                       Colors.white,
                       BlendMode.srcIn,
@@ -1211,7 +1205,7 @@ class PlusButton extends StatelessWidget {
   }
 }
 
-// 🅱️ 챌린지 인증 방식의 버튼
+// 챌린지 인증 방식의 버튼
 class ChallengeSelectButton extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -1246,9 +1240,7 @@ class ChallengeSelectButton extends StatelessWidget {
             style: AppTypography.b2.copyWith(
               // 활성화 시 Bold + primaryAble 색상
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected
-                  ? AppColors.primaryAble
-                  : AppColors.gray2, // 비활성 글자색은 임의 지정
+              color: isSelected ? AppColors.primaryAble : AppColors.gray2,
             ),
           ),
         ),

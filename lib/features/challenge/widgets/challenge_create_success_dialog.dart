@@ -1,3 +1,4 @@
+// 최초 작성자 : 김채영
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart'; // 클립보드 복사
 import 'package:share_plus/share_plus.dart'; // 공유
 
+// -- 챌린지 생성 성공했을 경우 띄우는 작은 화면 --
 class ChallengeCreateSuccessDialog extends StatefulWidget {
   const ChallengeCreateSuccessDialog({super.key});
 
@@ -13,10 +15,10 @@ class ChallengeCreateSuccessDialog extends StatefulWidget {
       _ChallengeCreateSuccessDialogState();
 }
 
+// 챌린지 생성 성공 화면의 로직 및 상태 관리 클래스
 class _ChallengeCreateSuccessDialogState
     extends State<ChallengeCreateSuccessDialog> {
-  // 초대한 친구들의 이름을 저장하는 Set
-  final Set<String> _invitedFriends = {};
+  final Set<String> _invitedFriends = {}; // 초대한 친구들의 이름을 저장하는 Set
 
   // 나중에 백엔드에서 받아올 실제 URL이 들어감
   final String challengeUrl = "https://challenge.app/room/abc123";
@@ -37,10 +39,11 @@ class _ChallengeCreateSuccessDialogState
   // 검색창 제어를 위한 컨트롤러
   final TextEditingController _searchController = TextEditingController();
 
+  // 상태 초기화
   @override
   void initState() {
     super.initState();
-    // 초기에는 전체 친구 목록을 보여줍니다.
+    // 초기에는 전체 친구 목록을 보여주기
     _filteredFriends = _allFriends;
 
     // 검색창 입력 감지 리스너 추가
@@ -56,7 +59,7 @@ class _ChallengeCreateSuccessDialogState
   // 클립보드 복사 로직
   void _copyToClipboard(BuildContext context) {
     Clipboard.setData(ClipboardData(text: challengeUrl)).then((_) {
-      // 복사 완료 후 유저에게 알림 (SnackBar)
+      // 복사 완료 후 유저에게 알림
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('링크가 클립보드에 복사되었습니다.'),
@@ -138,7 +141,7 @@ class _ChallengeCreateSuccessDialogState
 
                     const SizedBox(height: 10),
 
-                    // ✨ 5. 필터링된 리스트를 화면에 뿌려줍니다.
+                    // 필터링된 리스트를 화면에 보여주기
                     if (_filteredFriends.isEmpty)
                       Center(
                         child: Padding(
