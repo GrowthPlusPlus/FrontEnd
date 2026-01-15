@@ -21,5 +21,5 @@ class AppColors {
   static const Color warning = Color(0xffffd6c8);
 
   static const Color fire = Color(0xFFFB7039);
-  static const Color notification = Color(0xffec221f);
+  static const Color notification = Color(0xffd11e1b);
 }

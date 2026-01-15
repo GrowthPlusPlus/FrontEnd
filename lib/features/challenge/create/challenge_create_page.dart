@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:haenaem/shared/models/tag_data.dart';
+import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
@@ -579,16 +581,6 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
 
   // 챌린지 태그 선택 시트
   void showChallengeTagBottomSheet() {
-    // 바텀 시트 내에서 사용할 태그 데이터
-    final Map<String, List<String>> tagCategories = {
-      '연령/상태': ['10대', '20대', '30대', '고3', '편준생', 'n수생'],
-      '운동/건강': ['운동', '러닝', '홈트', '다이어트', '건강', '식단', '수면패턴'],
-      '학업/시험': ['입시', '공시', '시험', '어학', '자격증', '취준', '과제'],
-      '취미/여가': ['취미', '독서', '악기', '그림/드로잉', '필사/글쓰기'],
-      '그룹 활동': ['스터디', '동아리'],
-      '기타': ['기타'],
-    };
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -596,7 +588,6 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setBottomState) {
-            // 완료 버튼 활성화 조건 (1~2개 선택 시)
             bool isButtonEnabled =
                 _selectedTags.isNotEmpty && _selectedTags.length <= 2;
 
@@ -623,7 +614,8 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: tagCategories.entries.map((entry) {
+                        children: TagData.categories.entries.map((entry) {
+                          // 공통 데이터 사용
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 24.0),
                             child: Column(
@@ -637,23 +629,19 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                                 ),
                                 const SizedBox(height: 10),
                                 Wrap(
-                                  spacing: 12, // 태그 간 가로 간격
-                                  runSpacing: 8, // 태그 간 세로 간격
+                                  spacing: 12, // 간격 일치
+                                  runSpacing: 8,
                                   children: entry.value.map((tag) {
-                                    final isSelected = _selectedTags.contains(
-                                      tag,
-                                    );
-                                    return buildTagChip(
+                                    return AppTagChip(
+                                      // 공통 위젯 사용
                                       label: tag,
-                                      isSelected: isSelected,
+                                      isSelected: _selectedTags.contains(tag),
                                       onTap: () {
                                         setBottomState(() {
-                                          if (isSelected) {
+                                          if (_selectedTags.contains(tag)) {
                                             _selectedTags.remove(tag);
-                                          } else {
-                                            if (_selectedTags.length < 2) {
-                                              _selectedTags.add(tag);
-                                            }
+                                          } else if (_selectedTags.length < 2) {
+                                            _selectedTags.add(tag);
                                           }
                                         });
                                       },
@@ -713,70 +701,19 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     );
   }
 
-  // 태그
-  Widget buildTagChip({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 28, // 고정 높이
-        padding: const EdgeInsets.symmetric(horizontal: 11),
-        clipBehavior: Clip.antiAlias,
-        decoration: ShapeDecoration(
-          // 선택 시 테두리 추가, 배경색 변경
-          color: isSelected ? AppColors.selected : AppColors.gray5,
-          shape: RoundedRectangleBorder(
-            side: isSelected
-                ? const BorderSide(width: 2, color: AppColors.primaryAble)
-                : BorderSide.none,
-            borderRadius: BorderRadius.circular(15),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              label,
-              style: AppTypography.b2.copyWith(
-                color: isSelected ? AppColors.primaryAble : AppColors.black,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                height: 1.0,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // 선택된 챌린지 태그 목록 표시
   Widget buildSelectedTags() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        // Row 대신 Wrap을 사용하여 태그가 길어져도 줄바꿈이 되도록 함
-        spacing: 10, // 태그 간 간격
+      child: Wrap(
+        // Row 대신 Wrap으로 안전하게 처리
+        spacing: 10,
+        runSpacing: 8,
         children: _selectedTags
             .map(
-              (tag) => Container(
-                height: 28,
-                padding: const EdgeInsets.symmetric(horizontal: 11),
-                decoration: ShapeDecoration(
-                  color: AppColors.gray5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  tag,
-                  style: AppTypography.b2.copyWith(color: AppColors.black),
-                ),
+              (tag) => AppTagChip(
+                label: tag,
+                isSelected: false, // 선택 목록에서는 강조 테두리 없이 표시
               ),
             )
             .toList(),
