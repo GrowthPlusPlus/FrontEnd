@@ -13,7 +13,7 @@ class AppTypography {
   // Heading 2: 섹션 타이틀, 모달 제목
   static const TextStyle h2 = TextStyle(
     fontFamily: 'Pretendard',
-    fontSize: 20.0,
+    fontSize: 22.0,
     fontWeight: FontWeight.w700,
     height: 1.4, // 28px / 20px
   );
@@ -21,7 +21,7 @@ class AppTypography {
   // Heading 3: 게시글 제목, 카드 제목
   static const TextStyle h3 = TextStyle(
     fontFamily: 'Pretendard',
-    fontSize: 18.0,
+    fontSize: 20.0,
     fontWeight: FontWeight.w600,
     height: 1.44, // 26px / 18px
   );
@@ -40,6 +40,14 @@ class AppTypography {
     fontSize: 14.0,
     fontWeight: FontWeight.w400,
     height: 1.5, // 21px / 14px
+  );
+
+  // Body 3: 기본 본문 강조용
+  static const TextStyle b3 = TextStyle(
+    fontFamily: 'Pretendard',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w600,
+    height: 1.5, // 24px / 16px
   );
 
   // Caption 1: 날짜, 에러 메시지
