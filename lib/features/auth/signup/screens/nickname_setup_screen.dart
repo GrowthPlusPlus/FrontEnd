@@ -38,7 +38,7 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
         _isInvalidFormat = false;
       } else {
         // [규칙] 한글(초성/모음/완성형), 영문, 숫자만 1~10자 허용
-        final regExp = RegExp(r'^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]{1,15}$');
+        final regExp = RegExp(r'^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣._-]{1,15}$');
         _isInvalidFormat = !regExp.hasMatch(text);
       }
 

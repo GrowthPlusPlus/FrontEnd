@@ -21,7 +21,7 @@ class _SignupMainScreenState extends State<SignupMainScreen> {
   final PageController _pageController =
       PageController(); // 각 가입 단계 화면의 전환을 제어하는 컨트롤러
   int _currentStep = 1; // 1단계부터 시작
-  final int _totalSteps = 4; // 닉네임, 이미지, 소개, 태그 총 4단계
+  final int _totalSteps = 5; // 닉네임, 이미지, 소개, 태그 총 4단계
 
   // 다음 가입 단계로 이동하는 함수
   void _nextPage() {
@@ -61,7 +61,7 @@ class _SignupMainScreenState extends State<SignupMainScreen> {
     bool isSuccessStep = _currentStep == 5;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isSuccessStep ? null : Colors.white, // 성공 화면일 때 배경색 무시
       appBar: isSuccessStep
           ? null
           : AppBar(

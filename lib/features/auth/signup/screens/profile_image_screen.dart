@@ -56,7 +56,7 @@ class _ProfileImageScreenState extends State<ProfileImageScreen> {
                 const SizedBox(height: 10),
                 _buildOptionItem(
                   title: '갤러리에서 가져오기',
-                  iconPath: 'assets/images/icons/gallery.svg',
+                  iconPath: 'assets/images/icons/gallery_icon.svg',
                   onTap: () => _getImage(ImageSource.gallery),
                 ),
               ],

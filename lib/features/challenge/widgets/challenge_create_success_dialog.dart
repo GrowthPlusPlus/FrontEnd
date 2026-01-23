@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart'; // 클립보드 복사
 import 'package:share_plus/share_plus.dart'; // 공유
 
-// -- 챌린지 생성 성공했을 경우 띄우는 작은 화면 --
+// 챌린지 생성 성공했을 경우 띄우는 작은 화면
 class ChallengeCreateSuccessDialog extends StatefulWidget {
   const ChallengeCreateSuccessDialog({super.key});
 
@@ -47,7 +47,7 @@ class _ChallengeCreateSuccessDialogState
     _filteredFriends = _allFriends;
 
     // 검색창 입력 감지 리스너 추가
-    _searchController.addListener(_onSearchChanged);
+    _searchController.addListener(onSearchChanged);
   }
 
   @override
@@ -56,8 +56,47 @@ class _ChallengeCreateSuccessDialogState
     super.dispose();
   }
 
+  // 초대 버튼 누를 경우 뜨는 토스트 메시지
+  void _showToast(BuildContext context, String name) {
+    // 토스트 위젯 생성
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: 100,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: ShapeDecoration(
+                color: const Color(0xff1B1D1B).withAlpha(200),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                '$name 님에게 챌린지 초대를 보냈습니다!',
+                textAlign: TextAlign.center,
+                style: AppTypography.b1.copyWith(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // 화면에 추가
+    Overlay.of(context).insert(overlayEntry);
+
+    // 2초 후 자동으로 사라지게 설정
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   // 클립보드 복사 로직
-  void _copyToClipboard(BuildContext context) {
+  void copyToClipboard(BuildContext context) {
     Clipboard.setData(ClipboardData(text: challengeUrl)).then((_) {
       // 복사 완료 후 유저에게 알림
       ScaffoldMessenger.of(context).showSnackBar(
@@ -74,7 +113,7 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 공유창 로직
-  void _shareChallenge(BuildContext context) async {
+  void shareChallenge(BuildContext context) async {
     // 클릭된 버튼의 위치와 크기 정보를 가져옵니다 (iPad/태블릿 대응)
     final box = context.findRenderObject() as RenderBox?;
 
@@ -92,7 +131,7 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 검색 로직: 입력값이 바뀔 때마다 리스트를 필터링
-  void _onSearchChanged() {
+  void onSearchChanged() {
     String query = _searchController.text.toLowerCase();
     setState(() {
       if (query.isEmpty) {
@@ -122,7 +161,7 @@ class _ChallengeCreateSuccessDialogState
         child: Column(
           children: [
             // 상단 그라데이션 헤더
-            _buildGradientHeader(),
+            buildGradientHeader(),
 
             // 링크 공유 + 친구 초대
             Expanded(
@@ -132,12 +171,12 @@ class _ChallengeCreateSuccessDialogState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 링크 공유 섹션
-                    _buildLinkShareSection(),
+                    buildLinkShareSection(),
 
                     const SizedBox(height: 10),
 
                     // 친구 검색창
-                    _buildFriendSearchBar(),
+                    buildFriendSearchBar(),
 
                     const SizedBox(height: 10),
 
@@ -157,14 +196,14 @@ class _ChallengeCreateSuccessDialogState
                     else
                       ..._filteredFriends.map(
                         (friend) =>
-                            _buildInviteItem(friend['name']!, friend['id']!),
+                            buildInviteItem(friend['name']!, friend['id']!),
                       ),
                   ],
                 ),
               ),
             ),
             // 하단 닫기 버튼
-            _buildLaterButton(context),
+            buildLaterButton(context),
           ],
         ),
       ),
@@ -172,7 +211,7 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 상단 그라데이션 헤더 위젯
-  Widget _buildGradientHeader() {
+  Widget buildGradientHeader() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24),
@@ -208,83 +247,63 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 링크 공유 섹션
-  Widget _buildLinkShareSection() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: ShapeDecoration(
-        color: AppColors.gray5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '챌린지 링크 공유',
-            style: AppTypography.b2.copyWith(color: AppColors.gray1),
-          ),
-          const SizedBox(height: 8),
-          // 링크 주소 입력 박스 스타일
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            decoration: ShapeDecoration(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(width: 1, color: AppColors.gray4), // gray4
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  'assets/images/icons/challenge_create_success_link.svg',
-                  width: 16,
-                  height: 16,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'https://challenge.app/room/abc123',
-                    style: AppTypography.c1.copyWith(
-                      color: const Color(0xFF3E7E60),
-                    ),
-                  ),
-                ),
-              ],
+  Widget buildLinkShareSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '챌린지 링크 공유',
+          style: AppTypography.b2.copyWith(color: AppColors.gray1),
+        ),
+        const SizedBox(height: 8),
+        // 링크 주소 입력 박스 스타일
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(10),
+          decoration: ShapeDecoration(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(width: 1, color: AppColors.gray4), // gray4
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const SizedBox(height: 8),
-
-          // 복사, 공유
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _buildActionButton(
+          child: Text(
+            'https://challenge.app/room/abc123',
+            style: AppTypography.c1.copyWith(color: const Color(0xFF3E7E60)),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // 복사, 공유
+        Row(
+          //mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Expanded(
+              child: buildActionButton(
                 label: '복사',
-                color: const Color(0xFF2B7FFF),
+                color: AppColors.gray5,
                 iconPath: 'assets/images/icons/link_copy.svg',
                 // 복사 함수 연결
-                onTap: (ctx) => _copyToClipboard(ctx),
+                onTap: (ctx) => copyToClipboard(ctx),
               ),
-              const SizedBox(width: 10),
-              _buildActionButton(
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: buildActionButton(
                 label: '공유',
-                color: const Color(0xFF615FFF),
+                color: AppColors.gray5,
                 iconPath: 'assets/images/icons/link_share.svg',
                 // TODO: 링크 공유 로직
-                onTap: (ctx) => _shareChallenge(ctx),
+                onTap: (ctx) => shareChallenge(ctx),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
   // 복사/공유 공통 버튼 위젯
-  Widget _buildActionButton({
+  Widget buildActionButton({
     required String label,
     required Color color,
     required String iconPath,
@@ -296,9 +315,9 @@ class _ChallengeCreateSuccessDialogState
         return GestureDetector(
           onTap: () => onTap(context),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 8),
             decoration: ShapeDecoration(
-              color: color,
+              color: AppColors.gray5,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -311,14 +330,15 @@ class _ChallengeCreateSuccessDialogState
                   width: 16,
                   height: 16,
                   colorFilter: const ColorFilter.mode(
-                    Colors.white,
+                    AppColors.gray2,
                     BlendMode.srcIn,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   label,
-                  style: AppTypography.c1.copyWith(color: Colors.white),
+                  textAlign: TextAlign.center,
+                  style: AppTypography.b2.copyWith(color: AppColors.gray2),
                 ),
               ],
             ),
@@ -329,7 +349,7 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 친구 검색창
-  Widget _buildFriendSearchBar() {
+  Widget buildFriendSearchBar() {
     return Container(
       width: double.infinity,
       height: 37.98,
@@ -371,14 +391,14 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 친구 초대 아이템
-  Widget _buildInviteItem(String name, String id) {
+  Widget buildInviteItem(String name, String id) {
     bool isInvited = _invitedFriends.contains(id);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 0),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
       decoration: BoxDecoration(
-        color: AppColors.gray5,
+        //color: Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -394,10 +414,9 @@ class _ChallengeCreateSuccessDialogState
                     setState(() {
                       _invitedFriends.add(id); // ID 저장
                     });
+                    _showToast(context, name);
                   },
-            child: isInvited
-                ? _buildInvitedButton()
-                : _buildActiveInviteButton(),
+            child: isInvited ? buildInvitedButton() : buildActiveInviteButton(),
           ),
         ],
       ),
@@ -405,12 +424,12 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 초대함 버튼
-  Widget _buildInvitedButton() {
+  Widget buildInvitedButton() {
     return Container(
       width: 54.08,
       height: 33.99,
       decoration: ShapeDecoration(
-        color: AppColors.disable, // 해냄-green-disable
+        color: AppColors.disable,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       child: Center(
@@ -424,7 +443,7 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 초대 전 버튼
-  Widget _buildActiveInviteButton() {
+  Widget buildActiveInviteButton() {
     return Container(
       width: 54.08,
       height: 33.99,
@@ -438,7 +457,7 @@ class _ChallengeCreateSuccessDialogState
   }
 
   // 나중에 초대하기 버튼
-  Widget _buildLaterButton(BuildContext context) {
+  Widget buildLaterButton(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),

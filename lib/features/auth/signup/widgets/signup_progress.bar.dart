@@ -6,11 +6,15 @@ import 'package:haenaem/core/theme/app_colors.dart';
 class SignupProgressBar extends StatelessWidget {
   final int currentStep;
   final int totalSteps;
+  final Color? activeColor;
+  final Color? inactiveColor;
 
   const SignupProgressBar({
     super.key,
     required this.currentStep,
     required this.totalSteps,
+    this.activeColor,
+    this.inactiveColor,
   });
 
   @override
@@ -23,7 +27,10 @@ class SignupProgressBar extends StatelessWidget {
             height: 3,
             margin: EdgeInsets.only(right: index == totalSteps - 1 ? 0 : 4),
             decoration: BoxDecoration(
-              color: isCompleted ? AppColors.primaryAble : AppColors.gray4,
+              // 지정된 색상이 없으면 기본 테마 색상 사용
+              color: isCompleted
+                  ? (activeColor ?? AppColors.primaryAble)
+                  : (inactiveColor ?? AppColors.gray4),
               borderRadius: BorderRadius.circular(1000),
             ),
           ),

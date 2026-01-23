@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import '../widgets/emoji_firework_widget.dart';
+import 'package:haenaem/features/auth/signup/widgets/signup_progress.bar.dart';
+import 'package:haenaem/features/main/screens/main_screen.dart';
 
 // 회원가입 4단계를 모두 끝낸 후 띄우는 가입 성공 화면
 class SignupSuccessScreen extends StatefulWidget {
@@ -51,9 +53,11 @@ class _SignupSuccessScreenState extends State<SignupSuccessScreen> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment(0.00, 0.03),
-            end: Alignment(1.07, 1.18),
-            colors: [Color(0xFF6DBAE9), Color(0xFf26AF7D), Color(0xFF00A943)],
+            begin: Alignment(-1.0, -0.94),
+            end: Alignment(1.14, 1.36),
+            colors: [Color(0xFF6DB9E9), Color(0xFF25AE7C), Color(0xFF00A843)],
+            // 색상이 변하는 지점 배치
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
         child: Stack(
@@ -65,29 +69,41 @@ class _SignupSuccessScreenState extends State<SignupSuccessScreen> {
                 children: [
                   // 커스텀 AppBar
                   Container(
-                    height: 56,
+                    height: 46,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     alignment: Alignment.center,
                     child: Text(
                       '회원가입',
                       style: AppTypography.h3.copyWith(color: Colors.white),
                     ),
                   ),
+                  // 진행률 바 배치
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    child: SignupProgressBar(
+                      currentStep: 5,
+                      totalSteps: 5,
+                      activeColor: Colors.white,
+                      inactiveColor: Colors.white,
+                    ),
+                  ),
 
                   // 메인 콘텐츠 영역
                   Expanded(
-                    child: Padding(
+                    child: Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
-                        vertical: 24,
+                        vertical: 36,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 3,
                         children: [
                           Text(
                             '가입을 해냈어요! 🎉\n당신의 첫 번째 성취를 축하합니다.',
                             style: AppTypography.h2.copyWith(
                               color: Colors.white,
-                              height: 1.27,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -95,7 +111,6 @@ class _SignupSuccessScreenState extends State<SignupSuccessScreen> {
                             '멋진 챌린지들이 기다리고 있어요.\n함께 해낼 준비 됐나요?',
                             style: AppTypography.h3.copyWith(
                               color: Colors.white,
-                              height: 1.30,
                             ),
                           ),
                         ],
@@ -107,7 +122,17 @@ class _SignupSuccessScreenState extends State<SignupSuccessScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                     child: GestureDetector(
-                      onTap: widget.onFinish,
+                      onTap: () {
+                        // 만약 외부에서 넘겨준 추가 로직이 있다면 실행
+                        // if (widget.onFinish != null) widget.onFinish!();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      },
                       behavior: HitTestBehavior.opaque, // 투명한 영역도 터치 가능하게
                       child: Container(
                         width: double.infinity,

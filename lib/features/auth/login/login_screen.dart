@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
+import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 
 // 소셜 로그인 로그인 화면
 class LoginScreen extends StatelessWidget {
@@ -11,6 +12,14 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 공통으로 사용할 네비게이션 함수
+    void navigateToSignup() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SignupMainScreen()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -48,7 +57,7 @@ class LoginScreen extends StatelessWidget {
                   backgroundColor: const Color(0xFFFEE500),
                   textColor: Colors.black,
                   iconPath: 'assets/images/icons/kakao_logo.svg',
-                  onTap: () {},
+                  onTap: navigateToSignup,
                 ),
                 const SizedBox(height: 12),
                 _buildSocialButton(
@@ -57,13 +66,14 @@ class LoginScreen extends StatelessWidget {
                   textColor: const Color(0xFF0A0A0A),
                   iconPath: 'assets/images/icons/google_logo.svg',
                   borderColor: const Color(0xFFD1D5DC),
-                  onTap: () async {
-                    // final idToken = await AuthService.signInWithGoogle();
-                    // if (idToken != null) {
-                    //   // TODO: 백엔드 API 호출하여 idToken 전달
-                    //   print("백엔드로 보낼 토큰: $idToken");
-                    // }
-                  },
+                  onTap: navigateToSignup,
+                  //onTap: () async {
+                  // final idToken = await AuthService.signInWithGoogle();
+                  // if (idToken != null) {
+                  //   // TODO: 백엔드 API 호출하여 idToken 전달
+                  //   print("백엔드로 보낼 토큰: $idToken");
+                  // }
+                  //},
                 ),
                 const SizedBox(height: 12),
                 _buildSocialButton(
@@ -71,7 +81,8 @@ class LoginScreen extends StatelessWidget {
                   backgroundColor: const Color(0xFF03C75A),
                   textColor: Colors.white,
                   iconPath: 'assets/images/icons/naver_logo.svg',
-                  onTap: () {},
+                  onTap: navigateToSignup,
+                  //onTap = () {},
                 ),
 
                 const SizedBox(height: 30),

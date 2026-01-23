@@ -17,12 +17,12 @@ class ChallengeCreatePage extends StatefulWidget {
   State<ChallengeCreatePage> createState() => _ChallengeCreatePageState();
 }
 
-// 스크롤 제어를 위한 컨트롤러 추가 - 사진 첨부 필수 버튼을 누르면 notice가 뿅 나타나게
-final ScrollController _scrollController = ScrollController();
-
 class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
-  // 현재 선택된 방식을 저장 (0: 미선택, 1: 사진 필수, 2: 체크 자유)
-  int selectedType = 0;
+  int selectedType = 0; // 현재 선택된 방식을 저장 (0: 미선택, 1: 사진 필수, 2: 체크 자유)
+  int selectedVisibility = 0; // 1: 비공개, 2: 공개, 3: 친구 공개
+
+  // 스크롤 제어를 위한 컨트롤러 추가 - 사진 첨부 필수 버튼을 누르면 notice가 뿅 나타나게
+  final ScrollController _scrollController = ScrollController();
 
   // 그림자 표시 여부 (끝까지 내리면 그림자 없어지게)
   bool _showShadow = true;
@@ -50,6 +50,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
         _selectedTags.isNotEmpty && // 태그 1개 이상
         _descriptionController.text.trim().isNotEmpty && // 설명 입력
         selectedType != 0; // 인증 방식 선택
+    selectedVisibility != 0; // 공개범위 선택
   }
 
   // 선택된 태그들을 담을 리스트
@@ -79,8 +80,8 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _nameController.dispose();
     _descriptionController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -101,6 +102,11 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     final String description = _descriptionController.text.trim();
     final String authType = selectedType == 1 ? "PHOTO" : "FREE";
 
+    // 공개 범위 데이터 가공
+    final String visibility = selectedVisibility == 1
+        ? "PRIVATE"
+        : (selectedVisibility == 2 ? "PUBLIC" : "ONLY FRIENDS");
+
     // 콘솔에 예쁘게 출력 (백엔드에게 줄 데이터 미리보기)
     print("====================================");
     print("🚀 [챌린지 생성 요청 데이터]");
@@ -111,6 +117,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
     print("태그: ${tags.join(', ')}");
     print("설명: $description");
     print("인증방식: $authType");
+    print("공개범위 : $visibility");
     print("====================================");
 
     // 성공 팝업 띄우기
@@ -774,7 +781,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                 textColor: _selectedDay == null
                     ? AppColors.gray3
                     : AppColors.black,
-                iconPath: 'assets/images/icons/down.svg',
+                iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: _showCalendarBottomSheet,
               ),
 
@@ -786,7 +793,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                 textColor: _selectedDuration == null
                     ? AppColors.gray3
                     : AppColors.black,
-                iconPath: 'assets/images/icons/down.svg',
+                iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: showDurationBottomSheet,
               ),
 
@@ -798,7 +805,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                 textColor: _selectedFrequency == null
                     ? AppColors.gray3
                     : AppColors.black,
-                iconPath: 'assets/images/icons/down.svg',
+                iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: showFrequencyBottomSheet,
               ),
 
@@ -807,7 +814,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
               const ChallengeLabel(label: '챌린지 태그'),
               ChallengeInputBox(
                 hintText: '태그를 선택하세요',
-                iconPath: 'assets/images/icons/down.svg',
+                iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: showChallengeTagBottomSheet,
                 tag: _selectedTags.isEmpty ? null : buildSelectedTags(),
               ),
@@ -825,7 +832,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
 
               const ChallengeLabel(label: '챌린지 인증 방식'),
               Row(
-                spacing: 10,
+                //spacing: 10,
                 children: [
                   ChallengeSelectButton(
                     label: "사진 첨부 필수",
@@ -847,7 +854,7 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                       });
                     },
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   ChallengeSelectButton(
                     label: "체크(사진 첨부 자유)",
                     isSelected: selectedType == 2,
@@ -861,6 +868,38 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
                 const SizedBox(height: 12),
                 const AiNoticeBox(),
               ],
+              const SizedBox(height: 16),
+
+              // 챌린지 공개 범위
+              const ChallengeLabel(label: '챌린지 공개 범위'),
+              Row(
+                children: [
+                  ChallengeSelectButton(
+                    label: "비공개",
+                    isSelected: selectedVisibility == 1,
+                    onTap: () => setState(() => selectedVisibility = 1),
+                  ),
+                  const SizedBox(width: 10),
+                  ChallengeSelectButton(
+                    label: "공개",
+                    isSelected: selectedVisibility == 2,
+                    onTap: () => setState(() => selectedVisibility = 2),
+                  ),
+                  const SizedBox(width: 10),
+                  ChallengeSelectButton(
+                    label: "친구 공개",
+                    isSelected: selectedVisibility == 3,
+                    onTap: () => setState(() => selectedVisibility = 3),
+                  ),
+                ],
+              ),
+              // 공개 범위 안내 문구
+              const SizedBox(height: 4),
+              Text(
+                '비공개, 친구 공개 시 챌린지 검색에서 제외됩니다.',
+                style: AppTypography.c1.copyWith(color: AppColors.gray2),
+              ),
+              const SizedBox(height: 26),
             ],
           ),
         ),
@@ -1168,7 +1207,7 @@ class ChallengeSelectButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             // 활성화 시에만 primaryAble 외곽선 추가
             border: isSelected
-                ? Border.all(color: AppColors.primaryAble, width: 1)
+                ? Border.all(color: AppColors.primaryAble, width: 2)
                 : null,
           ),
           alignment: Alignment.center,
@@ -1177,7 +1216,7 @@ class ChallengeSelectButton extends StatelessWidget {
             style: AppTypography.b2.copyWith(
               // 활성화 시 Bold + primaryAble 색상
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? AppColors.primaryAble : AppColors.gray2,
+              color: isSelected ? AppColors.primaryAble : AppColors.black,
             ),
           ),
         ),
