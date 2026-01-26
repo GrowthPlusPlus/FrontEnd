@@ -29,17 +29,20 @@ class _FeedScreenState extends State<FeedScreen> {
           centerTitle: true,
           // 2. 우측 검색 아이콘
           actions: [
-            IconButton(
-              onPressed: () {
-                // 검색 기능 구현
-              },
-              icon: SvgPicture.asset(
-                'assets/images/icons/search_icon.svg',
-                width: 24,
-                height: 24,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.black,
-                  BlendMode.srcIn,
+            Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: IconButton(
+                onPressed: () {
+                  // 검색 기능 구현
+                },
+                icon: SvgPicture.asset(
+                  'assets/images/icons/search_icon.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.black,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),
