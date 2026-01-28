@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:haenaem/features/feed/screens/ChallengeSearchScreen.dart';
+import 'package:haenaem/features/feed/views/ExploreFeedView.dart';
+import 'package:haenaem/features/feed/views/FriendFeedView.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -33,7 +36,12 @@ class _FeedScreenState extends State<FeedScreen> {
               padding: const EdgeInsets.only(right: 20),
               child: IconButton(
                 onPressed: () {
-                  // 검색 기능 구현
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChallengeSearchScreen(),
+                    ),
+                  );
                 },
                 icon: SvgPicture.asset(
                   'assets/images/icons/search_icon.svg',
@@ -65,8 +73,8 @@ class _FeedScreenState extends State<FeedScreen> {
         ),
         body: const TabBarView(
           children: [
-            Center(child: Text('친구 피드 화면')),
-            Center(child: Text('둘러보기 피드 화면')),
+            FriendFeedView(),
+            ExploreFeedView(), //
           ],
         ),
       ),
