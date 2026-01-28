@@ -7,6 +7,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import '../widgets/signup_page_layout.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
+import 'package:haenaem/shared/widgets/image_source_sheet.dart';
 
 // 프로필 이미지 설정 화면
 class ProfileImageScreen extends StatefulWidget {
@@ -23,6 +24,23 @@ class _ProfileImageScreenState extends State<ProfileImageScreen> {
   File? _selectedImage; // 선택된 이미지 파일을 담는 변수 (null일 경우 기본 이미지 사용)
   final ImagePicker _picker = ImagePicker(); // 이미지 선택 서비스 호출
 
+  // shared-widgets에 있는 시트 불러오기 (카메라/갤러리)
+  void _showImageSourceSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        // 분리한 위젯을 호출하고 콜백을 연결합니다.
+        return ImageSourceSheet(
+          onSourceSelected: (source) {
+            _getImage(source); // 선택된 소스로 이미지 가져오기 실행
+          },
+        );
+      },
+    );
+  }
+
   // 갤러리에서 이미지를 가져오는 비동기 함수
   Future<void> _getImage(ImageSource source) async {
     final XFile? image = await _picker.pickImage(source: source);
@@ -32,77 +50,6 @@ class _ProfileImageScreenState extends State<ProfileImageScreen> {
       });
       if (mounted) Navigator.pop(context);
     }
-  }
-
-  // 사진 찍을래, 갤러리에서 고를래 시트
-  void _showImageSourceSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return CustomBottomSheet(
-          title: '사진 추가',
-          heightFactor: 0.4,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
-              children: [
-                _buildOptionItem(
-                  title: '직접 촬영하기',
-                  iconPath: 'assets/images/icons/camera.svg',
-                  onTap: () => _getImage(ImageSource.camera),
-                ),
-                const SizedBox(height: 10),
-                _buildOptionItem(
-                  title: '갤러리에서 가져오기',
-                  iconPath: 'assets/images/icons/gallery_icon.svg',
-                  onTap: () => _getImage(ImageSource.gallery),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // 시트 안 컴포넌트들의 색상, 이미지, 폰트 지정
-  Widget _buildOptionItem({
-    required String title,
-    required String iconPath,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          color: AppColors.gray5,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              iconPath,
-              width: 36,
-              height: 36,
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray1,
-                BlendMode.srcIn,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              title,
-              style: AppTypography.b1.copyWith(color: AppColors.gray1),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
