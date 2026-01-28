@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/create/challenge_create_page.dart';
+import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
 import 'package:haenaem/features/social/social_screen.dart';
 
 // 변수 용도: 다양한 챌린지 상태(완료, 실패 위기, 연속 인증, 일반)를 시각적으로 테스트하기 위한 데이터 세트
