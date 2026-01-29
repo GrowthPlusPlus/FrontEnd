@@ -50,8 +50,6 @@ class _FeedScreenState extends State<FeedScreen>
 
   @override
   Widget build(BuildContext context) {
-    // DefaultTabController 대신 직접 선언한 _tabController를 사용하므로 삭제 가능하지만,
-    // 기존 구조 유지를 위해 Scaffold를 바로 반환하거나 유지합니다.
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

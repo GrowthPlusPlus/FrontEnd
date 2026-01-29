@@ -117,7 +117,6 @@ class FeedPostCard extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(thickness: 8, color: Color(0xFFF5F5F5)), // 피드 사이 구분선
         ],
       ),
     );
