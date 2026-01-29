@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ExploreFeedView extends StatelessWidget {
-  const ExploreFeedView({super.key});
+  final ScrollController scrollController;
+  const ExploreFeedView({super.key, required this.scrollController});
 
   @override
   Widget build(BuildContext context) {

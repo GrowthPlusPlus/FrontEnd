@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:haenaem/features/feed/widgets/EnterConfirmDialog.dart';
 
 void main() {
   runApp(
@@ -174,12 +175,19 @@ class ChallengeDetailPage extends StatelessWidget {
         ],
       ),
 
-      // 하단 고정 - 인증하기 버튼
+      // 하단 고정 - 참여하기하기 버튼
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return const EnterConfirmDialog();
+                },
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryAble,
               minimumSize: const Size(double.infinity, 60),

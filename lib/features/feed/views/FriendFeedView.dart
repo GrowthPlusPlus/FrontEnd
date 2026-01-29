@@ -4,7 +4,8 @@ import 'package:haenaem/features/challenge/widgets/UserChallengeData.dart';
 import 'package:haenaem/features/challenge/widgets/MockData.dart'; // 기존에 만든 가짜 데이터 활용
 
 class FriendFeedView extends StatelessWidget {
-  const FriendFeedView({super.key});
+  final ScrollController scrollController;
+  const FriendFeedView({super.key, required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +26,7 @@ class FriendFeedView extends StatelessWidget {
     }
 
     return ListView.builder(
+      controller: scrollController,
       // 스크롤 성능 향상을 위해 적용
       padding: EdgeInsets.zero,
       itemCount: allPosts.length,
