@@ -12,7 +12,7 @@ class SocialRepository {
   // 실제 친구 목록 (SocialScreen에서 사용)
   final List<Friend> friends = [
     Friend(
-      name: '김해냄',
+      name: '지피티',
       title: '성실한 새싹',
       profileImage: "assets/images/profiles/user1.png",
     ),

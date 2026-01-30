@@ -27,7 +27,7 @@ class _ChallengeCalendarScreenState extends State<ChallengeCalendarScreen> {
   @override
   void initState() {
     super.initState();
-    challengeData = MockData.getChallengeByName("매일 10분 러닝");
+    challengeData = MockData.getChallengeByName("졸업 프로젝트 코딩");
   }
 
   // 달 이동 로직

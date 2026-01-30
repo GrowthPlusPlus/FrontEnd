@@ -87,7 +87,7 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.post.userName ?? 'Growth', // 1. 데이터 반영
+                          widget.post.userName ?? '김해냄', // 1. 데이터 반영
                           style: AppTypography.b1.copyWith(
                             color: AppColors.black,
                           ),

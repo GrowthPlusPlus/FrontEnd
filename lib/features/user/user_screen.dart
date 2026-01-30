@@ -38,7 +38,7 @@ class MyPageScreen extends StatelessWidget {
               // --- 프로필 섹션 ---
               buildProfileImage(),
               const SizedBox(height: 16),
-              buildProfileInfo('Growth', isName: true),
+              buildProfileInfo('김해냄', isName: true),
               const SizedBox(height: 4),
               buildProfileInfo('Hello World 😊', isName: false),
               const SizedBox(height: 20),
@@ -89,7 +89,7 @@ class MyPageScreen extends StatelessWidget {
           ),
           child: Center(
             child: SvgPicture.asset(
-              'assets/images/icons/profile.svg', // 프로필 새싹 SVG
+              'assets/images/placeholders/default_profile.svg',
             ),
           ),
         ),

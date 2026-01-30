@@ -1,3 +1,4 @@
+// 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -108,7 +109,7 @@ class ChallengeSearchScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     // 유저 이름 넣기
-                    '김채영 님의 관심 태그 기반 추천',
+                    '김해냄 님의 관심 태그 기반 추천',
                     style: AppTypography.h3.copyWith(color: Colors.white),
                   ),
                 ],

@@ -1,3 +1,4 @@
+// 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -149,16 +150,16 @@ class ChallengeDetailPage extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildAttendee('승빈'),
-                        _buildAttendee('김민수'),
-                        _buildAttendee('김이박정민수'),
-                        _buildAttendee('수'),
-                        _buildAttendee('사용자이름'),
-                        _buildAttendee('승빈'),
-                        _buildAttendee('김민수'),
-                        _buildAttendee('김이박정민수'),
-                        _buildAttendee('수'),
-                        _buildAttendee('사용자이름'),
+                        _buildAttendee('user1'),
+                        _buildAttendee('user2'),
+                        _buildAttendee('user3'),
+                        _buildAttendee('user4'),
+                        _buildAttendee('user5'),
+                        _buildAttendee('user6'),
+                        _buildAttendee('user7'),
+                        _buildAttendee('user8'),
+                        _buildAttendee('user9'),
+                        _buildAttendee('user10'),
                       ],
                     ),
                   ),

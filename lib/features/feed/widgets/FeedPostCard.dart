@@ -1,3 +1,4 @@
+// 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -38,7 +39,7 @@ class FeedPostCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.userName ?? 'Growth',
+                        post.userName ?? '김해냄',
                         style: AppTypography.b1.copyWith(
                           color: AppColors.black,
                         ),

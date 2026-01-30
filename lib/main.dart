@@ -11,6 +11,7 @@ import 'features/challenge/create/widgets/challenge_create_success_dialog.dart';
 import 'features/main/screens/main_screen.dart';
 import 'features/challenge/calendar/ChallengeCalendarScreen.dart';
 import 'features/challenge/verification/screens/challenge_verification_screen.dart';
+import 'package:haenaem/features/feed/screens/FeedScreen.dart';
 
 void main() async {
   // 비동기 초기화
@@ -44,11 +45,12 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [Locale('ko', 'KR')],
       locale: const Locale('ko', 'KR'), // 앱 기본 언어를 한국어로 설정
       //home: const ChallengeCreatePage(),
-      // home: const LoginScreen(),
+      //home: const LoginScreen(),
       //home: const ChallengeCreateSuccessDialog(),
       // home: const MainScreen(),
-      // home: const Screen(),
+      //home: const ChallengeCalendarScreen(),
       home: const ChallengeVerificationPage(),
+      //home: const FeedScreen(),
     );
   }
 }

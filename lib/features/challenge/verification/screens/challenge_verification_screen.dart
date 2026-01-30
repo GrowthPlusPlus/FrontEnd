@@ -1,6 +1,7 @@
 // 최초 작성자 : 김채영
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:crop_your_image/crop_your_image.dart';

@@ -11,7 +11,6 @@ class ReverificationGuideBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 343,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
         color: AppColors.warning,

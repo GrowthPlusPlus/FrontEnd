@@ -4,6 +4,7 @@ import 'package:haenaem/features/home/home_screen.dart';
 import 'package:haenaem/features/social/social_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'package:haenaem/features/user/user_screen.dart';
+import 'package:haenaem/features/feed/screens/FeedScreen.dart';
 
 // 내비게이션 바를 넣은 화면
 class MainScreen extends StatefulWidget {
@@ -20,7 +21,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     const HomeScreen(),
     const Center(child: Text("통계 화면")),
-    const Center(child: Text("피드 화면")),
+    const FeedScreen(),
     const SocialScreen(),
     const MyPageScreen(),
   ];

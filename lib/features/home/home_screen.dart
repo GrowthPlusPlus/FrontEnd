@@ -4,11 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
-import 'package:haenaem/features/social/social_screen.dart';
 
 // 변수 용도: 다양한 챌린지 상태(완료, 실패 위기, 연속 인증, 일반)를 시각적으로 테스트하기 위한 데이터 세트
 List<Challenge> testChallenges = [
-  // 케이스 1: 오늘 이미 완료 + 어제도 완료 (초록색 카드 + 불꽃 🔥 표시)
+  // 케이스 1: 오늘 이미 완료 + 어제도 완료 (초록색 카드 + 불꽃 표시)
   Challenge(
     title: "아침 6시 미라클 모닝",
     isDoneToday: true,

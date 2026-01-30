@@ -1,3 +1,4 @@
+// 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 
 class ExploreFeedView extends StatelessWidget {
