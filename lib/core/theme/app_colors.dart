@@ -22,4 +22,5 @@ class AppColors {
 
   static const Color fire = Color(0xFFFB7039);
   static const Color notification = Color(0xffec221f);
+  static const Color blue = Color(0xff4589FF);
 }

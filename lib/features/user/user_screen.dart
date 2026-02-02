@@ -8,9 +8,87 @@ import '../../../core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'withdrawal_screen.dart';
 
+// --- 향후 모델 파일로 분리할 챌린지 데이터 구조 ---
+class ChallengeItem {
+  final String name;
+  final String status; // '진행중', '완료', '실패'
+  final double progress;
+  final String dDay;
+  final int currentStreak;
+  final int currentParticipants;
+  final int totalParticipants;
+
+  ChallengeItem({
+    required this.name,
+    required this.status,
+    required this.progress,
+    required this.dDay,
+    this.currentStreak = 0,
+    this.currentParticipants = 0,
+    this.totalParticipants = 0,
+  });
+}
+
+// --- 챌린지 데이터 모델 ---
+enum ChallengeStatus { ongoing, success, fail }
+
+class ChallengeModel {
+  final String title;
+  final ChallengeStatus status;
+  final double progress;
+  final String dateInfo;
+  final String countInfo;
+
+  ChallengeModel({
+    required this.title,
+    required this.status,
+    required this.progress,
+    required this.dateInfo,
+    this.countInfo = '0/0명',
+  });
+}
+
 /// 클래스의 용도: 사용자의 프로필 정보 조회 및 로그아웃, 회원탈퇴 기능을 제공하는 마이페이지 화면
-class MyPageScreen extends StatelessWidget {
+class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
+
+  @override
+  State<MyPageScreen> createState() => _MyPageScreenState();
+}
+
+class _MyPageScreenState extends State<MyPageScreen> {
+  // 현재 선택된 탭 상태 (기본값: 진행중)
+  ChallengeStatus _selectedTab = ChallengeStatus.ongoing;
+
+  // 임시 데이터 리스트 (추후 실제 API/DB 연결)
+  final List<ChallengeModel> _allChallenges = [
+    ChallengeModel(
+      title: '물 마시기',
+      status: ChallengeStatus.ongoing,
+      progress: 0.4,
+      dateInfo: '매일, 완료까지 D-10',
+      countInfo: '3/5명',
+    ),
+    ChallengeModel(
+      title: '러닝하기',
+      status: ChallengeStatus.ongoing,
+      progress: 0.7,
+      dateInfo: '매일, 완료까지 D-03',
+      countInfo: '1/2명',
+    ),
+    ChallengeModel(
+      title: '명상하기',
+      status: ChallengeStatus.success,
+      progress: 1.0,
+      dateInfo: '완료일 2025/12/25',
+    ),
+    ChallengeModel(
+      title: '기상 챌린지',
+      status: ChallengeStatus.fail,
+      progress: 0.0,
+      dateInfo: '실패일 2026/01/15',
+    ),
+  ];
 
   /// 함수의 용도: 마이페이지 화면 UI 빌드
   /// 매개 변수: BuildContext context
@@ -34,7 +112,7 @@ class MyPageScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               // --- 프로필 섹션 ---
               buildProfileImage(),
               const SizedBox(height: 16),
@@ -44,7 +122,10 @@ class MyPageScreen extends StatelessWidget {
               const SizedBox(height: 20),
               // --- 등급 뱃지 ---
               buildRankBadge('초보 모험가'),
-              const SizedBox(height: 80),
+              const SizedBox(height: 40),
+              // --- 나의 챌린지 섹션 (새로 추가됨) ---
+              _buildChallengeSection(),
+              const SizedBox(height: 16),
               // --- 메뉴 리스트 섹션 ---
               buildMenuItem(
                 title: '로그아웃',
@@ -65,6 +146,7 @@ class MyPageScreen extends StatelessWidget {
                 },
                 showArrow: true,
               ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -146,6 +228,256 @@ class MyPageScreen extends StatelessWidget {
       child: Text(
         rank,
         style: AppTypography.b1.copyWith(color: AppColors.primaryAble),
+      ),
+    );
+  }
+
+  // 나의 챌린지 섹션 (탭 전환 기능 포함)
+  Widget _buildChallengeSection() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.gray4),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '나의 챌린지',
+                  style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+                ),
+                InkWell(
+                  onTap: () {}, // 더보기 페이지 이동 로직
+                  child: Row(
+                    children: [
+                      Text(
+                        '더보기',
+                        style: AppTypography.b2.copyWith(
+                          color: AppColors.gray3,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 14,
+                        color: AppColors.gray3,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 필터 탭 버튼 영역
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _buildStatusTab('진행중', ChallengeStatus.ongoing),
+                const SizedBox(width: 8),
+                _buildStatusTab('완료', ChallengeStatus.success),
+                const SizedBox(width: 8),
+                _buildStatusTab('실패', ChallengeStatus.fail),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 필터링된 리스트 출력
+          _buildChallengeList(),
+        ],
+      ),
+    );
+  }
+
+  // 상태 탭 버튼 빌더
+  Widget _buildStatusTab(String label, ChallengeStatus status) {
+    final bool isSelected = _selectedTab == status;
+
+    // 상태별 선택 시 테마 색상 설정
+    Color activeColor;
+    IconData icon;
+    switch (status) {
+      case ChallengeStatus.ongoing:
+        activeColor = AppColors.blue;
+        icon = Icons.access_time;
+        break;
+      case ChallengeStatus.success:
+        activeColor = AppColors.primaryAble;
+        icon = Icons.check_circle_outline;
+        break;
+      case ChallengeStatus.fail:
+        activeColor = AppColors.notification;
+        icon = Icons.cancel_outlined;
+        break;
+    }
+
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedTab = status),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? activeColor : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: isSelected ? null : Border.all(color: AppColors.gray4),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? Colors.white : AppColors.gray3,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: AppTypography.b2.copyWith(
+                  color: isSelected ? Colors.white : AppColors.gray3,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 필터링된 챌린지 아이템 리스트 생성
+  Widget _buildChallengeList() {
+    final filteredList = _allChallenges
+        .where((item) => item.status == _selectedTab)
+        .toList();
+
+    if (filteredList.isEmpty) {
+      return Container(
+        height: 100,
+        alignment: Alignment.center,
+        child: Text(
+          '챌린지가 없습니다.',
+          style: AppTypography.b2.copyWith(color: AppColors.gray3),
+        ),
+      );
+    }
+
+    return Column(
+      children: filteredList.asMap().entries.map((entry) {
+        return Column(
+          children: [
+            _buildChallengeCard(entry.value),
+            if (entry.key != filteredList.length - 1)
+              const Divider(height: 1, color: AppColors.gray4),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  // 챌린지 개별 카드 위젯
+  Widget _buildChallengeCard(ChallengeModel item) {
+    Color themeColor;
+    String statusText;
+    switch (item.status) {
+      case ChallengeStatus.ongoing:
+        themeColor = AppColors.blue;
+        statusText = '진행중';
+        break;
+      case ChallengeStatus.success:
+        themeColor = AppColors.primaryAble;
+        statusText = '완료';
+        break;
+      case ChallengeStatus.fail:
+        themeColor = AppColors.notification;
+        statusText = '실패';
+        break;
+    }
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    item.title,
+                    style: AppTypography.b1.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: themeColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: AppTypography.c1.copyWith(color: themeColor),
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '${(item.progress * 100).toInt()}%',
+                style: AppTypography.h3.copyWith(
+                  color: themeColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            item.dateInfo,
+            style: AppTypography.b2.copyWith(color: AppColors.gray2),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              SvgPicture.asset(
+                'assets/images/icons/small_fire_icon.svg',
+                width: 16,
+                height: 16,
+              ),
+              Text(
+                item.status == ChallengeStatus.ongoing ? ' 0일째' : ' 최대 0일',
+                style: AppTypography.b2,
+              ),
+              const SizedBox(width: 12),
+              if (item.status == ChallengeStatus.ongoing) ...[
+                SvgPicture.asset(
+                  'assets/images/icons/mini_success_icon.svg',
+                  width: 16,
+                  height: 16,
+                ),
+                Text(' ${item.countInfo}', style: AppTypography.b2),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: item.progress,
+            backgroundColor: AppColors.gray5,
+            color: themeColor,
+            minHeight: 4,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ],
       ),
     );
   }
