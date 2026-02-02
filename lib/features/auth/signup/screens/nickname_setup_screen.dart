@@ -3,19 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/auth/signup/widgets/signup_page_layout.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/signup_provider.dart';
+import '../models/signup_state.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart';
 
 // 닉네임 입력 화면
-class NicknameSetupScreen extends StatefulWidget {
+class NicknameSetupScreen extends ConsumerStatefulWidget {
   final VoidCallback onNext;
-
   const NicknameSetupScreen({super.key, required this.onNext});
 
   @override
-  State<NicknameSetupScreen> createState() => _NicknameSetupScreenState();
+  ConsumerState<NicknameSetupScreen> createState() =>
+      _NicknameSetupScreenState();
 }
 
 // 닉네임 입력 화면의 상태 관리 클래스
-class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
+class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
   final TextEditingController _nicknameController =
       TextEditingController(); // 닉네임 텍스트 입력을 제어하는 컨트롤러
   bool _isButtonEnabled = false; // 하단 다음 버튼의 활성화 상태
@@ -27,6 +32,14 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
     super.initState();
     // 사용자가 타이핑할 때마다 유효성을 실시간으로 계산하기 위해 리스너 등록
     _nicknameController.addListener(_handleInputChange);
+
+    // 뒤로 돌아왔을 때 이전에 입력한 닉네임 불러오기
+    Future.microtask(() {
+      final savedNickname = ref.read(signupProvider).nickname;
+      if (savedNickname.isNotEmpty) {
+        _nicknameController.text = savedNickname;
+      }
+    });
   }
 
   // 텍스트 변경 시 호출되어 검사 및 버튼 상태를 업데이트합니다.
@@ -52,20 +65,29 @@ class _NicknameSetupScreenState extends State<NicknameSetupScreen> {
     });
   }
 
-  // 다음 버튼 클릭 시 실행되며, 서버에 닉네임 중복 확인을 요청
   Future<void> _checkNickname() async {
-    // 형식 에러가 있는 상태라면 API 호출을 하지 않음
     if (_isInvalidFormat) return;
 
     final nickname = _nicknameController.text;
 
-    // TODO: 백엔드 중복 체크 API 호출
-    if (nickname == "중복") {
-      setState(() {
-        _isDuplicate = true;
-      });
-    } else {
-      widget.onNext(); // 중복이 아닐 경우 다음 단계로 이동
+    try {
+      // 💡 업데이트와 중복 체크를 동시에 수행합니다.
+      final isDup = await ref
+          .read(signupProvider.notifier)
+          .updateNicknameAndCheckDuplicate(nickname);
+
+      if (isDup) {
+        setState(() {
+          _isDuplicate = true; // 화면에 "중복된 닉네임이에요" 표시
+        });
+      } else {
+        // 성공했다면 이미 프로바이더에 저장되었으므로 바로 다음 단계로!
+        widget.onNext();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버와 통신 중 에러가 발생했습니다. 다시 시도해주세요.')),
+      );
     }
   }
 

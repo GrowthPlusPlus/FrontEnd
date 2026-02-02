@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
@@ -14,13 +16,16 @@ import 'features/challenge/verification/screens/challenge_verification_screen.da
 import 'package:haenaem/features/feed/screens/FeedScreen.dart';
 
 void main() async {
+  // 플러터 엔진 초기화 확인
+  WidgetsFlutterBinding.ensureInitialized();
+
   // 비동기 초기화
   WidgetsFlutterBinding.ensureInitialized();
 
   // 한국어 날짜 데이터 로드
   await initializeDateFormatting('ko_KR', null);
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -45,11 +50,11 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [Locale('ko', 'KR')],
       locale: const Locale('ko', 'KR'), // 앱 기본 언어를 한국어로 설정
       //home: const ChallengeCreatePage(),
-      //home: const LoginScreen(),
+      home: const AuthGate(),
       //home: const ChallengeCreateSuccessDialog(),
       // home: const MainScreen(),
       //home: const ChallengeCalendarScreen(),
-      home: const ChallengeVerificationPage(),
+      //home: const ChallengeVerificationPage(),
       //home: const FeedScreen(),
     );
   }

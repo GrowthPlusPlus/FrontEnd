@@ -5,23 +5,24 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/signup_provider.dart';
+import '../models/signup_state.dart';
 import '../widgets/signup_page_layout.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/shared/widgets/image_source_sheet.dart';
 
 // 프로필 이미지 설정 화면
-class ProfileImageScreen extends StatefulWidget {
+class ProfileImageScreen extends ConsumerStatefulWidget {
   final VoidCallback onNext;
-
   const ProfileImageScreen({super.key, required this.onNext});
 
   @override
-  State<ProfileImageScreen> createState() => _ProfileImageScreenState();
+  ConsumerState<ProfileImageScreen> createState() => _ProfileImageScreenState();
 }
 
 // 프로필 이미지 설정 화면의 상태 관리 클래스
-class _ProfileImageScreenState extends State<ProfileImageScreen> {
-  File? _selectedImage; // 선택된 이미지 파일을 담는 변수 (null일 경우 기본 이미지 사용)
+class _ProfileImageScreenState extends ConsumerState<ProfileImageScreen> {
   final ImagePicker _picker = ImagePicker(); // 이미지 선택 서비스 호출
 
   // shared-widgets에 있는 시트 불러오기 (카메라/갤러리)
@@ -30,14 +31,8 @@ class _ProfileImageScreenState extends State<ProfileImageScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        // 분리한 위젯을 호출하고 콜백을 연결합니다.
-        return ImageSourceSheet(
-          onSourceSelected: (source) {
-            _getImage(source); // 선택된 소스로 이미지 가져오기 실행
-          },
-        );
-      },
+      builder: (context) =>
+          ImageSourceSheet(onSourceSelected: (source) => _getImage(source)),
     );
   }
 
@@ -45,24 +40,50 @@ class _ProfileImageScreenState extends State<ProfileImageScreen> {
   Future<void> _getImage(ImageSource source) async {
     final XFile? image = await _picker.pickImage(source: source);
     if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-      });
+      ref.read(signupProvider.notifier).updateImage(File(image.path));
       if (mounted) Navigator.pop(context);
+    }
+  }
+
+  // "다음" 버튼 클릭 시 실행될 핸들러
+  Future<void> _handleNext() async {
+    final selectedImage = ref.read(signupProvider).profileImage;
+
+    if (selectedImage != null) {
+      // 이미지가 있다면 서버에 업로드 시도
+      final success = await ref
+          .read(signupProvider.notifier)
+          .uploadProfileImage(selectedImage);
+
+      if (!mounted) return;
+
+      if (success) {
+        widget.onNext();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미지 등록에 실패했습니다. 다시 시도해주세요.')),
+        );
+      }
+    } else {
+      // 이미지가 없으면 '건너뛰기'이므로 바로 다음 단계로 이동
+      widget.onNext();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // 프로바이더에서 현재 선택된 이미지 상태를 직접 가져오기
+    final selectedImage = ref.watch(signupProvider).profileImage;
+
     // 사용자가 이미지를 넣었는지에 따라 텍스트 결정
-    final String dynamicButtonText = _selectedImage == null ? '건너뛰기' : '다음';
+    final String dynamicButtonText = selectedImage == null ? '건너뛰기' : '다음';
 
     return SignupPageLayout(
       title: '프로필 이미지를\n설정해주세요',
       subTitle: '나를 잘 나타내는 사진을 올려주세요.\n언제든지 변경할 수 있어요.',
       isButtonEnabled: true,
       buttonText: dynamicButtonText, // 동적 텍스트 전달
-      onNext: widget.onNext,
+      onNext: _handleNext,
 
       child: Center(
         child: GestureDetector(
@@ -77,15 +98,15 @@ class _ProfileImageScreenState extends State<ProfileImageScreen> {
                   shape: BoxShape.circle,
                   color: AppColors.gray5,
                   border: Border.all(color: AppColors.gray4, width: 1),
-                  image: _selectedImage != null
+                  image: selectedImage != null
                       ? DecorationImage(
-                          image: FileImage(_selectedImage!),
+                          image: FileImage(selectedImage),
                           fit: BoxFit.cover,
                         )
                       : null,
                 ),
                 alignment: Alignment.center,
-                child: _selectedImage == null
+                child: selectedImage == null
                     ? SvgPicture.asset(
                         'assets/images/placeholders/default_profile.svg',
                         width: 150,
