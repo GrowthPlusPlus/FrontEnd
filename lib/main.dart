@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
+import 'package:haenaem/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
@@ -36,10 +37,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Haenaem',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: AppColors.primaryAble,
-        scaffoldBackgroundColor: Colors.white,
-      ),
+      theme: AppTheme.lightTheme,
 
       // 로컬라이징 설정 (달력 한글화를 위해 필수)
       localizationsDelegates: const [

@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'dart:convert';
+
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
 import 'package:haenaem/shared/models/tag_data.dart';
@@ -10,16 +14,18 @@ import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_create_success_dialog.dart';
+import 'package:haenaem/features/challenge/calendar/ChallengeCalendarScreen.dart';
 
 // -- 챌린지 생성 화면 --
-class ChallengeCreatePage extends StatefulWidget {
+class ChallengeCreatePage extends ConsumerStatefulWidget {
   const ChallengeCreatePage({super.key});
 
   @override
-  State<ChallengeCreatePage> createState() => _ChallengeCreatePageState();
+  ConsumerState<ChallengeCreatePage> createState() =>
+      _ChallengeCreatePageState();
 }
 
-class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
+class _ChallengeCreatePageState extends ConsumerState<ChallengeCreatePage> {
   int selectedType = 0; // 현재 선택된 방식을 저장 (0: 미선택, 1: 사진 필수, 2: 체크 자유)
   int selectedVisibility = 0; // 1: 비공개, 2: 공개, 3: 친구 공개
 
@@ -51,8 +57,8 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
         _selectedFrequency != null && // 빈도 선택됨
         _selectedTags.isNotEmpty && // 태그 1개 이상
         _descriptionController.text.trim().isNotEmpty && // 설명 입력
-        selectedType != 0; // 인증 방식 선택
-    selectedVisibility != 0; // 공개범위 선택
+        selectedType != 0 && // 인증 방식 선택
+        selectedVisibility != 0; // 공개범위 선택
   }
 
   // 선택된 태그들을 담을 리스트
@@ -88,46 +94,69 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
   }
 
   // 챌린지 생성 데이터 제출 준비 로직
-  void _submitChallenge() {
-    // 선택된 값들을 백엔드 전송용 데이터로 가공
-    final String title = _nameController.text.trim();
-    final String startDate = _selectedDay != null
-        ? "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}"
-        : "";
-
-    // "30일" -> 30 (숫자만 추출)
+  void _submitChallenge() async {
+    // 1. 데이터 가공 (Swagger 형식에 맞춤)
     final int duration =
         int.tryParse(_selectedDuration?.replaceAll('일', '') ?? '0') ?? 0;
 
-    final String frequency = _selectedFrequency ?? "";
-    final List<String> tags = List.from(_selectedTags);
-    final String description = _descriptionController.text.trim();
-    final String authType = selectedType == 1 ? "PHOTO" : "FREE";
+    // 인증 빈도 매핑 (예: "매일" -> 7, "주 3회" -> 3)
+    int frequency = 7;
+    if (_selectedFrequency != "매일") {
+      frequency =
+          int.tryParse(
+            _selectedFrequency?.replaceAll(RegExp(r'[^0-9]'), '') ?? '7',
+          ) ??
+          7;
+    }
 
-    // 공개 범위 데이터 가공
-    final String visibility = selectedVisibility == 1
-        ? "PRIVATE"
-        : (selectedVisibility == 2 ? "PUBLIC" : "ONLY FRIENDS");
+    final requestData = {
+      "title": _nameController.text.trim(),
+      "startDate": _selectedDay != null
+          ? "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}"
+          : "",
+      "duration": duration,
+      "frequency": frequency,
+      "tags": _selectedTags,
+      "description": _descriptionController.text.trim(),
+      "photoRequired": selectedType == 1, // 사진 필수 여부 (bool)
+      "challengeVisibility": selectedVisibility == 1
+          ? "PRIVATE"
+          : (selectedVisibility == 2 ? "PUBLIC" : "FRIENDS_ONLY"),
+      "maxParticipantNumber": 50,
+    };
 
-    // 콘솔에 예쁘게 출력 (백엔드에게 줄 데이터 미리보기)
-    print("====================================");
-    print("🚀 [챌린지 생성 요청 데이터]");
-    print("제목: $title");
-    print("시작일: $startDate");
-    print("기간: $duration일");
-    print("빈도: $frequency");
-    print("태그: ${tags.join(', ')}");
-    print("설명: $description");
-    print("인증방식: $authType");
-    print("공개범위 : $visibility");
-    print("====================================");
+    debugPrint('🚀 서버 전송 데이터: ${jsonEncode(requestData)}');
 
-    // 성공 팝업 띄우기
-    showDialog(
-      context: context,
-      barrierColor: const Color(0x7F1A1D1B),
-      builder: (context) => const ChallengeCreateSuccessDialog(),
-    );
+    // 2. API 호출
+    final notifier = ref.read(challengeCreateNotifierProvider.notifier);
+    final response = await notifier.create(requestData);
+
+    // 3. 결과 처리
+    if (response != null && mounted) {
+      // 현황 페이지로 이동하며 데이터 전달
+      // pushReplacement를 쓰면 '만들기' 화면이 스택에서 제거되어 뒤로가기를 눌러도 다시 나오지 않습니다.
+      await Future.delayed(const Duration(seconds: 5));
+      debugPrint('✅ 5초 대기 후 이동 시도 - challengeId: ${response.id}');
+
+      debugPrint('✅ 생성된 실제 ID: ${response.id}');
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChallengeCalendarScreen(
+            challengeId: response.id,
+            challengeTitle: _nameController.text.trim(), // 💡 유저가 입력한 제목 전달!
+            isJustCreated: true,
+            createdData: response,
+          ),
+        ),
+      );
+    } else if (mounted) {
+      // 에러 발생 시 처리 (notifier 내부에서 에러가 관리되지만 간단히 추가 가능)
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('챌린지 생성 중 오류가 발생했습니다.')));
+    }
   }
 
   // 스크롤 감지 함수

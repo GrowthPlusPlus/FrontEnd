@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:haenaem/features/challenge/widgets/UserChallengeData.dart'; // 모델 경로 확인
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
 
 class ChallengeFeedScreen extends StatefulWidget {
-  final CertificationPost post;
+  final CertificationPostModel post;
 
   const ChallengeFeedScreen({super.key, required this.post});
 
@@ -40,10 +40,11 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 날짜 포맷팅
-    String formattedDate = DateFormat(
-      'yyyy년 MM월 dd일 HH:mm',
-    ).format(widget.post.date);
+    DateTime parsedDate =
+        DateTime.tryParse(widget.post.postDate) ?? DateTime.now();
+
+    // 2. 날짜 포맷팅
+    String formattedDate = DateFormat('yyyy년 MM월 dd일 HH:mm').format(parsedDate);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -125,7 +126,7 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
 
             // --- 게시물 이미지 ---
             if (widget.post.hasImage && widget.post.imageUrl != null)
-              Image.asset(
+              Image.network(
                 widget.post.imageUrl!,
                 width: double.infinity,
                 height: 300,

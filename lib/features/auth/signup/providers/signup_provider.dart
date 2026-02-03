@@ -147,39 +147,58 @@ class SignupNotifier extends Notifier<SignupState> {
         state = state.copyWith(categorizedTags: grouped);
         debugPrint("✅ 태그 분류 완료: ${grouped.keys.length}개 카테고리");
       }
-    } catch (e) {
-      debugPrint("🚨 태그 로드 실패: $e");
+    }
+    //   } catch (e) {
+    //     debugPrint("🚨 태그 로드 실패: $e");
+    //   }
+    // }
+    // // 태그 이름 리스트를 ID 리스트로 변환하여 서버에 제출
+    // // TODO: 임시 우회 로직 백엔드 태그 구현 후에 수정
+    // Future<bool> submitTags() async {
+    //   // return true; // 패스
+    //   state = state.copyWith(isLoading: true);
+    //   try {
+    //     final accessToken = await _storage.read(key: 'accessToken');
+    //     // 이름 리스트를 ID 리스트로 매핑
+    //     final tagIds = state.tags.map((name) {
+    //       return _rawServerTags.firstWhere((t) => t['tag'] == name)['tagId']
+    //           as int;
+    //     }).toList();
+    //     final response = await _dio.post(
+    //       '/api/users/me/tags',
+    //       data: {"tagIds": tagIds},
+    //       options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+    //     );
+    //     return response.statusCode == 204;
+    //     return true;
+    //   } catch (e) {
+    //     debugPrint("🚨 태그 제출 실패: $e");
+    //     return true;
+    //   } finally {
+    //     state = state.copyWith(isLoading: false);
+    //   }
+    // }
+    catch (e) {
+      // 💡 백엔드 미구현 시 UI를 띄우기 위한 임시 Mock 데이터
+      debugPrint("🚨 태그 API 미구현: 임시 데이터를 사용합니다.");
+      final Map<String, List<String>> mockTags = {
+        "관심 분야": ["코딩", "운동", "독서", "여행", "맛집"],
+        "나의 성격": ["외향적", "내향적", "계획적", "즉흥적"],
+      };
+      state = state.copyWith(categorizedTags: mockTags);
     }
   }
 
-  // 태그 이름 리스트를 ID 리스트로 변환하여 서버에 제출
-  // TODO: 임시 우회 로직 백엔드 태그 구현 후에 수정
+  // 2. 태그 제출 (서버 호출 없이 즉시 패스)
   Future<bool> submitTags() async {
-    return true; // 패스
-
     state = state.copyWith(isLoading: true);
-    try {
-      final accessToken = await _storage.read(key: 'accessToken');
 
-      // 이름 리스트를 ID 리스트로 매핑
-      final tagIds = state.tags.map((name) {
-        return _rawServerTags.firstWhere((t) => t['tag'] == name)['tagId']
-            as int;
-      }).toList();
+    // 💡 실제 서버 통신 없이 0.5초 대기 후 바로 성공 반환
+    await Future.delayed(const Duration(milliseconds: 500));
 
-      final response = await _dio.post(
-        '/api/users/me/tags',
-        data: {"tagIds": tagIds},
-        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-      );
-
-      return response.statusCode == 204;
-    } catch (e) {
-      debugPrint("🚨 태그 제출 실패: $e");
-      return false;
-    } finally {
-      state = state.copyWith(isLoading: false);
-    }
+    debugPrint("⏩ 태그 단계 강제 패스 (임시 처리)");
+    state = state.copyWith(isLoading: false);
+    return true;
   }
 
   // 가입 절차가 모두 끝나면 상태 초기화
