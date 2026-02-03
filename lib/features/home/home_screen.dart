@@ -1,121 +1,24 @@
 // 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
-// 변수 용도: 다양한 챌린지 상태(완료, 실패 위기, 연속 인증, 일반)를 시각적으로 테스트하기 위한 데이터 세트
-List<Challenge> testChallenges = [
-  // 케이스 1: 오늘 이미 완료 + 어제도 완료 (초록색 카드 + 불꽃 표시)
-  Challenge(
-    title: "아침 6시 미라클 모닝",
-    isDoneToday: true,
-    isDeadlineToday: false,
-    isDoneYesterday: true,
-    deadline: DateTime(2026, 12, 31),
-    successCount: 15,
-    totalParticipants: 8,
-    currentCertifiedParticipants: 5,
-  ),
-
-  // 케이스 2: 오늘 이미 완료 + 어제는 미달성 (초록색 카드 + 불꽃 없음)
-  Challenge(
-    title: "매일 물 2L 마시기",
-    isDoneToday: true,
-    isDeadlineToday: false,
-    isDoneYesterday: false,
-    deadline: DateTime(2026, 6, 20),
-    successCount: 1,
-    totalParticipants: 20,
-    currentCertifiedParticipants: 12,
-  ),
-
-  // 케이스 3: 오늘 미달성 + 오늘이 마감일 (빨간색 카드 + 경고 문구 + 불꽃 없음)
-  Challenge(
-    title: "졸업 프로젝트 코딩",
-    isDoneToday: false,
-    isDeadlineToday: true,
-    isDoneYesterday: false,
-    deadline: DateTime(2026, 1, 12), // 오늘 날짜 기준
-    successCount: 5,
-    totalParticipants: 3,
-    currentCertifiedParticipants: 1,
-  ),
-
-  // 케이스 4: 오늘 미달성 + 오늘이 마감일 + 어제는 완료 (빨간색 카드 + 경고 문구 + 불꽃 없음)
-  // *논리: 오늘을 아직 안 했으므로 연속 인증(🔥) 조건인 'isDoneToday'가 false라 불꽃이 꺼져야 함
-  Challenge(
-    title: "영어 단어 50개 암기",
-    isDoneToday: false,
-    isDeadlineToday: true,
-    isDoneYesterday: true,
-    deadline: DateTime(2026, 1, 12),
-    successCount: 10,
-    totalParticipants: 15,
-    currentCertifiedParticipants: 7,
-  ),
-
-  // 케이스 5: 일반 상태 (회색 카드 + 그룹 현황 + 불꽃 없음)
-  Challenge(
-    title: "주 3회 헬스장 가기",
-    isDoneToday: false,
-    isDeadlineToday: false,
-    isDoneYesterday: false,
-    deadline: DateTime(2026, 2, 28),
-    successCount: 0,
-    totalParticipants: 5,
-    currentCertifiedParticipants: 0,
-  ),
-];
-
-// 작성자: Gemini
-// 클래스 용도: 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형
-enum ChallengeStatus {
-  completed, // 초록색 카드
-  urgent, // 빨간색 카드 및 날짜 표시
-  normal, // 회색 카드
-}
-
-// 클래스 용도: 챌린지 정보를 담는 데이터 모델
-class Challenge {
-  final String title;
-  final bool isDoneToday; // 오늘 완료 여부
-  final bool isDeadlineToday; // 오늘이 마감일인지 여부
-  final bool isDoneYesterday;
-  final DateTime deadline;
-  final int successCount; // 내 성공 일수 (예: 7)
-  final int totalParticipants; // 그룹 총 인원 (예: 5)
-  final int currentCertifiedParticipants; // 오늘 인증한 인원 (예: 2)
-
-  Challenge({
-    required this.title,
-    required this.isDoneToday,
-    required this.isDeadlineToday,
-    required this.isDoneYesterday,
-    required this.deadline,
-    required this.successCount,
-    required this.totalParticipants,
-    required this.currentCertifiedParticipants,
-  });
-
-  // 함수의 용도: 현재 챌린지의 상태를 계산하여 반환함
-  // 반환 값: ChallengeStatus (상태 열거형)
-  ChallengeStatus getStatus() {
-    if (isDoneToday) {
-      return ChallengeStatus.completed;
-    } else if (isDeadlineToday) {
-      return ChallengeStatus.urgent;
-    }
-    return ChallengeStatus.normal;
-  }
-}
-
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
+  // StatelessWidget -> ConsumerWidget 변경
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // WidgetRef 추가
+    // Riverpod 상태 구독
+    final homeDataAsync = ref.watch(challengeHomeNotifierProvider);
+    final todayStatus = ref.watch(todayTotalStatusProvider);
+
     // 1. 이번 주의 일요일 날짜 구하기
     DateTime now = DateTime.now();
     DateTime firstDayOfWeek = now.subtract(Duration(days: now.weekday % 7));
@@ -126,109 +29,150 @@ class HomeScreen extends StatelessWidget {
       (index) => firstDayOfWeek.add(Duration(days: index)),
     );
 
-    // 3. 오늘 챌린지들의 종합 상태 파악
-    ChallengeStatus todayStatus = getTodayTotalStatus();
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Stack(
-          children: [
-            // 메인 컨텐츠
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 상단 날짜 + 아이콘
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        getFormattedDate(), // 수정됨: 오늘 날짜를 함수에서 받아옴
-                        style: AppTypography.h2.copyWith(
-                          color: AppColors.black,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () {},
-                        icon: SvgPicture.asset(
-                          'assets/images/icons/notice_icon.svg',
-                          width: 40,
-                          height: 40,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.black,
-                            BlendMode.srcIn,
+        child: homeDataAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('데이터를 불러오지 못했습니다: $err')),
+          data: (data) => Stack(
+            children: [
+              // 메인 컨텐츠
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 상단 날짜 + 아이콘
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          getFormattedDate(), // 수정됨: 오늘 날짜를 함수에서 받아옴
+                          style: AppTypography.h2.copyWith(
+                            color: AppColors.black,
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        iconSize: 24,
-                        color: AppColors.black,
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // 주간 캘린더
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
-                  ),
-                  child: Row(
-                    children: weekDays.map((date) {
-                      final isToday =
-                          date.year == now.year &&
-                          date.month == now.month &&
-                          date.day == now.day;
-
-                      return _DayChip(
-                        date: date,
-                        isSelected: isToday,
-                        // 오늘인 경우에만 종합 상태를 전달하고, 다른 날은 기본 상태 전달
-                        status: isToday ? todayStatus : ChallengeStatus.normal,
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 챌린지 카드
-                // 사용자의 챌린지 정보를 받아와 챌린지 카드를 리스트로 렌더링
-                // [스크롤 영역] 챌린지 리스트만 Expanded로 감싸 독립적 스크롤 부여
-                Expanded(child: ChallengeListView(challenges: testChallenges)),
-              ],
-            ),
-
-            // 우하단 플로팅 + 버튼
-            Positioned(
-              right: 20,
-              bottom: 30, // 하단바 위로 떠 있게
-              child: FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ChallengeCreatePage(),
+                        const Spacer(),
+                        // 알림 아이콘: API의 notificationNumber 활용 가능
+                        Stack(
+                          alignment: Alignment.center,
+                          clipBehavior: Clip.none,
+                          children: [
+                            IconButton(
+                              onPressed: () {},
+                              icon: SvgPicture.asset(
+                                'assets/images/icons/home_notice_icon.svg',
+                                width: 24,
+                                height: 24,
+                                colorFilter: const ColorFilter.mode(
+                                  AppColors.black,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ),
+                            if (data.notificationNumber > 0)
+                              Positioned(
+                                right: 8,
+                                top: 3,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.notification,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${data.notificationNumber}',
+                                    style: AppTypography.c1.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: SvgPicture.asset(
+                            'assets/images/icons/dots_vert_icon.svg',
+                          ),
+                          iconSize: 24,
+                          color: AppColors.black,
+                          onPressed: () {},
+                        ),
+                      ],
                     ),
-                  );
-                }, // 채팅방 생성 페이지 연결
-                backgroundColor: Colors.white,
-                elevation: 4,
-                shape: const CircleBorder(),
-                child: const Icon(Icons.add, size: 32, color: Colors.green),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // 주간 캘린더
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      children: weekDays.map((date) {
+                        final isToday =
+                            date.year == now.year &&
+                            date.month == now.month &&
+                            date.day == now.day;
+
+                        return _DayChip(
+                          date: date,
+                          isSelected: isToday,
+                          // 오늘인 경우에만 종합 상태를 전달하고, 다른 날은 기본 상태 전달
+                          status: isToday
+                              ? todayStatus
+                              : ChallengeStatus.normal,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 챌린지 카드
+                  // 사용자의 챌린지 정보를 받아와 챌린지 카드를 리스트로 렌더링
+                  // [스크롤 영역] 챌린지 리스트만 Expanded로 감싸 독립적 스크롤 부여
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => ref
+                          .read(challengeHomeNotifierProvider.notifier)
+                          .refresh(),
+                      child: ChallengeListView(challenges: data.myChallenges),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+
+              // 우하단 플로팅 + 버튼
+              Positioned(
+                right: 20,
+                bottom: 30, // 하단바 위로 떠 있게
+                child: FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChallengeCreatePage(),
+                      ),
+                    );
+                  }, // 채팅방 생성 페이지 연결
+                  backgroundColor: Colors.white,
+                  elevation: 4,
+                  shape: const CircleBorder(),
+                  child: const Icon(Icons.add, size: 32, color: Colors.green),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -244,23 +188,6 @@ class HomeScreen extends StatelessWidget {
     String day = now.day.toString().padLeft(2, '0');
 
     return '$year. $month. $day';
-  }
-
-  // 함수의 용도: 현재 테스트 데이터 중 오늘 가장 우선순위가 높은 상태를 반환함
-  ChallengeStatus getTodayTotalStatus() {
-    if (testChallenges.isEmpty) return ChallengeStatus.normal;
-
-    bool hasUrgent = testChallenges.any(
-      (c) => c.getStatus() == ChallengeStatus.urgent,
-    );
-    if (hasUrgent) return ChallengeStatus.urgent;
-
-    bool allCompleted = testChallenges.every(
-      (c) => c.getStatus() == ChallengeStatus.completed,
-    );
-    if (allCompleted) return ChallengeStatus.completed;
-
-    return ChallengeStatus.normal;
   }
 }
 
@@ -345,7 +272,7 @@ class _DayChip extends StatelessWidget {
 // 작성자: Gemini
 // 클래스 용도: 사용자의 챌린지 목록을 리스트 형태로 렌더링하며, 데이터가 없을 시 안내 문구를 표시함
 class ChallengeListView extends StatelessWidget {
-  final List<Challenge> challenges; // 이전 대화에서 정의한 Challenge 모델 리스트
+  final List<ChallengeModel> challenges; // Challenge -> ChallengeModel 변경
 
   const ChallengeListView({super.key, required this.challenges});
 
@@ -421,13 +348,13 @@ class VerticalDashPainter extends CustomPainter {
 // 작성자: Gemini
 // 클래스 용도: 상세 요구사항(아이콘 위치, 점선, 조건별 문구, 연속 인증 불꽃)이 반영된 챌린지 카드
 class ChallengeCard extends StatelessWidget {
-  final Challenge challenge;
+  final ChallengeModel challenge; // Challenge -> ChallengeModel 변경
 
-  const ChallengeCard({super.key, required this.challenge});
+  ChallengeCard({super.key, required this.challenge});
 
   final Color colorSuccess = AppColors.success;
   final Color colorUrgent = AppColors.warning;
-  final Color colorNormal = AppColors.gray4;
+  final Color colorNormal = AppColors.gray5;
 
   @override
   Widget build(BuildContext context) {
@@ -502,8 +429,9 @@ class ChallengeCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min, // 필요한 만큼만 가로 공간 차지
       crossAxisAlignment: CrossAxisAlignment.center, // 아이콘과 글자 높이 맞춤
       children: [
-        // 1. 조건부로 불꽃 SVG 위젯 표시
-        if (challenge.isDoneYesterday && challenge.isDoneToday)
+        // 1. 조건부로 불꽃 SVG 위젯 표시 (API 구조에 따라 로직 보완 가능)
+        // 현재 API에는 어제 성공 여부가 없으므로 2일 이상 진행 중이면 표시하는 등의 커스텀이 필요할 수 있습니다.
+        if (challenge.duringDate >= 2 && challenge.isDoneToday)
           Padding(
             padding: const EdgeInsets.only(right: 4), // 아이콘과 텍스트 사이 간격
             child: SvgPicture.asset(
@@ -515,7 +443,7 @@ class ChallengeCard extends StatelessWidget {
 
         // 2. 성공 일수 텍스트
         Text(
-          '${challenge.successCount}일째',
+          '${challenge.duringDate}일째',
           style: AppTypography.b2.copyWith(
             fontSize: 14,
             color: AppColors.black,
@@ -544,7 +472,7 @@ class ChallengeCard extends StatelessWidget {
         ),
         const SizedBox(width: 4), // 아이콘과 텍스트 사이 간격
         Text(
-          '인증인원 ${challenge.currentCertifiedParticipants}/${challenge.totalParticipants}',
+          '인증인원 ${challenge.participantNumber}/${challenge.maxParticipantNumber}',
           style: AppTypography.b2.copyWith(
             fontSize: 14,
             color: AppColors.black,
