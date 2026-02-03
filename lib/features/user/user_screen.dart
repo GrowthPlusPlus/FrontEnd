@@ -1,4 +1,5 @@
 /// 최초 작성자: 정승빈
+/// 작성일: 2026-01-18
 library;
 
 import 'package:flutter/material.dart';
@@ -7,48 +8,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'withdrawal_screen.dart';
+import 'challenge_list_screen.dart';
 
-// --- 향후 모델 파일로 분리할 챌린지 데이터 구조 ---
-class ChallengeItem {
-  final String name;
-  final String status; // '진행중', '완료', '실패'
-  final double progress;
-  final String dDay;
-  final int currentStreak;
-  final int currentParticipants;
-  final int totalParticipants;
-
-  ChallengeItem({
-    required this.name,
-    required this.status,
-    required this.progress,
-    required this.dDay,
-    this.currentStreak = 0,
-    this.currentParticipants = 0,
-    this.totalParticipants = 0,
-  });
-}
-
-// --- 챌린지 데이터 모델 ---
-enum ChallengeStatus { ongoing, success, fail }
-
-class ChallengeModel {
-  final String title;
-  final ChallengeStatus status;
-  final double progress;
-  final String dateInfo;
-  final String countInfo;
-
-  ChallengeModel({
-    required this.title,
-    required this.status,
-    required this.progress,
-    required this.dateInfo,
-    this.countInfo = '0/0명',
-  });
-}
-
-/// 클래스의 용도: 사용자의 프로필 정보 조회 및 로그아웃, 회원탈퇴 기능을 제공하는 마이페이지 화면
+/// 클래스의 용도: 사용자의 프로필 정보 조회 및 챌린지 현황, 로그아웃 기능을 제공하는 마이페이지 화면
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
 
@@ -57,38 +19,8 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  // 현재 선택된 탭 상태 (기본값: 진행중)
-  ChallengeStatus _selectedTab = ChallengeStatus.ongoing;
-
-  // 임시 데이터 리스트 (추후 실제 API/DB 연결)
-  final List<ChallengeModel> _allChallenges = [
-    ChallengeModel(
-      title: '물 마시기',
-      status: ChallengeStatus.ongoing,
-      progress: 0.4,
-      dateInfo: '매일, 완료까지 D-10',
-      countInfo: '3/5명',
-    ),
-    ChallengeModel(
-      title: '러닝하기',
-      status: ChallengeStatus.ongoing,
-      progress: 0.7,
-      dateInfo: '매일, 완료까지 D-03',
-      countInfo: '1/2명',
-    ),
-    ChallengeModel(
-      title: '명상하기',
-      status: ChallengeStatus.success,
-      progress: 1.0,
-      dateInfo: '완료일 2025/12/25',
-    ),
-    ChallengeModel(
-      title: '기상 챌린지',
-      status: ChallengeStatus.fail,
-      progress: 0.0,
-      dateInfo: '실패일 2026/01/15',
-    ),
-  ];
+  // 선택된 챌린지 필터 상태 관리
+  ChallengeStatus selectedTab = ChallengeStatus.ongoing;
 
   /// 함수의 용도: 마이페이지 화면 UI 빌드
   /// 매개 변수: BuildContext context
@@ -123,8 +55,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
               // --- 등급 뱃지 ---
               buildRankBadge('초보 모험가'),
               const SizedBox(height: 40),
-              // --- 나의 챌린지 섹션 (새로 추가됨) ---
-              _buildChallengeSection(),
+              // --- 나의 챌린지 섹션 ---
+              buildChallengeSection(),
               const SizedBox(height: 16),
               // --- 메뉴 리스트 섹션 ---
               buildMenuItem(
@@ -232,10 +164,13 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  // 나의 챌린지 섹션 (탭 전환 기능 포함)
-  Widget _buildChallengeSection() {
+  /// 함수의 용도: 나의 챌린지 현황 섹션 빌드
+  /// 매개 변수: 없음
+  /// 반환 값: Widget
+  Widget buildChallengeSection() {
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(12),
@@ -253,7 +188,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
                 ),
                 InkWell(
-                  onTap: () {}, // 더보기 페이지 이동 로직
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChallengeListScreen(
+                          challenges: ALL_CHALLENGES_DATA,
+                        ),
+                      ),
+                    );
+                  },
                   child: Row(
                     children: [
                       Text(
@@ -273,32 +217,31 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ],
             ),
           ),
-          // 필터 탭 버튼 영역
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                _buildStatusTab('진행중', ChallengeStatus.ongoing),
+                buildStatusTab('진행중', ChallengeStatus.ongoing),
                 const SizedBox(width: 8),
-                _buildStatusTab('완료', ChallengeStatus.success),
+                buildStatusTab('완료', ChallengeStatus.success),
                 const SizedBox(width: 8),
-                _buildStatusTab('실패', ChallengeStatus.fail),
+                buildStatusTab('실패', ChallengeStatus.fail),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          // 필터링된 리스트 출력
-          _buildChallengeList(),
+          buildChallengeList(),
         ],
       ),
     );
   }
 
-  // 상태 탭 버튼 빌더
-  Widget _buildStatusTab(String label, ChallengeStatus status) {
-    final bool isSelected = _selectedTab == status;
+  /// 함수의 용도: 상태 필터링 탭 버튼 생성
+  /// 매개 변수: String label, ChallengeStatus status
+  /// 반환 값: Widget
+  Widget buildStatusTab(String label, ChallengeStatus status) {
+    final bool isSelected = selectedTab == status;
 
-    // 상태별 선택 시 테마 색상 설정
     Color activeColor;
     IconData icon;
     switch (status) {
@@ -318,7 +261,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
     return Expanded(
       child: InkWell(
-        onTap: () => setState(() => _selectedTab = status),
+        onTap: () => setState(() => selectedTab = status),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
@@ -349,13 +292,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  // 필터링된 챌린지 아이템 리스트 생성
-  Widget _buildChallengeList() {
-    final filteredList = _allChallenges
-        .where((item) => item.status == _selectedTab)
-        .toList();
+  /// 함수의 용도: 선택된 탭에 따른 챌린지 목록 위젯 생성
+  /// 매개 변수: 없음
+  /// 반환 값: Widget
+  Widget buildChallengeList() {
+    final sortedList = ChallengeModel.getSortedList(
+      ALL_CHALLENGES_DATA,
+      selectedTab,
+    );
 
-    if (filteredList.isEmpty) {
+    if (sortedList.isEmpty) {
       return Container(
         height: 100,
         alignment: Alignment.center,
@@ -366,21 +312,31 @@ class _MyPageScreenState extends State<MyPageScreen> {
       );
     }
 
+    final displayList = sortedList.take(2).toList();
+
     return Column(
-      children: filteredList.asMap().entries.map((entry) {
-        return Column(
-          children: [
-            _buildChallengeCard(entry.value),
-            if (entry.key != filteredList.length - 1)
-              const Divider(height: 1, color: AppColors.gray4),
-          ],
-        );
-      }).toList(),
+      children: [
+        ...displayList.asMap().entries.map((entry) {
+          final item = entry.value;
+          final index = entry.key;
+          final isLast = index == (displayList.length - 1);
+
+          return Column(
+            children: [
+              buildChallengeCard(item),
+              if (!isLast) const Divider(height: 1, color: AppColors.gray4),
+            ],
+          );
+        }),
+        const SizedBox(height: 1),
+      ],
     );
   }
 
-  // 챌린지 개별 카드 위젯
-  Widget _buildChallengeCard(ChallengeModel item) {
+  /// 함수의 용도: 개별 챌린지 항목 카드 위젯 생성
+  /// 매개 변수: ChallengeModel item
+  /// 반환 값: Widget
+  Widget buildChallengeCard(ChallengeModel item) {
     Color themeColor;
     String statusText;
     switch (item.status) {
@@ -455,8 +411,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 height: 16,
               ),
               Text(
-                item.status == ChallengeStatus.ongoing ? ' 0일째' : ' 최대 0일',
-                style: AppTypography.b2,
+                item.status == ChallengeStatus.ongoing
+                    ? ' ${item.streak}일째'
+                    : ' 최대 ${item.streak}일',
+                style: AppTypography.c1.copyWith(color: AppColors.black),
               ),
               const SizedBox(width: 12),
               if (item.status == ChallengeStatus.ongoing) ...[
@@ -571,7 +529,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         onTap: () {
                           // TODO: 실제 로그아웃 로직 연결 예정
                           Navigator.pop(context);
-                          // 현재는 로그아웃 버튼 누르면 다이얼로그 닫힘
                         },
                       ),
                     ),
