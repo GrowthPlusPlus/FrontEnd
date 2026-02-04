@@ -1,6 +1,7 @@
 // 최초 작성자: 강선욱
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -111,6 +112,108 @@ class ChallengeRepository {
       return []; // 에러 시 빈 리스트 반환
     }
   }
+
+  // 인증글 생성
+  Future<CertificationPostModel> createArticle({
+    required int challengeId,
+    required String content,
+    required List<String> imageUrls,
+  }) async {
+    try {
+      final Map<String, dynamic> requestBody = {
+        "data": {"content": content, "challengeId": challengeId},
+        "image": imageUrls, // 검증 완료된 이미지 URL 리스트
+      };
+
+      debugPrint('🚀 [API Request] /api/articles Body: $requestBody');
+
+      final response = await _dio.post('/api/articles', data: requestBody);
+
+      if (response.statusCode == 201) {
+        return CertificationPostModel.fromJson(response.data);
+      } else {
+        throw Exception('인증글 생성 실패 (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 인증글 생성 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '게시글 업로드 실패');
+    }
+  }
+
+  // 인증 사진 검증
+  Future<bool> verifyImage(File imageFile) async {
+    try {
+      // 1. 파일 읽기 및 Base64 변환
+      final bytes = await imageFile.readAsBytes();
+      final String base64Image = base64Encode(bytes);
+
+      // 2. API 호출
+      final response = await _dio.post(
+        '/api/image/verify',
+        data: {"images": base64Image},
+      );
+
+      // 3. 성공 처리 (204 No Content)
+      if (response.statusCode == 204) {
+        debugPrint('✅ [204] 이미지 검증 성공');
+        return true;
+      }
+
+      return false;
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      final errorData = e.response?.data;
+
+      // 4. 상태 코드별 구체적 핸들링
+      switch (statusCode) {
+        case 400:
+          // 이미지 크기, 포맷, 손상 등 정책 위반
+          debugPrint('⚠️ [400] 이미지 검증 실패: 규격에 맞지 않는 파일입니다. ($errorData)');
+          break;
+
+        case 413:
+          // 파일 용량이 너무 커서 서버가 거부한 경우 (Base64 인코딩 시 자주 발생)
+          debugPrint('🚨 [413] 요청 용량 초과: 이미지 크기를 줄여야 합니다.');
+          break;
+
+        case 500:
+          // 서버 내부 로직 에러 (주로 클라우디너리 연동 실패 등)
+          debugPrint(
+            '🔥 [500] 서버 내부 오류: 백엔드 로직 혹은 클라우디너리 설정 확인 필요 ($errorData)',
+          );
+          break;
+
+        default:
+          debugPrint(
+            '❓ [Unknown] 알 수 없는 오류 발생 (Code: $statusCode, Data: $errorData)',
+          );
+      }
+      return false;
+    } catch (e) {
+      debugPrint('💻 [Client Error] 앱 내부 오류 혹은 네트워크 미연결: $e');
+      return false;
+    }
+  }
+  // Future<bool> verifyImage(File imageFile) async {
+  //   try {
+  //     // 파일을 바이트로 읽어 Base64 문자열로 변환 (명세서의 "string" 대응)
+  //     final bytes = await imageFile.readAsBytes();
+  //     final String base64Image = base64Encode(bytes);
+
+  //     final response = await _dio.post(
+  //       '/api/image/verify',
+  //       data: {
+  //         "images": base64Image, // 명세서 키값 "images"
+  //       },
+  //     );
+
+  //     // 204 No Content는 성공을 의미함
+  //     return response.statusCode == 204;
+  //   } on DioException catch (e) {
+  //     debugPrint('❌ 이미지 검증 실패: ${e.response?.statusCode}');
+  //     return false; // 400 등 에러 발생 시 실패 처리
+  //   }
+  // }
 }
 
 // Riverpod Provider 설정

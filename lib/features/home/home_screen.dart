@@ -7,6 +7,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/features/challenge/calendar/ChallengeCalendarScreen.dart';
 
 class HomeScreen extends ConsumerWidget {
   // StatelessWidget -> ConsumerWidget 변경
@@ -360,62 +361,76 @@ class ChallengeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = challenge.getStatus();
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: getCardColor(status),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        // 높이를 내부 자식 중 가장 큰 것에 맞춤 (점선 높이 확보용)
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              // 왼쪽: 정보 영역
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      challenge.title,
-                      style: AppTypography.b1.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+    // 터치 이벤트
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChallengeCalendarScreen(
+              challengeId: challenge.challengeId, // 필수로 필요한 ID 전달
+              challengeTitle: challenge.title, // 상단 앱바에 표시할 타이틀 전달
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: getCardColor(status),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          // 높이를 내부 자식 중 가장 큰 것에 맞춤 (점선 높이 확보용)
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                // 왼쪽: 정보 영역
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        challenge.title,
+                        style: AppTypography.b1.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    // 3. 연속 인증 시 불꽃 이모티콘 추가
-                    buildSuccessDays(),
+                      const SizedBox(height: 4),
+                      // 3. 연속 인증 시 불꽃 이모티콘 추가
+                      buildSuccessDays(),
 
-                    const SizedBox(height: 4),
-                    // 2. Urgent 상태 시 경고 문구 분기 처리
-                    buildBottomInfo(status),
-                  ],
-                ),
-              ),
-
-              // 세로 점선
-              SizedBox(
-                width: 40,
-                child: Center(
-                  // CustomPaint를 중앙에 배치
-                  child: CustomPaint(
-                    size: const Size(1, double.infinity),
-                    painter: VerticalDashPainter(),
+                      const SizedBox(height: 4),
+                      // 2. Urgent 상태 시 경고 문구 분기 처리
+                      buildBottomInfo(status),
+                    ],
                   ),
                 ),
-              ),
 
-              // 우측 중간에 위치하는 아이콘
-              SizedBox(
-                width: 44, // 고정 영역 확보
-                child: Center(
-                  child: buildStatusIcon(status), // 중앙 정렬된 아이콘
+                // 세로 점선
+                SizedBox(
+                  width: 40,
+                  child: Center(
+                    // CustomPaint를 중앙에 배치
+                    child: CustomPaint(
+                      size: const Size(1, double.infinity),
+                      painter: VerticalDashPainter(),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+
+                // 우측 중간에 위치하는 아이콘
+                SizedBox(
+                  width: 44, // 고정 영역 확보
+                  child: Center(
+                    child: buildStatusIcon(status), // 중앙 정렬된 아이콘
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

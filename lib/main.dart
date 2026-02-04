@@ -8,6 +8,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';

@@ -1,7 +1,6 @@
 // 최초 작성자 : 김채영
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:crop_your_image/crop_your_image.dart';
@@ -9,6 +8,10 @@ import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/features/challenge/data/challenge_repository.dart';
+
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
 import '../../../../shared/widgets/image_source_sheet.dart';
@@ -19,18 +22,24 @@ import '../widgets/verification_tip_box.dart';
 import '../widgets/verification_info_box.dart';
 import '../widgets/ai_success_box.dart';
 import '../widgets/ai_fail_box.dart';
+import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
 
 // 챌린지 인증하기 화면
-class ChallengeVerificationPage extends StatefulWidget {
-  const ChallengeVerificationPage({super.key});
+class ChallengeVerificationPage extends ConsumerStatefulWidget {
+  final int challengeId;
+  const ChallengeVerificationPage({super.key, required this.challengeId});
 
   @override
-  State<ChallengeVerificationPage> createState() =>
+  ConsumerState<ChallengeVerificationPage> createState() =>
       _ChallengeVerificationPageState();
 }
 
-class _ChallengeVerificationPageState extends State<ChallengeVerificationPage> {
+// 상태 관리를 위한 Enum
+enum ImageVerificationStatus { idle, loading, success, fail }
+
+class _ChallengeVerificationPageState
+    extends ConsumerState<ChallengeVerificationPage> {
   final TextEditingController _contentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -39,6 +48,7 @@ class _ChallengeVerificationPageState extends State<ChallengeVerificationPage> {
   final List<AssetEntity> _selectedAssets = []; // 갤러리 체크 상태 유지용
 
   bool _showShadow = true;
+  ImageVerificationStatus _verifyStatus = ImageVerificationStatus.idle;
 
   // 전체 이미지 리스트
   List<File> get _allImages => [..._cameraImages, ..._galleryImages];
@@ -74,26 +84,17 @@ class _ChallengeVerificationPageState extends State<ChallengeVerificationPage> {
         return ImageSourceSheet(
           onSourceSelected: (source) async {
             Navigator.pop(context);
-
+            dynamic result;
             if (source == ImageSource.camera) {
               // 카메라 촬영 플로우
-              final result = await Navigator.push(
+              result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const CustomCameraScreen(),
                 ),
               );
-
-              if (result != null && result is File && mounted) {
-                if (_allImages.length < 3) {
-                  setState(() {
-                    _cameraImages.add(result); // 카메라 바구니에 추가
-                  });
-                }
-              }
             } else {
-              // 갤러리 선택 플로우
-              final result = await Navigator.push(
+              result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => CustomGalleryScreen(
@@ -101,18 +102,10 @@ class _ChallengeVerificationPageState extends State<ChallengeVerificationPage> {
                   ),
                 ),
               );
-
-              if (result != null && result is Map<String, dynamic> && mounted) {
-                setState(() {
-                  // 갤러리 에셋 정보 갱신
-                  _selectedAssets.clear();
-                  _selectedAssets.addAll(result['assets'] as List<AssetEntity>);
-
-                  // 갤러리 이미지 바구니만 교체 (카메라 바구니는 보존)
-                  _galleryImages.clear();
-                  _galleryImages.addAll(result['files'] as List<File>);
-                });
-              }
+            }
+            // 결과 처리 함수 호출
+            if (result != null) {
+              _handleImageResult(result);
             }
           },
         );
@@ -295,6 +288,42 @@ class _ChallengeVerificationPageState extends State<ChallengeVerificationPage> {
     );
   }
 
+  // 이미지 검증 로직 함수
+  Future<void> _runImageVerification(File file) async {
+    setState(() => _verifyStatus = ImageVerificationStatus.loading);
+
+    final repository = ref.read(challengeRepositoryProvider);
+    final isSuccess = await repository.verifyImage(file);
+
+    if (mounted) {
+      setState(() {
+        _verifyStatus = isSuccess
+            ? ImageVerificationStatus.success
+            : ImageVerificationStatus.fail;
+      });
+    }
+  }
+
+  // 사진 추가 후 검증 호출
+  void _handleImageResult(dynamic result) async {
+    File? selectedFile;
+    if (result is File) {
+      selectedFile = result;
+      _cameraImages.add(selectedFile);
+    } else if (result is Map<String, dynamic>) {
+      _selectedAssets.clear();
+      _selectedAssets.addAll(result['assets'] as List<AssetEntity>);
+      _galleryImages.clear();
+      _galleryImages.addAll(result['files'] as List<File>);
+      selectedFile = _galleryImages.last;
+    }
+
+    if (selectedFile != null) {
+      await _runImageVerification(selectedFile);
+    }
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -339,12 +368,22 @@ class _ChallengeVerificationPageState extends State<ChallengeVerificationPage> {
                     _buildPhotoUploadBox(), // 헬퍼 함수 호출
                     const SizedBox(height: 8),
 
-                    _allImages.isEmpty
-                        ? const VerificationInfoBox()
-                        : const AiVerificationBox(), // 사진이 한 장이라도 있을 때
+                    // 검증 상태에 따른 박스 교체 로직
+                    if (_verifyStatus == ImageVerificationStatus.idle ||
+                        _verifyStatus == ImageVerificationStatus.loading)
+                      const VerificationInfoBox() // 기본 가이드
+                    else if (_verifyStatus == ImageVerificationStatus.success)
+                      const AiSuccessBox() // 성공 시 표시
+                    else
+                      const AiFailBox(), // 실패 시 표시
 
                     const SizedBox(height: 8),
-                    const VerificationTipBox(),
+
+                    // 실패 여부에 따른 하단 팁 박스 교체 로직
+                    _verifyStatus == ImageVerificationStatus.fail
+                        ? const ReverificationGuideBox() // 실패 시 재인증 가이드
+                        : const VerificationTipBox(), // 평상시/성공 시 팁 박스
+
                     const SizedBox(height: 16),
                     const ChallengeLabel(label: '인증 내용'),
                     ChallengeInputBox(
@@ -366,12 +405,30 @@ class _ChallengeVerificationPageState extends State<ChallengeVerificationPage> {
           label: '인증하기',
           showShadow: _showShadow,
           onPressed: _isFormValid
-              ? () {
-                  // ✅ [수정] 이미 File 리스트인 _allImages를 그대로 서버로 보냅니다.
-                  print("최종 전송할 파일들: $_allImages");
-                  // TODO: 서버 업로드 API 호출
+              ? () async {
+                  // TODO: AI 검증 API를 먼저 호출하여 서버로부터 이미지 URL들을 받아와야 함
+                  // List<String> verifiedUrls = await ref.read(verifyProvider).upload(_allImages);
+
+                  // 인증글 생성 API 호출
+                  final success = await ref
+                      .read(articleCreateNotifierProvider.notifier)
+                      .submitArticle(
+                        challengeId: widget.challengeId,
+                        content: _contentController.text,
+                        verifiedImageUrls: [], // 여기에 실제 검증 완료된 URL 리스트가 들어가야 함
+                      );
+
+                  if (success && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('인증글이 성공적으로 등록되었습니다!')),
+                    );
+
+                    // 성공 시 인증글(피드) 화면으로 이동하거나,
+                    // 현재 화면을 닫아서 캘린더로 돌아감.
+                    Navigator.pop(context);
+                  }
                 }
-              : null,
+              : null, // 폼이 유효하지 않으면 버튼 비활성화
         ),
       ),
     );

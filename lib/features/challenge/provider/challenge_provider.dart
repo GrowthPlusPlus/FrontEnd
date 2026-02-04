@@ -102,3 +102,32 @@ Future<List<CertificationPostModel>> challengePosts(
     month: month,
   );
 }
+
+// 챌린지 생성 로직
+@riverpod
+class ArticleCreateNotifier extends _$ArticleCreateNotifier {
+  @override
+  AsyncValue<CertificationPostModel?> build() => const AsyncValue.data(null);
+
+  Future<bool> submitArticle({
+    required int challengeId,
+    required String content,
+    required List<String> verifiedImageUrls,
+  }) async {
+    state = const AsyncValue.loading();
+
+    // AsyncValue.guard 내부에서 ref 사용 가능
+    final result = await AsyncValue.guard(
+      () => ref
+          .read(challengeRepositoryProvider)
+          .createArticle(
+            challengeId: challengeId,
+            content: content,
+            imageUrls: verifiedImageUrls,
+          ),
+    );
+
+    state = result;
+    return !result.hasError;
+  }
+}

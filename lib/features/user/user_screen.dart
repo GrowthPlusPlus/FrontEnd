@@ -7,20 +7,23 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+
 import 'withdrawal_screen.dart';
 import 'challenge_list_screen.dart';
 import '../auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 
 /// 클래스의 용도: 사용자의 프로필 정보 조회 및 챌린지 현황, 로그아웃 기능을 제공하는 마이페이지 화면
-class MyPageScreen extends StatefulWidget {
+class MyPageScreen extends ConsumerStatefulWidget {
   const MyPageScreen({super.key});
 
   @override
-  State<MyPageScreen> createState() => _MyPageScreenState();
+  ConsumerState<MyPageScreen> createState() => _MyPageScreenState();
 }
 
-class _MyPageScreenState extends State<MyPageScreen> {
+class _MyPageScreenState extends ConsumerState<MyPageScreen> {
   // 선택된 챌린지 필터 상태 관리
   ChallengeStatus selectedTab = ChallengeStatus.ongoing;
 
@@ -29,6 +32,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
   /// 반환 값: Widget
   @override
   Widget build(BuildContext context) {
+    final homeDataAsync = ref.watch(
+      challengeHomeNotifierProvider,
+    ); // 홈탭에서 사용하는 동일한 프로바이더
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -489,7 +495,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   void showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -526,7 +532,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: buildDialogButton(
-                        context: context,
+                        context: dialogContext,
                         text: '확인',
                         onTap: () async {
                           // 1. 다이얼로그 먼저 닫기

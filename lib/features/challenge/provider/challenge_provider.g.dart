@@ -380,5 +380,26 @@ final challengeCreateNotifierProvider =
 
 typedef _$ChallengeCreateNotifier =
     AutoDisposeNotifier<AsyncValue<ChallengeCreateResponse?>>;
+String _$articleCreateNotifierHash() =>
+    r'ef629d79463f50634d6335ec21454552edcf7ed9';
+
+/// See also [ArticleCreateNotifier].
+@ProviderFor(ArticleCreateNotifier)
+final articleCreateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      ArticleCreateNotifier,
+      AsyncValue<CertificationPostModel?>
+    >.internal(
+      ArticleCreateNotifier.new,
+      name: r'articleCreateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$articleCreateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ArticleCreateNotifier =
+    AutoDisposeNotifier<AsyncValue<CertificationPostModel?>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
