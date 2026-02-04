@@ -146,10 +146,61 @@ class AuthService {
     return null;
   }
 
-  // 저장된 모든 보안 토큰을 삭제하여 초기 상태로 복구
+  // 로그아웃: 서버의 리프레시 토큰을 삭제하고, 앱(클라이언트)의 모든 토큰을 삭제합니다.
   static Future<void> logout() async {
-    await _storage.deleteAll();
-    debugPrint("🧹 모든 토큰 삭제 완료");
+    try {
+      // 1. 사전 준비 단계 (Access Token 확인)
+      final String? accessToken = await _storage.read(key: 'accessToken');
+
+      if (accessToken != null) {
+        // 2. 서버 통신 단계 (추가된 기능)
+        // 서버에게 "이 사용자의 리프레시 토큰을 지워줘"라고 요청합니다.
+        debugPrint("🚀 서버 로그아웃 요청 (리프레시 토큰 삭제)");
+        await _dio.delete(
+          '/api/me/logout',
+          options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+        );
+      }
+    } on DioException catch (e) {
+      // 3. 예외 처리 단계
+      // 네트워크가 끊겼거나 서버 에러가 나도 로그를 남기고 넘어갑니다.
+      debugPrint("⚠️ 서버 로그아웃 통신 실패: ${e.response?.statusCode}");
+    } finally {
+      // 4. 로컬 정리 단계 (기존 logout기능)
+      // 서버 성공 여부와 상관없이 '무조건' 내 폰의 토큰을 싹 지웁니다.
+      await _storage.deleteAll();
+      debugPrint("✅ 클라이언트 엑세스 토큰 및 모든 정보 삭제 완료");
+    }
+  }
+
+  // 회원탈퇴: 서버에 탈퇴 요청을 보내고, 성공 시 로컬 데이터를 모두 삭제합니다.
+  // 유저 정보 및 관련 데이터를 삭제하며, 통계성 데이터는 서버 측 로직에 따라 보존됩니다.
+  static Future<void> withdraw() async {
+    try {
+      final String? accessToken = await _storage.read(key: 'accessToken');
+
+      if (accessToken != null) {
+        debugPrint("🗑️ 회원 탈퇴 요청 시작");
+        // 서버에 계정 삭제 요청 (DELETE)
+        // 리프레시 토큰뿐만 아니라 유저의 개인정보 등을 삭제하도록 서버에 명령합니다.
+        await _dio.delete(
+          '/api/me',
+          options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+        );
+
+        // 탈퇴 성공 후 클라이언트 데이터 정리
+        await _storage.deleteAll();
+        debugPrint("👋 회원 탈퇴 처리 및 로컬 데이터 정리 완료");
+      }
+    } on DioException catch (e) {
+      debugPrint(
+        '🌐 회원탈퇴 요청 실패: ${e.response?.statusCode} - ${e.response?.data}',
+      );
+      rethrow; // 실패 시 사용자에게 알림을 주기 위해 에러를 UI로 던짐
+    } catch (e) {
+      debugPrint('🚨 예상치 못한 탈퇴 에러: $e');
+      rethrow;
+    }
   }
 
   // 저장된 Access Token 가져오기

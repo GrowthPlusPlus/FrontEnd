@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../auth/services/auth_service.dart';
+import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 
 /// 클래스의 용도: 회원 탈퇴 안내 및 동의 확인, 탈퇴 처리를 수행하는 화면
 class WithdrawalScreen extends StatefulWidget {
@@ -186,10 +188,33 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                   : const Color(0xFFDBADAD), //
               textColor: Colors.white,
               onTap: isAgreed
-                  ? () {
-                      // TODO: 탈퇴 로직 연결
-                      Navigator.pop(context);
-                      // 현재는 탈퇴 버튼 누르면 내 페이지로 복귀함
+                  ? () async {
+                      try {
+                        // 1. 회원 탈퇴 API 호출 (DELETE 요청 및 토큰 삭제)
+                        await AuthService.withdraw();
+
+                        // 2. 탈퇴 성공 알림 및 이동
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('회원 탈퇴가 완료되었습니다.')),
+                          );
+                          // 3. AuthGate로 이동하여 초기화된 상태로 보냄
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AuthGate(),
+                            ),
+                            (route) => false,
+                          );
+                        }
+                      } catch (e) {
+                        // 4. 에러 발생 시 처리
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('탈퇴 처리 중 오류가 발생했습니다: $e')),
+                          );
+                        }
+                      }
                     }
                   : null, // 비활성화 상태
             ),

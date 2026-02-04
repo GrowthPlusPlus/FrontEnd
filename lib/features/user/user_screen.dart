@@ -9,6 +9,8 @@ import '../../../core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'withdrawal_screen.dart';
 import 'challenge_list_screen.dart';
+import '../auth/services/auth_service.dart';
+import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 
 /// 클래스의 용도: 사용자의 프로필 정보 조회 및 챌린지 현황, 로그아웃 기능을 제공하는 마이페이지 화면
 class MyPageScreen extends StatefulWidget {
@@ -526,9 +528,37 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       child: buildDialogButton(
                         context: context,
                         text: '확인',
-                        onTap: () {
-                          // TODO: 실제 로그아웃 로직 연결 예정
+                        onTap: () async {
+                          // 1. 다이얼로그 먼저 닫기
                           Navigator.pop(context);
+
+                          // 2. 로그아웃 API 호출 및 로컬 데이터 삭제
+                          await AuthService.logout();
+
+                          // 3. 화면 이동 (context가 유효한지 확인 후 실행)
+                          if (context.mounted) {
+                            // pushAndRemoveUntil을 사용하면 현재 마이페이지를 포함한 모든 화면을 지우고
+                            // AuthGate를 처음부터 다시 실행하게 됩니다.
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const AuthGate(),
+                              ),
+                              (route) => false, // 이전의 모든 기록을 지움
+                            );
+                          }
+
+                          /// 3. 로그인 화면으로 이동 (기존 페이지 스택을 모두 비움)
+                          //if (context.mounted) {
+                          // '/login'은 팀원이 설정한 로그인 화면의 라우트 이름입니다.
+                          // 만약 라우트 설정이 없다면 MaterialPageRoute를 사용하세요.
+                          //Navigator.pushAndRemoveUntil(
+                          //context,
+                          //MaterialPageRoute(
+                          //builder: (context) => const AuthGate(),
+                          //),
+                          //(route) => false,
+                          //);
+                          //}
                         },
                       ),
                     ),
