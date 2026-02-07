@@ -7,18 +7,21 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'social_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'social_repository.dart';
 
 /// 클래스의 용도: 기존 친구 목록을 검색하고 삭제할 수 있는 편집 화면
-class FriendEditScreen extends StatefulWidget {
+class FriendEditScreen extends ConsumerStatefulWidget {
+  // ConsumerStatefulWidget으로 변경
   final List<Friend> initialFriends;
 
   const FriendEditScreen({super.key, required this.initialFriends});
 
   @override
-  State<FriendEditScreen> createState() => FriendEditScreenState();
+  ConsumerState<FriendEditScreen> createState() => FriendEditScreenState();
 }
 
-class FriendEditScreenState extends State<FriendEditScreen> {
+class FriendEditScreenState extends ConsumerState<FriendEditScreen> {
   final TextEditingController searchController = TextEditingController();
   late List<Friend> totalList;
   List<Friend> filteredList = [];
@@ -69,9 +72,9 @@ class FriendEditScreenState extends State<FriendEditScreen> {
         filteredList = List.from(totalList);
       } else {
         filteredList = totalList.where((friend) {
-          String friendName = friend.name.toLowerCase();
-          if (friendName.contains(trimmedQuery)) return true;
-          return getChoseongString(friendName).contains(trimmedQuery);
+          String friendnickName = friend.nickname.toLowerCase();
+          if (friendnickName.contains(trimmedQuery)) return true;
+          return getChoseongString(friendnickName).contains(trimmedQuery);
         }).toList();
       }
       sortFriendList(filteredList);
@@ -100,7 +103,7 @@ class FriendEditScreenState extends State<FriendEditScreen> {
   /// 매개 변수: List<Friend> list (정렬할 리스트)
   /// 반환 값: 없음
   void sortFriendList(List<Friend> list) {
-    list.sort((a, b) => compareKoreanFirst(a.name, b.name));
+    list.sort((a, b) => compareKoreanFirst(a.nickname, b.nickname));
   }
 
   /// 함수의 용도: 한글을 우선순위로 두는 비교 로직 수행
@@ -148,14 +151,14 @@ class FriendEditScreenState extends State<FriendEditScreen> {
     showDialog(
       context: context,
       builder: (context) => DeleteConfirmDialog(
-        userName: friend.name,
+        usernickName: friend.nickname,
         onDelete: () {
           setState(() {
-            totalList.removeWhere((f) => f.name == friend.name);
+            totalList.removeWhere((f) => f.nickname == friend.nickname);
             filterList(searchController.text);
           });
           Navigator.pop(context);
-          displayToast('${friend.name} 님이 삭제되었습니다.');
+          displayToast('${friend.nickname} 님이 삭제되었습니다.');
         },
       ),
     );
@@ -256,14 +259,14 @@ class FriendEditScreenState extends State<FriendEditScreen> {
             decoration: BoxDecoration(
               color: const Color(0x7FDFE1DC),
               shape: BoxShape.circle,
-              image: friend.profileImage != null
+              image: friend.profileImageUrl != null
                   ? DecorationImage(
-                      image: AssetImage(friend.profileImage!),
+                      image: AssetImage(friend.profileImageUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: friend.profileImage == null
+            child: friend.profileImageUrl == null
                 ? Center(
                     child: SvgPicture.asset(
                       'assets/images/icons/default_profile_icon.svg',
@@ -278,7 +281,7 @@ class FriendEditScreenState extends State<FriendEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  friend.name,
+                  friend.nickname,
                   style: AppTypography.h3.copyWith(fontSize: 15),
                 ),
                 Text(
@@ -307,12 +310,12 @@ class FriendEditScreenState extends State<FriendEditScreen> {
 
 /// 클래스의 용도: 친구 삭제 여부를 묻는 팝업 다이얼로그
 class DeleteConfirmDialog extends StatelessWidget {
-  final String userName;
+  final String usernickName;
   final VoidCallback onDelete;
 
   const DeleteConfirmDialog({
     super.key,
-    required this.userName,
+    required this.usernickName,
     required this.onDelete,
   });
 
@@ -329,7 +332,7 @@ class DeleteConfirmDialog extends StatelessWidget {
             const Text('친구 삭제', style: AppTypography.h2),
             const SizedBox(height: 12),
             Text(
-              '$userName 님을 삭제하시겠습니까?',
+              '$usernickName 님을 삭제하시겠습니까?',
               style: AppTypography.b2.copyWith(color: AppColors.gray2),
               textAlign: TextAlign.center,
             ),
