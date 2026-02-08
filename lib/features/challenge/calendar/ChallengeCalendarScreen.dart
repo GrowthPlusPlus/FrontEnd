@@ -6,6 +6,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
+import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/challenge/feed/ChallengeFeedScreen.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengePopupMenu.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_create_success_dialog.dart';
@@ -94,8 +95,15 @@ class _ChallengeCalendarScreenState
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: ElevatedButton(
                 onPressed: () {
-                  // 💡 클릭 시 인증 화면으로 이동 로직 추가 가능
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => const ChallengeVerificationPage()));
+                  // ✅ 버튼 클릭 시 인증하기 화면으로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChallengeVerificationPage(
+                        challengeId: widget.challengeId,
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryAble,
@@ -126,10 +134,13 @@ class _ChallengeCalendarScreenState
                 postsAsync.when(
                   data: (posts) => _buildCalendarGrid(_focusedDay, posts),
                   loading: () => const SizedBox(
-                    height: 200,
+                    height: 300,
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (e, s) => const Text('달력을 불러오지 못했습니다.'),
+                  error: (e, s) => const SizedBox(
+                    height: 300,
+                    child: Center(child: Text('달력을 불러오지 못했습니다.')),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 _buildPostsHeader(postsAsync),
@@ -355,7 +366,11 @@ class _ChallengeCalendarScreenState
     final int skipDays = firstDayOfMonth.weekday % 7;
     final int lastDayOfMonth = DateTime(date.year, date.month + 1, 0).day;
 
+    // 오늘 날짜 정보
+    final now = DateTime.now();
+
     return GridView.builder(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: skipDays + lastDayOfMonth,
@@ -368,32 +383,77 @@ class _ChallengeCalendarScreenState
         if (index < skipDays) return const SizedBox();
         int day = index - skipDays + 1;
 
+        // 오늘 날짜 여부
+        final bool isToday =
+            now.year == date.year && now.month == date.month && now.day == day;
+
         // 서버 날짜 형식과 비교
         final String targetDateStr =
             "${date.year}-${date.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+
+        // 해당 날짜에 맞는 포스트 찾기
         final post = posts.firstWhere(
           (p) => p.postDate == targetDateStr,
-          orElse: () =>
-              CertificationPostModel(postId: -1, postDate: '', content: ''),
+          // ✅ 에러 해결: 모델 생성자에 정의된 파라미터명과 필수 인자를 사용합니다.
+          orElse: () => CertificationPostModel(
+            postId: -1,
+            challengeTitle: '', // 필수 인자
+            totalSuccessDays: 0, // 필수 인자
+            content: '', // 필수 인자
+            articleImageUrl: [], // 필수 인자 (이게 post.imageUrl getter의 소스입니다)
+            createdAt: null, // post.postDate getter의 소스
+          ),
         );
 
         bool isCertified = post.postId != -1; // 위에서 찾은 post 사용
 
-        return GestureDetector(
-          onTap: isCertified
-              ? () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ChallengeFeedScreen(post: post),
+        // 오늘 날짜 스타일
+        if (isToday) {
+          return GestureDetector(
+            onTap: isCertified ? () => _navigateToFeed(post) : null,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: ShapeDecoration(
+                color: isCertified ? null : const Color(0x7FDFE1DC),
+                image: isCertified && post.imageUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(post.imageUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    width: 1,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                    color: Color(0xFF616161),
                   ),
-                )
-              : null,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  '$day',
+                  style: const TextStyle(
+                    color: Color(0xFF616161),
+                    fontSize: 14,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // 일반 날짜 (인증 여부에 따른 스타일)
+        return GestureDetector(
+          onTap: isCertified ? () => _navigateToFeed(post) : null,
           child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isCertified ? AppColors.primaryAble : AppColors.gray5,
               borderRadius: BorderRadius.circular(8),
-              // 💡 이미지도 NetworkImage로 서버 URL을 사용해야 합니다.
               image: (isCertified && post.imageUrl != null)
                   ? DecorationImage(
                       image: NetworkImage(post.imageUrl!),
@@ -410,6 +470,14 @@ class _ChallengeCalendarScreenState
           ),
         );
       },
+    );
+  }
+
+  // 중복 코드 방지를 위한 네비게이션 헬퍼
+  void _navigateToFeed(CertificationPostModel post) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ChallengeFeedScreen(post: post)),
     );
   }
 

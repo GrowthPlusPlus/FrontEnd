@@ -1,5 +1,6 @@
 // 최초 작성자: 강선욱
 // 챌린지 데이터 관리 모델 클래스
+import 'package:intl/intl.dart';
 
 // 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형
 enum ChallengeStatus {
@@ -191,34 +192,56 @@ class ChallengeComment {
 // 개별 인증글 모델
 class CertificationPostModel {
   final int postId;
-  final String postDate;
-  final String? imageUrl;
+  final String challengeTitle;
+  final int totalSuccessDays;
   final String content;
-  final String? userName;
-  final int likeCount;
+  final List<String> articleImageUrl;
+  final String? userNickname;
+  final String? userImageUrl;
+  final DateTime? createdAt;
+  final int likeNumber;
+  final int commentNumber;
+  final bool liked;
   final List<ChallengeComment> comments;
+
+  // 기존 UI 코드 호환성을 위한 Getter
+  String get postDate =>
+      createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt!) : "";
+  String? get imageUrl =>
+      articleImageUrl.isNotEmpty ? articleImageUrl.first : null;
+  String? get userName => userNickname;
+  int get likeCount => likeNumber;
 
   CertificationPostModel({
     required this.postId,
-    required this.postDate,
-    this.imageUrl,
+    required this.challengeTitle,
+    required this.totalSuccessDays,
     required this.content,
-    this.userName, // 선택 사항
-    this.likeCount = 0, // 기본값
-    this.comments = const [], // 빈 리스트 기본값
+    required this.articleImageUrl,
+    this.userNickname,
+    this.userImageUrl,
+    this.createdAt,
+    this.likeNumber = 0,
+    this.commentNumber = 0,
+    this.liked = false,
+    this.comments = const [],
   });
 
-  bool get hasImage => imageUrl != null && imageUrl!.isNotEmpty;
+  bool get hasImage => articleImageUrl.isNotEmpty;
 
   factory CertificationPostModel.fromJson(Map<String, dynamic> json) {
     return CertificationPostModel(
       postId: json['postId'] ?? 0,
-      postDate: json['postDate'] ?? '',
-      imageUrl: json['imageUrl'],
+      challengeTitle: json['challengeTitle'] ?? '',
+      totalSuccessDays: json['totalSuccessDays'] ?? 0,
       content: json['content'] ?? '',
-      userName: json['userName'], // 서버 응답에 없다면 null
-      likeCount: json['likeCount'] ?? 0,
-      // 댓글 파싱 로직 (필요 시 추가)
+      articleImageUrl: List<String>.from(json['articleImageUrl'] ?? []),
+      userNickname: json['userNickname'],
+      userImageUrl: json['userImageUrl'],
+      createdAt: DateTime.tryParse(json['createdAt'] ?? ''),
+      likeNumber: json['likeNumber'] ?? 0,
+      commentNumber: json['commentNumber'] ?? 0,
+      liked: json['liked'] ?? false,
       comments: (json['comments'] as List? ?? [])
           .map((c) => ChallengeComment.fromJson(c))
           .toList(),

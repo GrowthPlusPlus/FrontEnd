@@ -2,10 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:haenaem/features/social/social_screen.dart';
+import 'package:haenaem/features/user/user_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';
@@ -15,6 +19,7 @@ import 'features/main/screens/main_screen.dart';
 import 'features/challenge/calendar/ChallengeCalendarScreen.dart';
 import 'features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/feed/screens/FeedScreen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() async {
   // 플러터 엔진 초기화 확인
@@ -22,6 +27,19 @@ void main() async {
 
   // 비동기 초기화
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 저장소 인스턴스 생성
+  const storage = FlutterSecureStorage();
+
+  // 저장된 토큰 읽기
+  String? accessToken = await storage.read(key: 'accessToken');
+  String? refreshToken = await storage.read(key: 'refreshToken');
+
+  print("--------------------------------");
+  print("🔑 [토큰 검사 결과]");
+  print("Access Token: ${accessToken ?? '없음 (삭제됨)'}");
+  print("Refresh Token: ${refreshToken ?? '없음 (삭제됨)'}");
+  print("--------------------------------");
 
   // 한국어 날짜 데이터 로드
   await initializeDateFormatting('ko_KR', null);
@@ -50,10 +68,12 @@ class MyApp extends StatelessWidget {
       //home: const ChallengeCreatePage(),
       home: const AuthGate(),
       //home: const ChallengeCreateSuccessDialog(),
-      // home: const MainScreen(),
+      //home: const MainScreen(),
       //home: const ChallengeCalendarScreen(),
       //home: const ChallengeVerificationPage(),
       //home: const FeedScreen(),
+      //home: const MyPageScreen(),
+      //home: const SocialScreen(),
     );
   }
 }
