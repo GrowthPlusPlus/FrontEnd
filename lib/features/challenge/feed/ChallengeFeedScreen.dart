@@ -2,24 +2,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+
 import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/widgets/comment_popup_menu.dart';
 
-class ChallengeFeedScreen extends StatefulWidget {
+class ChallengeFeedScreen extends ConsumerStatefulWidget {
   final CertificationPostModel post;
-
   const ChallengeFeedScreen({super.key, required this.post});
 
   @override
-  State<ChallengeFeedScreen> createState() => _ChallengeFeedScreenState();
+  ConsumerState<ChallengeFeedScreen> createState() =>
+      _ChallengeFeedScreenState();
 }
 
-class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
+class _ChallengeFeedScreenState extends ConsumerState<ChallengeFeedScreen> {
   // 1. 텍스트 제어를 위한 컨트롤러 선언
   final TextEditingController _commentController = TextEditingController();
   bool _isButtonActive = false; // 버튼 활성화 상태 추적
+  int _currentImagePage = 0; // 현재 보고 있는 이미지의 인덱스를 저장할 변수
 
   @override
   void initState() {
@@ -40,11 +45,13 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime parsedDate =
-        DateTime.tryParse(widget.post.postDate) ?? DateTime.now();
-
-    // 2. 날짜 포맷팅
-    String formattedDate = DateFormat('yyyy년 MM월 dd일 HH:mm').format(parsedDate);
+    // 데이터 구독
+    final detailAsync = ref.watch(
+      articleDetailProvider(postId: widget.post.postId),
+    );
+    final commentsAsync = ref.watch(
+      articleCommentsProvider(postId: widget.post.postId),
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -67,173 +74,267 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- 게시글 상단 (프로필/헤더) ---
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 5, 5, 10),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    // 데이터 모델에 profileUrl이 있다면 사용, 없으면 기본 아이콘
-                    child: SvgPicture.asset(
+      // 로딩/에러/데이터 처리
+      body: detailAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('데이터를 불러올 수 없습니다: $err')),
+        data: (latestPost) {
+          // 상세 조회의 날짜 사용
+          String formattedDate = latestPost.createdAt != null
+              ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(latestPost.createdAt!)
+              : "";
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- 게시글 상단 (프로필/헤더) ---
+                _buildPostHeader(latestPost),
+                _buildPostContent(latestPost),
+                _buildPostImage(latestPost),
+                _buildPostStats(formattedDate, latestPost),
+
+                const Divider(thickness: 1),
+
+                // --- 댓글 리스트 영역 ---
+                commentsAsync.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (err, stack) => const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(child: Text('댓글 로드 실패')),
+                  ),
+                  data: (comments) {
+                    if (comments.isEmpty) return _buildEmptyComments();
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) =>
+                          _buildCommentItem(comments[index]),
+                    );
+                  },
+                ),
+                const SizedBox(height: 80),
+              ],
+            ),
+          );
+        },
+      ),
+      bottomSheet: _buildCommentInputField(),
+    );
+  }
+
+  Widget _buildPostHeader(CertificationPostModel post) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 5, 5, 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: ClipOval(
+              child: post.userImageUrl != null && post.userImageUrl!.isNotEmpty
+                  ? Image.network(
+                      post.userImageUrl!,
+                      fit: BoxFit.cover, // 사진이 찌그러지지 않게 꽉 채움
+                      errorBuilder: (_, __, ___) => SvgPicture.asset(
+                        'assets/images/icons/default_profile_icon.svg',
+                        width: 40,
+                        height: 40,
+                      ),
+                    )
+                  : SvgPicture.asset(
                       'assets/images/icons/default_profile_icon.svg',
+                      width: 40,
+                      height: 40,
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.post.userName ?? '김해냄', // 1. 데이터 반영
-                          style: AppTypography.b1.copyWith(
-                            color: AppColors.black,
-                          ),
-                        ),
-                        Text(
-                          '초보 모험가', // 칭호 시스템이 있다면 post.userBadge 등으로 대체 가능
-                          style: AppTypography.c1.copyWith(
-                            color: AppColors.gray2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const ChallengeFeedPopupMenu(),
-                ],
-              ),
             ),
-
-            // --- 게시물 본문 텍스트 ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 5),
-                  // 인증글 본문 데이터 반영
-                  Text(
-                    widget.post.content,
-                    style: AppTypography.b2.copyWith(color: AppColors.gray1),
-                  ),
-                  const SizedBox(height: 15),
-                ],
-              ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(post.userName ?? '익명', style: AppTypography.b1),
+                Text(
+                  '챌린지 모험가',
+                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                ),
+              ],
             ),
+          ),
+          // 팝업 메뉴에도 최신 정보 전달
+          ChallengeFeedPopupMenu(post: post),
+        ],
+      ),
+    );
+  }
 
-            // --- 게시물 이미지 ---
-            if (widget.post.hasImage && widget.post.imageUrl != null)
-              Image.network(
-                widget.post.imageUrl!,
+  Widget _buildPostContent(CertificationPostModel post) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Text(
+        post.content,
+        style: AppTypography.b2.copyWith(color: AppColors.gray1),
+      ),
+    );
+  }
+
+  Widget _buildPostImage(CertificationPostModel post) {
+    debugPrint('📸 이미지 경로: ${post.imageUrl}');
+    debugPrint('📸 이미지 존재 여부: ${post.hasImage}');
+
+    // hasImage가 false이거나 url이 없으면 안 보임
+    if (post.images.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 300, // 기존 높이 유지
+          width: double.infinity,
+          child: PageView.builder(
+            itemCount: post.images.length,
+            onPageChanged: (index) {
+              // 💡 페이지가 바뀔 때마다 상태 업데이트 (인디케이터용)
+              setState(() {
+                _currentImagePage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final String path = post.images[index].imageUrl;
+              // 💡 경로 처리: http로 시작하지 않으면 서버 주소 붙여주기
+              final String fullUrl = path.startsWith('http')
+                  ? path
+                  : 'https://hanaem.onrender.com$path';
+
+              return Image.network(
+                fullUrl,
                 width: double.infinity,
-                height: 300,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 200,
-                  color: AppColors.disable,
-                  child: const Icon(Icons.error),
-                ),
-              ),
-
-            // --- 좋아요 및 댓글 수 정보 ---
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 15, 15, 10),
-              child: Row(
-                children: [
-                  // 1. 좋아요 섹션
-                  GestureDetector(
-                    onTap: () {},
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/images/icons/like_icon.svg',
-                          width: 20,
-                          height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.gray2,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${widget.post.likeCount}',
-                          style: AppTypography.b2.copyWith(
-                            color: AppColors.gray2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // 2. 댓글 섹션
-                  GestureDetector(
-                    onTap: () {},
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/images/icons/comment_icon.svg',
-                          width: 20,
-                          height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.gray2,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${widget.post.comments.length}', // 2. 댓글 리스트 길이를 자동으로 반영
-                          style: AppTypography.b2.copyWith(
-                            color: AppColors.gray2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  // 3. 날짜 정보
-                  Text(
-                    formattedDate,
-                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(thickness: 1),
-
-            // --- 댓글 리스트 (post.comments 데이터를 순회하며 생성) ---
-            if (widget.post.comments.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Text(
-                    '첫 댓글을 남겨보세요!',
-                    style: AppTypography.b2.copyWith(color: AppColors.gray1),
-                  ),
-                ),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: widget.post.comments.length,
-                itemBuilder: (context, index) {
-                  final comment = widget.post.comments[index];
-                  return _buildCommentItem(comment); // 3. 댓글 객체 전달
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: AppColors.gray5,
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
                 },
-              ),
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: AppColors.gray5,
+                    child: const Center(
+                      child: Icon(Icons.broken_image, color: AppColors.gray3),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
 
-            const SizedBox(height: 80),
+        // 💡 이미지가 2장 이상일 때만 하단에 페이지 점(Indicator) 표시
+        if (post.images.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(post.images.length, (index) {
+                return Container(
+                  width: 6,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    // 현재 페이지면 브랜드 컬러, 아니면 회색
+                    color: _currentImagePage == index
+                        ? AppColors.primaryAble
+                        : AppColors.gray4,
+                  ),
+                );
+              }),
+            ),
+          ),
+      ],
+    );
+  }
 
-            const Divider(thickness: 1),
-          ],
+  Widget _buildPostStats(String date, CertificationPostModel post) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 15, 15, 10),
+      child: Row(
+        children: [
+          // 💡 좋아요 아이콘 영역
+          GestureDetector(
+            onTap: () {
+              // 좋아요 토글 호출
+              ref
+                  .read(articleLikeNotifierProvider.notifier)
+                  .toggleLike(
+                    postId: post.postId,
+                    isCurrentlyLiked: post.liked,
+                  );
+            },
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  post.liked
+                      ? 'assets/images/icons/like_filled_icon.svg' // 빨간 하트
+                      : 'assets/images/icons/like_icon.svg', // 안 채워진 하트
+                  width: 20,
+                  colorFilter: ColorFilter.mode(
+                    post.liked ? AppColors.notification : AppColors.gray2,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  post.likeNumber.toString(),
+                  style: AppTypography.b2.copyWith(
+                    color: post.liked
+                        ? AppColors.notification
+                        : AppColors.gray2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          _buildStatIcon(
+            'assets/images/icons/comment_icon.svg',
+            post.commentNumber.toString(),
+          ),
+          const Spacer(),
+          Text(date, style: AppTypography.b2.copyWith(color: AppColors.gray2)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatIcon(String iconPath, String count) {
+    return Row(
+      children: [
+        SvgPicture.asset(
+          iconPath,
+          width: 20,
+          colorFilter: const ColorFilter.mode(AppColors.gray2, BlendMode.srcIn),
+        ),
+        const SizedBox(width: 4),
+        Text(count, style: AppTypography.b2.copyWith(color: AppColors.gray2)),
+      ],
+    );
+  }
+
+  Widget _buildEmptyComments() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Text(
+          '첫 댓글을 남겨보세요!',
+          style: AppTypography.b2.copyWith(color: AppColors.gray1),
         ),
       ),
-
-      bottomSheet: _buildCommentInputField(),
     );
   }
 
@@ -257,6 +358,7 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
           Expanded(
             child: TextField(
               controller: _commentController, // 컨트롤러 연결
+              autofocus: false, // 화면 리빌드될 때마다 키보드 불러오지 않기!
               decoration: InputDecoration(
                 hintText: '댓글을 입력하세요...',
                 hintStyle: AppTypography.b2.copyWith(color: AppColors.gray3),
@@ -287,18 +389,32 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
           // 3. 버튼 활성화 상태에 따라 색상 및 동작 변경
           GestureDetector(
             onTap: _isButtonActive
-                ? () {
-                    // 전송 로직 실행
-                    print("댓글 전송: ${_commentController.text}");
-                    _commentController.clear(); // 전송 후 입력창 비우기
+                ? () async {
+                    // 💡 댓글 작성 API 호출
+                    final contents = _commentController.text.trim();
+                    final success = await ref
+                        .read(articleCommentCreateNotifierProvider.notifier)
+                        .addComment(
+                          postId: widget.post.postId,
+                          contents: contents,
+                        );
+
+                    if (success && mounted) {
+                      // 성공 시 입력창 초기화 및 키보드 내리기
+                      _commentController.clear();
+                      FocusScope.of(context).unfocus();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('댓글이 작성되었습니다.')),
+                      );
+                    }
                   }
-                : null, // 비활성화 시 클릭 안됨
+                : null,
             child: CircleAvatar(
-              radius: 22.5, // 45px 크기 유지를 위해 절반 값 설정
+              radius: 22.5,
               backgroundColor: _isButtonActive
-                  ? AppColors
-                        .primaryAble // 활성화 시 초록색
-                  : AppColors.disable, // 비활성화 시 회색
+                  ? AppColors.primaryAble
+                  : AppColors.disable,
               child: SvgPicture.asset(
                 'assets/images/icons/comment_upload_icon.svg',
               ),
@@ -309,7 +425,7 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
     );
   }
 
-  // 댓글 아이템 빌더 (모델 기반 수정)
+  // 댓글 아이템 빌더
   Widget _buildCommentItem(ChallengeComment comment) {
     String commentDate = DateFormat(
       'yyyy년 MM월 dd일 HH:mm',
@@ -320,37 +436,44 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start, // 상단 정렬 유지
         children: [
-          // 1. 프로필 이미지
-          SvgPicture.asset(
-            'assets/images/icons/default_profile_icon.svg',
+          // 프로필 이미지
+          SizedBox(
             width: 40,
             height: 40,
+            child: ClipOval(
+              child:
+                  comment.userPicture != null && comment.userPicture!.isNotEmpty
+                  ? Image.network(
+                      comment.userPicture!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => SvgPicture.asset(
+                        'assets/images/icons/default_profile_icon.svg',
+                      ),
+                    )
+                  : SvgPicture.asset(
+                      'assets/images/icons/default_profile_icon.svg',
+                    ),
+            ),
           ),
           const SizedBox(width: 12),
 
-          // 2. 댓글 본문 영역
+          // 댓글 본문 영역
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start, // 아이콘과 이름 상단 맞춤
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 이름과 뱃지를 하나의 Column으로 묶어 아이콘 공간 확보
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(comment.userNickname, style: AppTypography.b1),
                           Text(
-                            comment.userName,
-                            style: AppTypography.b1.copyWith(
-                              color: AppColors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 2), // 이름과 뱃지 사이 간격
-                          Text(
-                            comment.userBadge,
+                            '일반 모험가',
                             style: AppTypography.c1.copyWith(
                               color: AppColors.gray2,
                             ),
@@ -358,24 +481,14 @@ class _ChallengeFeedScreenState extends State<ChallengeFeedScreen> {
                         ],
                       ),
                     ),
-                    // 더보기 버튼: IconButton의 여백 문제를 피하기 위해 GestureDetector 사용
-                    GestureDetector(
-                      onTap: () {
-                        // 메뉴 액션
-                      },
-                      child: SvgPicture.asset(
-                        'assets/images/icons/dots_vert_icon.svg',
-                        width: 24,
-                        height: 24,
-                      ),
+                    CommentPopupMenu(
+                      postId: widget.post.postId, // 새로고침을 위해 필요
+                      comment: comment,
                     ),
                   ],
                 ),
-                const SizedBox(height: 5), // 텍스트 시작 전 간격 조절
-                Text(
-                  comment.content,
-                  style: AppTypography.b2.copyWith(color: AppColors.black),
-                ),
+                const SizedBox(height: 5),
+                Text(comment.contents, style: AppTypography.b2),
                 const SizedBox(height: 5),
                 Text(
                   commentDate,

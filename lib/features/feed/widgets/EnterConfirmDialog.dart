@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
-class EnterConfirmDialog extends StatelessWidget {
-  const EnterConfirmDialog({super.key});
+class EnterConfirmDialog extends ConsumerWidget {
+  final int challengeId;
+  const EnterConfirmDialog({super.key, required this.challengeId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(challengeParticipateNotifierProvider);
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.white,

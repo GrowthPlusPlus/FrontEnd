@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:haenaem/features/social/social_screen.dart';
 import 'features/challenge/create/screens/challenge_create_page.dart';
-import 'features/user/user_screen.dart';
+import 'features/user/my_page_screen.dart';
 import 'features/main/screens/main_screen.dart';
 
 class App extends StatelessWidget {

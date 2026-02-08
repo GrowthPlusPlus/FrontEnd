@@ -6,11 +6,18 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/invite/challengeInviteScreen.dart';
 import 'package:haenaem/features/challenge/widgets/ExitConfirmDialog.dart';
 import 'package:haenaem/features/challenge/widgets/NotificationSettingsDialog.dart';
+import 'package:haenaem/features/challenge/settings/challenge_settings_screen.dart';
 
+// 챌린지방 팝업 (방장일 경우/멤버일 경우)
 class ChallengePopupMenu extends StatelessWidget {
   final bool isHost; // 방장 여부
+  final int challengeId;
 
-  const ChallengePopupMenu({super.key, required this.isHost});
+  const ChallengePopupMenu({
+    super.key,
+    required this.isHost,
+    required this.challengeId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +126,14 @@ class ChallengePopupMenu extends StatelessWidget {
         );
         break;
       case 'settings':
-        // 방장 전용: 챌린지 설정 로직
+        // 방장 전용: 챌린지 설정 화면 이동
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ChallengeSettingsScreen(challengeId: challengeId),
+          ),
+        );
         break;
       case 'exit':
         // 참여자 전용: 나가기 컨펌 다이얼로그

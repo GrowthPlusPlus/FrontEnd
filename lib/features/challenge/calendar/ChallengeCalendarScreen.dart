@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:intl/intl.dart';
 
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/challenge/feed/ChallengeFeedScreen.dart';
@@ -66,11 +68,20 @@ class _ChallengeCalendarScreenState
 
   @override
   Widget build(BuildContext context) {
-    // 1. 상단 스탯 정보 구독
     final calendarDataAsync = ref.watch(
       challengeCalendarDataProvider(widget.challengeId),
     );
-    // 2. 하단 인증글 목록 구독
+
+    // 달력 그리드용 가벼운 사진 데이터
+    final photosAsync = ref.watch(
+      challengeCalendarPhotosProvider(
+        challengeId: widget.challengeId,
+        year: _focusedDay.year,
+        month: _focusedDay.month,
+      ),
+    );
+
+    // 하단 상세 인증글 목록 데이터
     final postsAsync = ref.watch(
       challengePostsProvider(
         challengeId: widget.challengeId,
@@ -78,93 +89,80 @@ class _ChallengeCalendarScreenState
         month: _focusedDay.month,
       ),
     );
-
     return calendarDataAsync.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (err, stack) => Scaffold(body: Center(child: Text('에러 발생: $err'))),
       data: (summaryData) => DefaultTabController(
         length: 3,
-        initialIndex: 1,
+        initialIndex: 1, // '내 현황' 탭 시작
         child: Scaffold(
           backgroundColor: Colors.white,
-          extendBody: true,
           appBar: _buildAppBar(summaryData.challengeOwner),
-          bottomNavigationBar: SafeArea(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: ElevatedButton(
-                onPressed: () {
-                  // ✅ 버튼 클릭 시 인증하기 화면으로 이동
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChallengeVerificationPage(
-                        challengeId: widget.challengeId,
-                      ),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryAble,
-                  minimumSize: const Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  elevation: 8,
-                ),
-                child: Text(
-                  '인증하기',
-                  style: AppTypography.h3.copyWith(color: Colors.white),
-                ),
-              ),
-            ),
+          // 탭에 따라 다른 화면을 보여주려면 TabBarView를 사용해야 합니다.
+          // 현재는 모든 탭에서 공통으로 달력이 보이도록 설정되어 있습니다.
+          body: TabBarView(
+            children: [
+              const Center(child: Text("소개 화면 (준비 중)")), // 탭 0: 소개
+              _buildMyStatusView(
+                summaryData,
+                photosAsync,
+                postsAsync,
+              ), // 탭 1: 내 현황
+              const Center(child: Text("멤버 현황 화면 (준비 중)")), // 탭 2: 멤버 현황
+            ],
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-            child: Column(
-              children: [
-                _buildStatCards(summaryData),
-                const SizedBox(height: 20),
-                _buildCalendarHeader(_focusedDay),
-                const SizedBox(height: 20),
-                _buildWeekdayHeader(),
-                const SizedBox(height: 10),
-                // 3. 달력 그리드 (서버 데이터 posts 주입)
-                postsAsync.when(
-                  data: (posts) => _buildCalendarGrid(_focusedDay, posts),
-                  loading: () => const SizedBox(
-                    height: 300,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  error: (e, s) => const SizedBox(
-                    height: 300,
-                    child: Center(child: Text('달력을 불러오지 못했습니다.')),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildPostsHeader(postsAsync),
-                const SizedBox(height: 16),
-                // 4. 인증글 리스트
-                postsAsync.when(
-                  data: (posts) {
-                    if (posts.isEmpty) return _buildEmptyState();
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: posts.length,
-                      itemBuilder: (context, index) =>
-                          _buildCertCard(context, post: posts[index]),
-                    );
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, s) => const Text('인증글 로드 중 에러'),
-                ),
-              ],
-            ),
-          ),
+          bottomNavigationBar: _buildBottomButton(context),
         ),
+      ),
+    );
+  }
+
+  // 기존 body 내용을 별도 위젯으로 분리 (내 현황 탭 전용)
+  Widget _buildMyStatusView(
+    ChallengeCalendarModel summaryData,
+    AsyncValue<List<ChallengeCalendarPhoto>> photosAsync,
+    AsyncValue<List<CertificationPostModel>> postsAsync,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+      child: Column(
+        children: [
+          _buildStatCards(summaryData),
+          const SizedBox(height: 20),
+          _buildCalendarHeader(_focusedDay),
+          const SizedBox(height: 20),
+          _buildWeekdayHeader(),
+          const SizedBox(height: 10),
+          photosAsync.when(
+            data: (photos) {
+              final allPosts = postsAsync.value ?? [];
+              return _buildCalendarGrid(_focusedDay, photos, allPosts);
+            },
+            loading: () => const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, s) => const Text('달력을 불러오지 못했습니다.'),
+          ),
+          const SizedBox(height: 20),
+          _buildPostsHeader(postsAsync),
+          const SizedBox(height: 16),
+          postsAsync.when(
+            data: (posts) {
+              if (posts.isEmpty) return _buildEmptyState();
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: posts.length,
+                itemBuilder: (context, index) =>
+                    _buildCertCard(context, post: posts[index]),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, s) => const Text('인증글 로드 중 에러'),
+          ),
+        ],
       ),
     );
   }
@@ -179,7 +177,9 @@ class _ChallengeCalendarScreenState
       ),
       title: Text(widget.challengeTitle ?? "챌린지 현황", style: AppTypography.h3),
       centerTitle: true,
-      actions: [ChallengePopupMenu(isHost: isHost)],
+      actions: [
+        ChallengePopupMenu(isHost: isHost, challengeId: widget.challengeId),
+      ],
 
       bottom: TabBar(
         labelColor: AppColors.primaryAble,
@@ -197,6 +197,38 @@ class _ChallengeCalendarScreenState
           const Tab(text: '내 현황'),
           const Tab(text: '멤버 현황'),
         ],
+      ),
+    );
+  }
+
+  // 인증하기 버튼 분리
+  Widget _buildBottomButton(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ChallengeVerificationPage(challengeId: widget.challengeId),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryAble,
+            minimumSize: const Size(double.infinity, 60),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 8,
+          ),
+          child: Text(
+            '인증하기',
+            style: AppTypography.h3.copyWith(color: Colors.white),
+          ),
+        ),
       ),
     );
   }
@@ -361,12 +393,13 @@ class _ChallengeCalendarScreenState
     );
   }
 
-  Widget _buildCalendarGrid(DateTime date, List<CertificationPostModel> posts) {
-    final firstDayOfMonth = DateTime(date.year, date.month, 1);
-    final int skipDays = firstDayOfMonth.weekday % 7;
+  Widget _buildCalendarGrid(
+    DateTime date,
+    List<ChallengeCalendarPhoto> photos,
+    List<CertificationPostModel> allPosts, // 상세 정보 리스트
+  ) {
+    final int skipDays = DateTime(date.year, date.month, 1).weekday % 7;
     final int lastDayOfMonth = DateTime(date.year, date.month + 1, 0).day;
-
-    // 오늘 날짜 정보
     final now = DateTime.now();
 
     return GridView.builder(
@@ -391,72 +424,36 @@ class _ChallengeCalendarScreenState
         final String targetDateStr =
             "${date.year}-${date.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
 
-        // 해당 날짜에 맞는 포스트 찾기
-        final post = posts.firstWhere(
+        // photos 리스트에서 해당 날짜 찾기
+        final photoData = photos.firstWhereOrNull(
           (p) => p.postDate == targetDateStr,
-          // ✅ 에러 해결: 모델 생성자에 정의된 파라미터명과 필수 인자를 사용합니다.
-          orElse: () => CertificationPostModel(
-            postId: -1,
-            challengeTitle: '', // 필수 인자
-            totalSuccessDays: 0, // 필수 인자
-            content: '', // 필수 인자
-            articleImageUrl: [], // 필수 인자 (이게 post.imageUrl getter의 소스입니다)
-            createdAt: null, // post.postDate getter의 소스
-          ),
         );
 
-        bool isCertified = post.postId != -1; // 위에서 찾은 post 사용
+        bool isCertified = photoData != null && photoData.postId != -1;
 
-        // 오늘 날짜 스타일
-        if (isToday) {
-          return GestureDetector(
-            onTap: isCertified ? () => _navigateToFeed(post) : null,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: ShapeDecoration(
-                color: isCertified ? null : const Color(0x7FDFE1DC),
-                image: isCertified && post.imageUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(post.imageUrl!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(
-                    width: 1,
-                    strokeAlign: BorderSide.strokeAlignOutside,
-                    color: Color(0xFF616161),
-                  ),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  '$day',
-                  style: const TextStyle(
-                    color: Color(0xFF616161),
-                    fontSize: 14,
-                    fontFamily: 'Pretendard',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
+        // 클릭 시 넘겨줄 상세 포스트를 posts 리스트에서 찾기
+        final CertificationPostModel? fullPost = isCertified
+            ? allPosts.firstWhereOrNull((p) => p.postId == photoData.postId) ??
+                  allPosts.firstWhereOrNull((p) => p.postDate == targetDateStr)
+            : null;
 
-        // 일반 날짜 (인증 여부에 따른 스타일)
         return GestureDetector(
-          onTap: isCertified ? () => _navigateToFeed(post) : null,
+          onTap: (isCertified && fullPost != null)
+              ? () => _navigateToFeed(fullPost)
+              : null,
           child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isCertified ? AppColors.primaryAble : AppColors.gray5,
+              color: isCertified
+                  ? AppColors.primaryAble
+                  : (isToday ? const Color(0x7FDFE1DC) : AppColors.gray5),
               borderRadius: BorderRadius.circular(8),
-              image: (isCertified && post.imageUrl != null)
+              border: isToday
+                  ? Border.all(color: const Color(0xFF616161), width: 1)
+                  : null,
+              image: (isCertified && photoData.imageUrl != null)
                   ? DecorationImage(
-                      image: NetworkImage(post.imageUrl!),
+                      image: NetworkImage(photoData.imageUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
@@ -464,7 +461,10 @@ class _ChallengeCalendarScreenState
             child: Text(
               '$day',
               style: TextStyle(
-                color: isCertified ? Colors.white : AppColors.gray2,
+                color: isCertified
+                    ? Colors.white
+                    : (isToday ? const Color(0xFF616161) : AppColors.gray2),
+                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ),
@@ -486,6 +486,10 @@ class _ChallengeCalendarScreenState
     BuildContext context, {
     required CertificationPostModel post,
   }) {
+    // mm월 dd일
+    final String formattedDate = post.createdAt != null
+        ? DateFormat('M월 d일').format(post.createdAt!)
+        : "";
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -499,29 +503,64 @@ class _ChallengeCalendarScreenState
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.gray4),
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              post.postDate,
-              style: AppTypography.c1.copyWith(color: AppColors.primaryAble),
-            ),
-            const SizedBox(height: 5),
-            Row(
-              children: [
-                if (post.imageUrl != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      post.imageUrl!,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
+            // 1. 이미지 영역 (왼쪽)
+            if (post.imageUrl != null) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  post.imageUrl!,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 80,
+                    height: 80,
+                    color: AppColors.gray5,
+                    child: const Icon(
+                      Icons.error_outline,
+                      color: AppColors.gray3,
                     ),
                   ),
-                const SizedBox(width: 10),
-                Expanded(child: Text(post.content, style: AppTypography.b2)),
-              ],
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+
+            // 캘린더 + mm월 dd일
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/images/icons/green_calendar.svg',
+                        width: 12,
+                        height: 12,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        formattedDate,
+                        style: AppTypography.c1.copyWith(
+                          color: AppColors.primaryAble,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4), // 날짜와 내용 사이 간격
+                  // 인증 내용
+                  Text(
+                    post.content,
+                    style: AppTypography.b2.copyWith(color: AppColors.black),
+                    maxLines: 3, // 내용이 너무 길어질 경우 3줄까지만 표시
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

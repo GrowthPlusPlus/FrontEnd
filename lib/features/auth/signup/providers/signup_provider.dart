@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import '../models/signup_state.dart';
 
 // 회원가입 상태를 관리하는 Provider 정의
@@ -13,8 +15,7 @@ final signupProvider = NotifierProvider<SignupNotifier, SignupState>(() {
 
 class SignupNotifier extends Notifier<SignupState> {
   final _storage = const FlutterSecureStorage();
-  final _dio = Dio(BaseOptions(baseUrl: 'https://hanaem.onrender.com'));
-  List<Map<String, dynamic>> _rawServerTags = []; // 태그 ID 조회를 위한 원본 백업
+  List<ChallengeTagModel> _allServerTags = []; // 태그 ID 조회를 위한 원본 백업
 
   @override
   SignupState build() {
@@ -40,32 +41,13 @@ class SignupNotifier extends Notifier<SignupState> {
   // 반환값: true (중복 발생), false (설정 성공)
   Future<bool> updateNicknameAndCheckDuplicate(String nickname) async {
     try {
-      final accessToken = await _storage.read(key: 'accessToken');
+      final repository = ref.read(challengeRepositoryProvider);
+      await repository.updateNickname(nickname); // 💡 Repo 메서드 호출
 
-      final response = await _dio.patch(
-        '/api/users/me/nickname',
-        data: {"nickname": nickname},
-        options: Options(
-          headers: {'Authorization': 'Bearer $accessToken'},
-          contentType: Headers.jsonContentType,
-        ),
-      );
-
-      // 204 No Content: 성공적으로 닉네임이 설정됨
-      if (response.statusCode == 204) {
-        state = state.copyWith(nickname: nickname); // 로컬 상태 동기화
-        debugPrint("✅ 닉네임 설정 성공: $nickname");
-        return false; // 중복 아님
-      }
-      return false;
+      state = state.copyWith(nickname: nickname);
+      return false; // 성공 (중복 아님)
     } on DioException catch (e) {
-      // 409 Conflict: 서버에서 중복으로 판단하고 예외 반환
-      if (e.response?.statusCode == 409) {
-        debugPrint("🚩 중복된 닉네임: $nickname");
-        return true; // 중복임
-      }
-      // 그 외 400(검증 실패) 등은 예외로 던짐
-      debugPrint("🚨 닉네임 설정 중 서버 에러: ${e.response?.statusCode}");
+      if (e.response?.statusCode == 409) return true; // 중복임
       rethrow;
     }
   }
@@ -73,28 +55,11 @@ class SignupNotifier extends Notifier<SignupState> {
   /// 프로필 이미지 전용 업로드 API 호출
   Future<bool> uploadProfileImage(File imageFile) async {
     try {
-      final accessToken = await _storage.read(key: 'accessToken');
-
-      // 명세서에 따라 'image' 파트로 파일 준비
-      final formData = FormData.fromMap({
-        "image": await MultipartFile.fromFile(
-          imageFile.path,
-          filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
-        ),
-      });
-
-      final response = await _dio.post(
-        '/api/users/me/profile-image',
-        data: formData,
-        options: Options(
-          headers: {'Authorization': 'Bearer $accessToken'},
-          contentType: 'multipart/form-data',
-        ),
-      );
-
-      return response.statusCode == 204; // 204 No Content면 성공
-    } on DioException catch (e) {
-      debugPrint("🚨 이미지 업로드 실패: ${e.response?.statusCode}");
+      final repository = ref.read(challengeRepositoryProvider);
+      await repository.uploadProfileImage(imageFile); // 💡 Repo 메서드 호출
+      return true;
+    } catch (e) {
+      debugPrint("🚨 이미지 업로드 실패: $e");
       return false;
     }
   }
@@ -102,111 +67,65 @@ class SignupNotifier extends Notifier<SignupState> {
   // 한 줄 소개 업데이트 API 호출
   Future<bool> updateIntroduction(String bio) async {
     try {
-      final accessToken = await _storage.read(key: 'accessToken');
-
-      final response = await _dio.patch(
-        '/api/users/me/introduction',
-        data: {"introduction": bio}, // 서버 명세에 맞춰 'introduction' 키 사용
-        options: Options(
-          headers: {'Authorization': 'Bearer $accessToken'},
-          contentType: Headers.jsonContentType,
-        ),
-      );
-
-      return response.statusCode == 204; // 성공 시 204 반환
-    } on DioException catch (e) {
-      debugPrint("🚨 한 줄 소개 업데이트 실패: ${e.response?.statusCode}");
+      final repository = ref.read(challengeRepositoryProvider);
+      await repository.updateIntroduction(bio); // 💡 Repo 메서드 호출
+      return true;
+    } catch (e) {
+      debugPrint("🚨 한 줄 소개 업데이트 실패: $e");
       return false;
     }
   }
 
   // 전체 태그 조회 및 카테고리별 분류
+  // 태그 정보 로드
   Future<void> fetchAllTags() async {
     try {
-      final accessToken = await _storage.read(key: 'accessToken');
-      final response = await _dio.get(
-        '/api/tags',
-        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-      );
+      // 리포지토리 호출
+      final repository = ref.read(challengeRepositoryProvider);
+      _allServerTags = await repository.getAllTags();
 
-      if (response.statusCode == 200) {
-        _rawServerTags = List<Map<String, dynamic>>.from(response.data);
+      // 카테고리별 분류 로직
+      final Map<String, List<String>> grouped = {};
+      for (var tagModel in _allServerTags) {
+        final category = tagModel.tagCategory;
+        final name = tagModel.tag;
 
-        // 자동 분류 로직
-        final Map<String, List<String>> grouped = {};
-        for (var item in _rawServerTags) {
-          final category = item['tagCategory'] as String;
-          final name = item['tag'] as String;
-
-          if (!grouped.containsKey(category)) {
-            grouped[category] = [];
-          }
-          grouped[category]!.add(name);
+        if (!grouped.containsKey(category)) {
+          grouped[category] = [];
         }
-
-        state = state.copyWith(categorizedTags: grouped);
-        debugPrint("✅ 태그 분류 완료: ${grouped.keys.length}개 카테고리");
+        grouped[category]!.add(name);
       }
-    }
-    //   } catch (e) {
-    //     debugPrint("🚨 태그 로드 실패: $e");
-    //   }
-    // }
-    // // 태그 이름 리스트를 ID 리스트로 변환하여 서버에 제출
-    // // TODO: 임시 우회 로직 백엔드 태그 구현 후에 수정
-    // Future<bool> submitTags() async {
-    //   // return true; // 패스
-    //   state = state.copyWith(isLoading: true);
-    //   try {
-    //     final accessToken = await _storage.read(key: 'accessToken');
-    //     // 이름 리스트를 ID 리스트로 매핑
-    //     final tagIds = state.tags.map((name) {
-    //       return _rawServerTags.firstWhere((t) => t['tag'] == name)['tagId']
-    //           as int;
-    //     }).toList();
-    //     final response = await _dio.post(
-    //       '/api/users/me/tags',
-    //       data: {"tagIds": tagIds},
-    //       options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-    //     );
-    //     return response.statusCode == 204;
-    //     return true;
-    //   } catch (e) {
-    //     debugPrint("🚨 태그 제출 실패: $e");
-    //     return true;
-    //   } finally {
-    //     state = state.copyWith(isLoading: false);
-    //   }
-    // }
-    catch (e) {
-      // 💡 백엔드 미구현 시 UI를 띄우기 위한 임시 Mock 데이터
-      debugPrint("🚨 태그 API 미구현: 임시 데이터를 사용합니다.");
-      final Map<String, List<String>> mockTags = {
-        "관심 분야": ["코딩", "운동", "독서", "여행", "맛집"],
-        "나의 성격": ["외향적", "내향적", "계획적", "즉흥적"],
-      };
-      state = state.copyWith(categorizedTags: mockTags);
+
+      state = state.copyWith(categorizedTags: grouped);
+      debugPrint("✅ 태그 API 연동 성공: ${_allServerTags.length}개 태그 로드");
+    } catch (e) {
+      debugPrint("🚨 태그 로드 실패: $e");
     }
   }
 
-  // 2. 태그 제출 (서버 호출 없이 즉시 패스)
+  // 선택된 태그 이름들을 ID로 변환하여 서버에 전송
   Future<bool> submitTags() async {
+    if (state.tags.isEmpty) return false;
+
     state = state.copyWith(isLoading: true);
+    try {
+      // 1. 이름(String) -> ID(int) 변환
+      final List<int> selectedTagIds = state.tags.map((name) {
+        return _allServerTags.firstWhere((t) => t.tag == name).tagId;
+      }).toList();
 
-    // 💡 실제 서버 통신 없이 0.5초 대기 후 바로 성공 반환
-    await Future.delayed(const Duration(milliseconds: 500));
+      // 2. 서버 전송
+      await ref
+          .read(challengeRepositoryProvider)
+          .updateUserTags(selectedTagIds);
 
-    debugPrint("⏩ 태그 단계 강제 패스 (임시 처리)");
-    state = state.copyWith(isLoading: false);
-    return true;
-  }
-
-  // 가입 절차가 모두 끝나면 상태 초기화
-  // 이 함수가 없으면 로그아웃 후 다른 계정으로 가입할 때 이전 데이터가 남아있을 수 있음
-  void resetState() {
-    state = SignupState();
-    _rawServerTags = [];
-    debugPrint("🧹 회원가입 상태 초기화 완료");
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      debugPrint("🚨 태그 제출 실패: $e");
+      state = state.copyWith(isLoading: false);
+      return false;
+    }
   }
 
   // 태그 토글 (추가/삭제)
@@ -225,39 +144,30 @@ class SignupNotifier extends Notifier<SignupState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      // 저장된 Access Token 가져오기 (인증용)
-      final accessToken = await _storage.read(key: 'accessToken');
+      // 💡 이제 _dio 대신 리포지토리를 사용합니다!
+      final repository = ref.read(challengeRepositoryProvider);
 
-      // Multipart 데이터 준비 (이미지 포함)
-      final formData = FormData.fromMap({
-        "nickname": state.nickname,
-        "bio": state.bio,
-        "tags": state.tags, // List<String> 형태
-        if (state.profileImage != null)
-          "profileImage": await MultipartFile.fromFile(
-            state.profileImage!.path,
-            filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
-          ),
-      });
-
-      final response = await _dio.post(
-        '/api/user/signup',
-        data: formData,
-        options: Options(
-          headers: {'Authorization': 'Bearer $accessToken'},
-          contentType: 'multipart/form-data',
-        ),
+      await repository.submitSignup(
+        nickname: state.nickname,
+        bio: state.bio,
+        tags: state.tags,
+        profileImage: state.profileImage,
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint("🎉 회원가입 서버 전송 성공!");
-        return true;
-      }
+      debugPrint("🎉 회원가입 서버 전송 성공!");
+      return true;
     } on DioException catch (e) {
       debugPrint("🌐 가입 요청 에러: ${e.response?.data ?? e.message}");
+      return false;
     } finally {
       state = state.copyWith(isLoading: false);
     }
-    return false;
+  }
+
+  // 회원가입 절차가 모두 성공적으로 끝나면 상태를 초기화합니다.
+  void resetState() {
+    state = SignupState(); // 모델을 초기 상태로 되돌림
+    _allServerTags = []; // 캐시된 서버 태그 목록 비우기
+    debugPrint("🧹 회원가입 상태 초기화 완료 (성공 화면)");
   }
 }

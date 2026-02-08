@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:haenaem/features/home/home_screen.dart';
 import 'package:haenaem/features/social/social_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'package:haenaem/features/user/user_screen.dart';
+import 'package:haenaem/features/user/my_page_screen.dart';
 import 'package:haenaem/features/feed/screens/FeedScreen.dart';
 
 // 내비게이션 바를 넣은 화면

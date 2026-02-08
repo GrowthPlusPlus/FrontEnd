@@ -1,6 +1,7 @@
 // 최초 작성자 : 김채영
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:crop_your_image/crop_your_image.dart';
@@ -11,6 +12,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/data/challenge_repository.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
@@ -24,11 +26,18 @@ import '../widgets/ai_success_box.dart';
 import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
+import 'package:haenaem/features/challenge/widgets/verification_cancel_dialog.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationPage extends ConsumerStatefulWidget {
   final int challengeId;
-  const ChallengeVerificationPage({super.key, required this.challengeId});
+  final CertificationPostModel? existingPost; // 데이터가 있으면 수정 모드
+
+  const ChallengeVerificationPage({
+    super.key,
+    required this.challengeId,
+    this.existingPost,
+  });
 
   @override
   ConsumerState<ChallengeVerificationPage> createState() =>
@@ -40,28 +49,51 @@ enum ImageVerificationStatus { idle, loading, success, fail }
 
 class _ChallengeVerificationPageState
     extends ConsumerState<ChallengeVerificationPage> {
-  final TextEditingController _contentController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-
+  late TextEditingController _contentController;
   final List<File> _cameraImages = []; // 카메라 전용 바구니
   final List<File> _galleryImages = []; // 갤러리 전용 바구니
   final List<AssetEntity> _selectedAssets = []; // 갤러리 체크 상태 유지용
 
-  bool _showShadow = true;
+  // 기존 이미지 관리용 (수정 모드 전용)
+  late List<dynamic> _existingImages;
+  final List<int> _imageIdsToDelete = [];
+
+  final ScrollController _scrollController = ScrollController();
   ImageVerificationStatus _verifyStatus = ImageVerificationStatus.idle;
+  bool _showShadow = true;
+
+  bool get isEditMode => widget.existingPost != null;
+  List<File> get _newImages => [..._cameraImages, ..._galleryImages];
 
   // 전체 이미지 리스트
   List<File> get _allImages => [..._cameraImages, ..._galleryImages];
 
-  // 버튼 활성화 조건 : 사진이 1장 이상 있고 텍스트가 있을 때
-  bool get _isFormValid =>
-      _allImages.isNotEmpty && _contentController.text.trim().isNotEmpty;
+  // 버튼 활성화 조건
+  // 생성: 사진 1장 이상 + 텍스트 필수
+  // 수정: (기존사진 - 삭제예정 + 새사진)이 1장 이상 + 텍스트 필수
+  bool get _isFormValid {
+    // 1. 현재 살아남은 기존 사진 개수 계산
+    final int existingCount = widget.existingPost?.images.length ?? 0;
+    final int activeExistingCount = existingCount - _imageIdsToDelete.length;
+
+    // 2. 총 사진 개수 (기존 남은 사진 + 새로 추가할 사진)
+    final int totalPhotos = activeExistingCount + _newImages.length;
+
+    // 사진 1장 이상 AND 내용 필수
+    return totalPhotos > 0 && _contentController.text.trim().isNotEmpty;
+  }
 
   @override
   void initState() {
     super.initState();
+    _contentController = TextEditingController(
+      text: isEditMode ? widget.existingPost!.content : '',
+    );
+    // 기존 이미지 데이터 초기화
+    _existingImages = isEditMode ? List.from(widget.existingPost!.images) : [];
+
     _scrollController.addListener(_onScroll);
-    _contentController.addListener(() => setState(() {}));
+    _contentController.addListener(() => setState(() {})); // 글자수 실시간 반영
   }
 
   void _onScroll() {
@@ -324,19 +356,141 @@ class _ChallengeVerificationPageState
     setState(() {});
   }
 
+  Widget _buildStatusBox() {
+    Widget mainBox; // 상단 박스
+    Widget subBox; // 하단 박스
+
+    // 1. 사진 넣기 전 (Idle)
+    if (_allImages.isEmpty && _verifyStatus == ImageVerificationStatus.idle) {
+      mainBox = const VerificationInfoBox();
+      subBox = const VerificationTipBox();
+    }
+    // 2. 사진 막 넣었을 때 (Loading)
+    else if (_verifyStatus == ImageVerificationStatus.loading) {
+      mainBox = const AiVerificationBox();
+      subBox = const VerificationTipBox();
+    }
+    // 3. 검증 성공 시 (Success)
+    else if (_verifyStatus == ImageVerificationStatus.success) {
+      mainBox = const AiSuccessBox();
+      subBox = const VerificationTipBox();
+    }
+    // 4. 검증 실패 시 (Fail)
+    else {
+      mainBox = const AiFailBox();
+      subBox = const ReverificationGuideBox(); // 실패 시 전용 가이드
+    }
+
+    return Column(
+      children: [
+        mainBox,
+        const SizedBox(height: 8), // 두 박스 사이 간격
+        subBox,
+      ],
+    );
+  }
+
+  // 기존 이미지 리스트 UI (수정 모드일 때만 호출)
+  Widget _buildExistingImagesList() {
+    // articleImageUrl이 String 리스트이므로 인덱스로 관리하거나 ID가 필요함
+    // 만약 post.images 객체 리스트가 있다면 ID 추출이 가능합니다.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDynamicLabel(
+          '기존 인증 사진',
+          _existingImages.length - _imageIdsToDelete.length,
+        ),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _existingImages.length,
+            itemBuilder: (context, index) {
+              final PostImage image = _existingImages[index];
+              final int realImageId = image.imageId; // ID 추출
+
+              if (_imageIdsToDelete.contains(realImageId))
+                return const SizedBox.shrink();
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        image.imageUrl,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: () =>
+                            setState(() => _imageIdsToDelete.add(realImageId)),
+                        child: _buildDeleteIcon(),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildDeleteIcon() {
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: const BoxDecoration(
+        color: Colors.black54,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(Icons.close, size: 16, color: Colors.white),
+    );
+  }
+
+  // 인증글 공통 팝업 호출 로직 (작성 취소할 경우, 수정 취소할 경우)
+  void _handleBackAction() async {
+    final bool? shouldExit = await showDialog<bool>(
+      context: context,
+      barrierColor: const Color(0x7F1A1D1B),
+      builder: (context) => VerificationCancelDialog(
+        title: isEditMode ? '수정을 취소하시겠어요?' : '작성을 취소하시겠어요?',
+        message: isEditMode
+            ? '지금 나가면 수정 중인 내용은\n저장되지 않고 삭제됩니다.'
+            : '지금 나가면 작성 중인 내용은\n저장되지 않고 삭제됩니다.',
+        cancelLabel: isEditMode ? '수정 취소' : '작성 취소',
+      ),
+    );
+
+    // 팝업에서 나감을 선택했을 경우에만 이전 화면으로 이동
+    if (shouldExit == true && mounted) {
+      // 단순히 뒤로 가는 경우라면 Navigator.pop(context),
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        _showCancelDialog(context);
+        _handleBackAction();
       },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
           leading: IconButton(
-            onPressed: () => _showCancelDialog(context),
+            onPressed: _handleBackAction,
             icon: SvgPicture.asset(
               'assets/images/icons/arrow_left.svg',
               width: 24,
@@ -344,7 +498,7 @@ class _ChallengeVerificationPageState
             ),
           ),
           title: Text(
-            "챌린지 인증하기",
+            isEditMode ? '인증글 수정' : '챌린지 인증하기',
             style: AppTypography.h3.copyWith(color: AppColors.black),
           ),
           centerTitle: true,
@@ -364,25 +518,17 @@ class _ChallengeVerificationPageState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDynamicLabel('인증 사진', _allImages.length),
+                    if (isEditMode && _existingImages.isNotEmpty)
+                      _buildExistingImagesList(),
+                    _buildDynamicLabel(
+                      isEditMode ? '새 사진 추가' : '인증 사진',
+                      _newImages.length,
+                    ),
                     _buildPhotoUploadBox(), // 헬퍼 함수 호출
                     const SizedBox(height: 8),
 
-                    // 검증 상태에 따른 박스 교체 로직
-                    if (_verifyStatus == ImageVerificationStatus.idle ||
-                        _verifyStatus == ImageVerificationStatus.loading)
-                      const VerificationInfoBox() // 기본 가이드
-                    else if (_verifyStatus == ImageVerificationStatus.success)
-                      const AiSuccessBox() // 성공 시 표시
-                    else
-                      const AiFailBox(), // 실패 시 표시
-
-                    const SizedBox(height: 8),
-
-                    // 실패 여부에 따른 하단 팁 박스 교체 로직
-                    _verifyStatus == ImageVerificationStatus.fail
-                        ? const ReverificationGuideBox() // 실패 시 재인증 가이드
-                        : const VerificationTipBox(), // 평상시/성공 시 팁 박스
+                    // 검증 상태에 따른 박스 로직
+                    _buildStatusBox(),
 
                     const SizedBox(height: 16),
                     const ChallengeLabel(label: '인증 내용'),
@@ -401,115 +547,70 @@ class _ChallengeVerificationPageState
             ),
           ],
         ),
+        // 하단 버튼 통합
         bottomNavigationBar: VerificationSubmitButton(
-          label: '인증하기',
+          label: isEditMode ? '수정하기' : '인증하기',
           showShadow: _showShadow,
-          onPressed: _isFormValid
-              ? () async {
-                  // TODO: AI 검증 API를 먼저 호출하여 서버로부터 이미지 URL들을 받아와야 함
-                  // List<String> verifiedUrls = await ref.read(verifyProvider).upload(_allImages);
-
-                  // 인증글 생성 API 호출
-                  final success = await ref
-                      .read(articleCreateNotifierProvider.notifier)
-                      .submitArticle(
-                        challengeId: widget.challengeId,
-                        content: _contentController.text,
-                        verifiedImageUrls: [], // 여기에 실제 검증 완료된 URL 리스트가 들어가야 함
-                      );
-
-                  if (success && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('인증글이 성공적으로 등록되었습니다!')),
-                    );
-
-                    // 성공 시 인증글(피드) 화면으로 이동하거나,
-                    // 현재 화면을 닫아서 캘린더로 돌아감.
-                    Navigator.pop(context);
-                  }
-                }
-              : null, // 폼이 유효하지 않으면 버튼 비활성화
+          onPressed: _isFormValid ? _onSave : null,
         ),
       ),
     );
   }
-}
 
-// 뒤로 가기 아이콘을 누르거나 시스템 바의 뒤로가기를 누를 경우 뜨는 안내 모달
-void _showCancelDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierColor: const Color(0x7F1A1D1B),
-    builder: (context) {
-      return Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 4),
-              Text(
-                '작성을 취소하시겠어요?',
-                style: AppTypography.h3.copyWith(color: AppColors.black),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '지금 나가면 작성 중인 내용은 저장되지 않고 모두 삭제됩니다.',
-                textAlign: TextAlign.center,
-                style: AppTypography.b1.copyWith(color: AppColors.gray2),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.gray5,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '계속 작성하기',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.b1.copyWith(
-                            color: AppColors.gray2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.popUntil(context, (route) => route.isFirst);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.gray5,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '작성 취소',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.b1.copyWith(
-                            color: AppColors.notification,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+  Future<void> _onSave() async {
+    final content = _contentController.text.trim();
+    bool success = false;
+    final now = DateTime.now(); // 현재 날짜 정보 가져오기
+
+    if (isEditMode) {
+      success = await ref
+          .read(articleUpdateNotifierProvider.notifier)
+          .editArticle(
+            postId: widget.existingPost!.postId,
+            content: content,
+            deleteImageIds: _imageIdsToDelete,
+            newImages: _newImages,
+          );
+    } else {
+      success = await ref
+          .read(articleCreateNotifierProvider.notifier)
+          .submitArticle(
+            challengeId: widget.challengeId,
+            content: content,
+            imageFiles: _newImages,
+          );
+    }
+
+    if (success && mounted) {
+      // 챌린지 상단 요약 정보 (완료 일수, 연속 일수) 갱신
+      ref.invalidate(challengeCalendarDataProvider(widget.challengeId));
+
+      // 달력 그리드 사진 데이터 갱신
+      ref.invalidate(
+        challengeCalendarPhotosProvider(
+          challengeId: widget.challengeId,
+          year: now.year,
+          month: now.month,
         ),
       );
-    },
-  );
+
+      // 하단 인증글 리스트 갱신
+      ref.invalidate(
+        challengePostsProvider(
+          challengeId: widget.challengeId,
+          year: now.year,
+          month: now.month,
+        ),
+      );
+
+      // 홈 화면의 챌린지 리스트 상태 (불 아이콘 등) 갱신
+      ref.invalidate(challengeHomeNotifierProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(isEditMode ? '수정이 완료되었습니다!' : '인증이 완료되었습니다!')),
+      );
+
+      Navigator.pop(context); // 탭으로 돌아가면 위에서 invalidate한 덕분에 최신 데이터가 보임.
+    }
+  }
 }
