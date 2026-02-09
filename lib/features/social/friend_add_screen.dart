@@ -97,19 +97,38 @@ class FriendAddScreenState extends ConsumerState<FriendAddScreen>
 
     try {
       // 1. 서버로부터 검색 결과 리스트를 받아옴
-      final results = await ref
+      // 서버 API가 초성 검색을 지원하지 않더라도, 결과 목록을 받아온 뒤
+      // 클라이언트에서 2차 필터링을 수행할 수 있도록 raw 데이터를 받습니다.
+      final rawResults = await ref
           .read(socialRepositoryProvider)
-          .searchUsers(query);
+          .searchUsers("");
+      // TODO: [성능 최적화 필요] 현재 서버 API가 초성 검색을 지원하지 않아,
+      // 임시로 전체 유저 목록을 받아와 클라이언트에서 필터링하고 있습니다.
+      // 유저 수가 늘어나면 앱 속도가 느려질 수 있으므로,
+      // 추후 백엔드에 초성 검색 기능(DB 쿼리 수정 등)을 요청하여
+      // 서버 사이드 필터링으로 교체해야 합니다.
 
-      // [추가됨] KoreanStringUtils를 사용하여 검색 결과 정렬
-      // 정렬 순서: 한글 > 영문 대문자 > 영문 소문자 > 숫자 > 특수문자
-      results.sort(
+      // 2. 클라이언트 사이드 필터링 (social_screen.dart와 동일 로직 적용)
+      // 서버에서 'ㅎㄴ'으로 검색 시 결과가 없더라도, 만약 서버가 전체 유저나
+      // 유사 유저를 반환한다면 이 로직이 '해냄'을 찾아냅니다.
+      final filtered = rawResults.where((user) {
+        final name = user.nickname.toLowerCase();
+        final searchLower = query.toLowerCase();
+
+        // 닉네임 포함 여부 OR 초성 포함 여부 확인
+        return name.contains(searchLower) ||
+            KoreanStringUtils.getChoseongString(name).contains(searchLower);
+      }).toList();
+
+      // 3. 정렬 (social_screen.dart와 동일 로직 적용)
+      // 순서: 한글 > 영문 대문자 > 영문 소문자 > 숫자 > 특수문자
+      filtered.sort(
         (a, b) => KoreanStringUtils.compareKoreanFirst(a.nickname, b.nickname),
       );
 
       if (!mounted) return;
       setState(() {
-        filteredResults = results;
+        filteredResults = filtered;
         isLoading = false;
       });
     } on DioException catch (e) {
