@@ -1,7 +1,6 @@
 // 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
-import 'package:haenaem/features/feed/widgets/FeedPostCard.dart'; // 위에서 만든 카드 경로
-import 'package:haenaem/features/challenge/widgets/UserChallengeData.dart';
+import 'package:haenaem/features/feed/widgets/FeedPostCard.dart'; // 피드 포스트 카드 경로
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/MockData.dart'; // 기존에 만든 가짜 데이터 활용
 
