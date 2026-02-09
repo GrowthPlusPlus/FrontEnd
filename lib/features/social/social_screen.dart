@@ -10,6 +10,7 @@ import '../../../core/theme/app_typography.dart';
 import 'friend_add_screen.dart';
 import 'social_repository.dart';
 import 'social_model.dart';
+import '../../core/utils/korean_string_utils.dart';
 
 class SocialScreen extends ConsumerStatefulWidget {
   const SocialScreen({super.key});
@@ -26,44 +27,6 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
   void dispose() {
     searchController.dispose();
     super.dispose();
-  }
-
-  // 한글 초성 검색 로직 (기존 유지)
-  static const int HANGEUL_BASE = 0xAC00;
-  static const List<String> CHOSEONG_LIST = [
-    'ㄱ',
-    'ㄲ',
-    'ㄴ',
-    'ㄷ',
-    'ㄸ',
-    'ㄹ',
-    'ㅁ',
-    'ㅂ',
-    'ㅃ',
-    'ㅅ',
-    'ㅆ',
-    'ㅇ',
-    'ㅈ',
-    'ㅉ',
-    'ㅊ',
-    'ㅋ',
-    'ㅌ',
-    'ㅍ',
-    'ㅎ',
-  ];
-
-  String getChoseong(String text) {
-    String result = "";
-    for (int i = 0; i < text.length; i++) {
-      int charCode = text.codeUnitAt(i);
-      if (charCode >= HANGEUL_BASE && charCode <= 0xD7A3) {
-        int index = (charCode - HANGEUL_BASE) ~/ 588;
-        result += CHOSEONG_LIST[index];
-      } else {
-        result += text[i];
-      }
-    }
-    return result;
   }
 
   @override
@@ -92,7 +55,7 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
               );
 
               // 3. 화면이 닫히고 돌아오면 친구 목록 Provider를 강제로 새로고침
-              ref.refresh(friendListProvider);
+              ref.invalidate(friendListProvider);
             },
           ),
         ],
@@ -123,13 +86,21 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
           Expanded(
             child: friendListAsync.when(
               data: (totalFriends) {
-                // 검색어에 따른 필터링 로직
+                // 1. 필터링 및 2. 정렬 로직 적용
                 final filteredFriends = totalFriends.where((friend) {
                   final name = friend.nickname.toLowerCase();
                   final query = searchQuery.toLowerCase();
                   return name.contains(query) ||
-                      getChoseong(name).contains(query);
+                      KoreanStringUtils.getChoseongString(name).contains(query);
                 }).toList();
+
+                // 가나다순 정렬 추가
+                filteredFriends.sort(
+                  (a, b) => KoreanStringUtils.compareKoreanFirst(
+                    a.nickname,
+                    b.nickname,
+                  ),
+                );
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,8 +118,10 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
                             style: AppTypography.b2,
                           ),
                           GestureDetector(
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              // 1. async 추가
+                              // 2. await로 편집 화면이 닫힐 때까지 대기
+                              await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => FriendEditScreen(
@@ -156,6 +129,9 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
                                   ),
                                 ),
                               );
+
+                              // 3. 편집 화면에서 돌아오면 친구 목록 새로고침 (삭제 반영)
+                              ref.invalidate(friendListProvider);
                             },
                             child: Text(
                               '편집',
