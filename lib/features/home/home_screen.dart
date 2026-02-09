@@ -101,8 +101,9 @@ class HomeScreen extends ConsumerWidget {
                         IconButton(
                           icon: SvgPicture.asset(
                             'assets/images/icons/dots_vert_icon.svg',
+                            width: 24,
+                            height: 24,
                           ),
-                          iconSize: 24,
                           color: AppColors.black,
                           onPressed: () {},
                         ),

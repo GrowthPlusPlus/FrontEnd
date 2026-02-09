@@ -5,6 +5,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter/cupertino.dart';
 
+// 챌린지 알림 설정 다이얼로그
 class NotificationSettingsDialog extends StatefulWidget {
   const NotificationSettingsDialog({super.key});
 

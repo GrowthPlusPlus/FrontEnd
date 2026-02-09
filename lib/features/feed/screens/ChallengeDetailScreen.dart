@@ -5,17 +5,9 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/widgets/EnterConfirmDialog.dart';
 
-void main() {
-  runApp(
-    const MaterialApp(
-      home: ChallengeDetailPage(),
-      debugShowCheckedModeBanner: false,
-    ),
-  );
-}
-
 class ChallengeDetailPage extends StatelessWidget {
-  const ChallengeDetailPage({super.key});
+  final int challengeId; // 검색 결과에서 넘겨받을 ID
+  const ChallengeDetailPage({super.key, required this.challengeId});
 
   @override
   Widget build(BuildContext context) {
@@ -185,10 +177,11 @@ class ChallengeDetailPage extends StatelessWidget {
               showDialog(
                 context: context,
                 builder: (context) {
-                  return const EnterConfirmDialog();
+                  return EnterConfirmDialog(challengeId: challengeId);
                 },
               );
             },
+
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryAble,
               minimumSize: const Size(double.infinity, 60),
@@ -199,7 +192,9 @@ class ChallengeDetailPage extends StatelessWidget {
             ),
             child: Text(
               '챌린지 참여하기',
-              style: AppTypography.h3.copyWith(color: Colors.white),
+              style: AppTypography.h3.copyWith(
+                color: Colors.white,
+              ), // 문법 수정: = -> :
             ),
           ),
         ),

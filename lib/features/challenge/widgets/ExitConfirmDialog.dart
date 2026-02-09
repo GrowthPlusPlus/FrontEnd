@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
+// 챌린지 나가기 다이얼로그
 class ExitConfirmDialog extends StatelessWidget {
   const ExitConfirmDialog({super.key});
 

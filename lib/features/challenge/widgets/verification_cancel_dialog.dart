@@ -1,16 +1,19 @@
-// 최초 작성자 : 강선욱
+// 최초 작성자 : 김채영
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
-// 삭제 다이얼로그 (인증글일 경우와 댓글일 경우에 따라 달라지도록 수정함)
-class DeleteConfirmDialog extends StatelessWidget {
-  final String title; // 다이얼로그 제목
-  final String message; // 다이얼로그 본문
-  const DeleteConfirmDialog({
+// 작성하다가 뒤로가기 누를 경우 나오는 다이얼로그 (인증글 작성할 경우와 인증글 수정할 경우로 나뉨)
+class VerificationCancelDialog extends StatelessWidget {
+  final String title; // 제목
+  final String message; // 본문 설명
+  final String cancelLabel;
+
+  const VerificationCancelDialog({
     super.key,
     required this.title,
     required this.message,
+    required this.cancelLabel,
   });
 
   @override
@@ -18,33 +21,30 @@ class DeleteConfirmDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // 내용만큼만 높이 차지
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // 전달받은 title 표시
+            const SizedBox(height: 4),
             Text(
               title,
               style: AppTypography.h3.copyWith(color: AppColors.black),
             ),
             const SizedBox(height: 8),
-
-            // 전달받은 본문 메시지
             Text(
               message,
               textAlign: TextAlign.center,
               style: AppTypography.b1.copyWith(color: AppColors.gray2),
             ),
-            const SizedBox(height: 20),
-
-            // 버튼 영역
+            const SizedBox(height: 24),
             Row(
               children: [
-                // 취소 버튼
+                // 계속 진행 버튼
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context, false),
+                    onTap: () =>
+                        Navigator.pop(context, false), // 취소 안 함 (계속 작성)
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
@@ -52,7 +52,7 @@ class DeleteConfirmDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '취소',
+                        '계속 작성하기',
                         textAlign: TextAlign.center,
                         style: AppTypography.b1.copyWith(
                           color: AppColors.gray2,
@@ -62,11 +62,10 @@ class DeleteConfirmDialog extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-
-                // 삭제하기 버튼
+                // 나가기 버튼
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context, true),
+                    onTap: () => Navigator.pop(context, true), // 나감
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
@@ -74,7 +73,7 @@ class DeleteConfirmDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '삭제하기',
+                        cancelLabel,
                         textAlign: TextAlign.center,
                         style: AppTypography.b1.copyWith(
                           color: AppColors.notification,

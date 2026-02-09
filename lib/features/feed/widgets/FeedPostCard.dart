@@ -6,17 +6,19 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/widgets/UserChallengeData.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
 
 class FeedPostCard extends StatelessWidget {
-  final CertificationPost post;
+  final CertificationPostModel post;
   final VoidCallback? onTap;
 
   const FeedPostCard({super.key, required this.post, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('yyyy년 MM월 dd일 HH:mm').format(post.date);
-
+    String formattedDate = post.createdAt != null
+        ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(post.createdAt!)
+        : "";
     return InkWell(
       onTap: onTap, // 카드 클릭 시 상세 페이지 이동 등을 위해 추가
       child: Column(
@@ -53,7 +55,7 @@ class FeedPostCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const ChallengeFeedPopupMenu(),
+                ChallengeFeedPopupMenu(post: post),
               ],
             ),
           ),
@@ -89,11 +91,16 @@ class FeedPostCard extends StatelessWidget {
 
           // 3. 이미지
           if (post.hasImage && post.imageUrl != null)
-            Image.asset(
+            Image.network(
               post.imageUrl!,
               width: double.infinity,
               height: 375,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                height: 200,
+                color: AppColors.gray5,
+                child: const Icon(Icons.error),
+              ),
             ),
 
           // 4. 하단 정보 (좋아요, 댓글, 날짜)

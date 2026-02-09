@@ -1,6 +1,7 @@
 // 최초 작성자: 강선욱
 // 챌린지 데이터 관리 모델 클래스
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 
 // 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형
 enum ChallengeStatus {
@@ -163,28 +164,68 @@ class ChallengeCalendarModel {
   }
 }
 
-// 1. 댓글 데이터를 담당할 클래스를 새로 정의합니다.
-class ChallengeComment {
-  final String userName;
-  final String userBadge;
-  final String content;
-  final DateTime createdAt;
+// 챌린지 내 현황 달력 그리드 모델
+class ChallengeCalendarPhoto {
+  final int postId;
+  final String postDate;
+  final String? imageUrl;
 
-  ChallengeComment({
-    required this.userName,
-    required this.userBadge,
-    required this.content,
-    required this.createdAt,
+  ChallengeCalendarPhoto({
+    required this.postId,
+    required this.postDate,
+    this.imageUrl,
   });
 
-  // 서버 응답 데이터를 변환하기 위한 생성자
+  factory ChallengeCalendarPhoto.fromJson(Map<String, dynamic> json) {
+    return ChallengeCalendarPhoto(
+      postId: json['postId'] ?? 0,
+      postDate: json['postDate'] ?? '',
+      imageUrl: json['imageUrl'],
+    );
+  }
+}
+
+// 댓글 데이터 관리
+class ChallengeComment {
+  final int commentId;
+  final String userNickname;
+  final String? userPicture;
+  final String contents;
+  final DateTime createdAt;
+  final bool mine;
+
+  ChallengeComment({
+    required this.commentId,
+    required this.userNickname,
+    this.userPicture,
+    required this.contents,
+    required this.createdAt,
+    required this.mine,
+  });
+
   factory ChallengeComment.fromJson(Map<String, dynamic> json) {
     return ChallengeComment(
-      userName: json['userName'] ?? '익명',
-      userBadge: json['userBadge'] ?? '일반',
-      content: json['content'] ?? '',
-      // 서버에서 온 날짜 문자열을 DateTime 객체로 변환
+      commentId: json['commentId'] ?? 0,
+      userNickname: json['userNickname'] ?? '익명',
+      userPicture: json['userPicture'],
+      contents: json['contents'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      mine: json['mine'] ?? false,
+    );
+  }
+}
+
+// 이미지 객체를 관리할 클래스
+class PostImage {
+  final int imageId;
+  final String imageUrl;
+
+  PostImage({required this.imageId, required this.imageUrl});
+
+  factory PostImage.fromJson(Map<String, dynamic> json) {
+    return PostImage(
+      imageId: json['imageId'] ?? 0,
+      imageUrl: json['imageUrl'] ?? '',
     );
   }
 }
@@ -195,9 +236,9 @@ class CertificationPostModel {
   final String challengeTitle;
   final int totalSuccessDays;
   final String content;
-  final List<String> articleImageUrl;
   final String? userNickname;
   final String? userImageUrl;
+  final List<PostImage> images;
   final DateTime? createdAt;
   final int likeNumber;
   final int commentNumber;
@@ -207,17 +248,17 @@ class CertificationPostModel {
   // 기존 UI 코드 호환성을 위한 Getter
   String get postDate =>
       createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt!) : "";
-  String? get imageUrl =>
-      articleImageUrl.isNotEmpty ? articleImageUrl.first : null;
+  String? get imageUrl => images.isNotEmpty ? images.first.imageUrl : null;
   String? get userName => userNickname;
   int get likeCount => likeNumber;
+  bool get hasImage => images.isNotEmpty;
 
   CertificationPostModel({
     required this.postId,
     required this.challengeTitle,
     required this.totalSuccessDays,
     required this.content,
-    required this.articleImageUrl,
+    required this.images,
     this.userNickname,
     this.userImageUrl,
     this.createdAt,
@@ -227,24 +268,192 @@ class CertificationPostModel {
     this.comments = const [],
   });
 
-  bool get hasImage => articleImageUrl.isNotEmpty;
-
   factory CertificationPostModel.fromJson(Map<String, dynamic> json) {
+    // 1. 상세 조회용 'images' 리스트 처리 (객체 형태)
+    List<PostImage> extractedImages = [];
+
+    // 1. 신규 규격 (객체 리스트: images) 처리
+    if (json['images'] != null && json['images'] is List) {
+      extractedImages = (json['images'] as List)
+          .map((item) => PostImage.fromJson(item))
+          .toList();
+    }
+    // 2. 구 규격 대응 (문자열 리스트 혹은 단일 URL일 경우 ID 0으로 생성)
+    else if (extractedImages.isEmpty) {
+      if (json['imageUrl'] != null) {
+        extractedImages.add(PostImage(imageId: 0, imageUrl: json['imageUrl']));
+      } else if (json['articleImageUrl'] != null) {
+        final List<dynamic> list = json['articleImageUrl'];
+        extractedImages = list
+            .map((url) => PostImage(imageId: 0, imageUrl: url.toString()))
+            .toList();
+      }
+    }
+
     return CertificationPostModel(
       postId: json['postId'] ?? 0,
       challengeTitle: json['challengeTitle'] ?? '',
       totalSuccessDays: json['totalSuccessDays'] ?? 0,
       content: json['content'] ?? '',
-      articleImageUrl: List<String>.from(json['articleImageUrl'] ?? []),
+      images: extractedImages,
       userNickname: json['userNickname'],
       userImageUrl: json['userImageUrl'],
-      createdAt: DateTime.tryParse(json['createdAt'] ?? ''),
+      createdAt: json['postDate'] != null
+          ? DateTime.tryParse(json['postDate'])
+          : DateTime.tryParse(json['createdAt'] ?? ''),
       likeNumber: json['likeNumber'] ?? 0,
       commentNumber: json['commentNumber'] ?? 0,
       liked: json['liked'] ?? false,
       comments: (json['comments'] as List? ?? [])
           .map((c) => ChallengeComment.fromJson(c))
           .toList(),
+    );
+  }
+}
+
+// 마이페이지 사용자 프로필 부분
+class UserProfileModel {
+  final String nickname;
+  final String introduction;
+  final String profileImageUrl;
+
+  UserProfileModel({
+    required this.nickname,
+    required this.introduction,
+    required this.profileImageUrl,
+  });
+
+  factory UserProfileModel.fromJson(Map<String, dynamic> json) {
+    return UserProfileModel(
+      nickname: json['nickname'] ?? '',
+      introduction: json['introduction'] ?? '',
+      profileImageUrl: json['profileImageUrl'] ?? '',
+    );
+  }
+}
+
+// 마이페이지 탭 구분을 위한 전용 이름
+enum MyPageTab { inProgress, success, fail }
+
+// 내 페이지 - 나의 챌린지 - 진행중인 챌린지
+class ChallengeInProgressModel {
+  final int challengeId;
+  final String title;
+  final int requiredWeeklyCount;
+  final int todaySuccessCount;
+  final int participantNumber;
+  final int duringDate;
+  final String endDate;
+  final double achievementRate; // 0.0 ~ 1.0 사이의 값
+  final String status;
+
+  ChallengeInProgressModel({
+    required this.challengeId,
+    required this.title,
+    required this.requiredWeeklyCount,
+    required this.todaySuccessCount,
+    required this.participantNumber,
+    required this.duringDate,
+    required this.endDate,
+    required this.achievementRate,
+    required this.status,
+  });
+
+  factory ChallengeInProgressModel.fromJson(Map<String, dynamic> json) {
+    debugPrint('📥 RAW JSON: $json');
+
+    double rate = (json['achievementRate'] ?? 0).toDouble();
+
+    // [0% 해결] 만약 서버에서 0을 줬는데 오늘 성공 횟수가 있다면 직접 계산
+    if (rate == 0 &&
+        json['todaySuccessCount'] != null &&
+        json['requiredWeeklyCount'] != null) {
+      int today = json['todaySuccessCount'];
+      int weekly = json['requiredWeeklyCount'];
+      if (weekly > 0) rate = today / weekly; // 예: 1/7 = 0.14...
+    } else if (rate > 1.0) {
+      rate = rate / 100.0; // 85 -> 0.85 변환
+    }
+
+    return ChallengeInProgressModel(
+      challengeId: json['challengeId'] ?? 0,
+      title: json['title'] ?? '',
+      requiredWeeklyCount: json['requiredWeeklyCount'],
+      todaySuccessCount: json['todaySuccessCount'],
+      participantNumber: json['participantNumber'],
+      duringDate: json['duringDate'] ?? 0,
+      endDate: json['endDate'] ?? '',
+      achievementRate: rate,
+      status: json['status'] ?? 'IN_PROGRESS',
+    );
+  }
+
+  // 기존 UI 위젯 수정을 최소화하기 위한 Getter
+  String get dateInfo => "완료일까지 D-${_calculateDDay()}";
+  String get countInfo => "$todaySuccessCount/$participantNumber명";
+  double get progress => achievementRate;
+
+  int _calculateDDay() {
+    try {
+      final end = DateTime.parse(endDate);
+      final dDay = end.difference(DateTime.now()).inDays;
+      return dDay < 0 ? 0 : dDay;
+    } catch (_) {
+      return 0;
+    }
+  }
+}
+
+// 챌린지 검색
+// TODO: 챌린지 아이디 부분 수정
+class SearchChallengeModel {
+  final int challengeId;
+  final String title;
+  final int participantNumber;
+  final int requiredWeeklyCount;
+  final bool photoRequired;
+  final List<ChallengeTagModel> tags;
+
+  SearchChallengeModel({
+    required this.challengeId,
+    required this.title,
+    required this.participantNumber,
+    required this.requiredWeeklyCount,
+    required this.photoRequired,
+    required this.tags,
+  });
+
+  factory SearchChallengeModel.fromJson(Map<String, dynamic> json) {
+    return SearchChallengeModel(
+      challengeId: json['challengeId'] ?? json['id'] ?? 0,
+      title: json['title'] ?? '',
+      participantNumber: json['participantNumber'] ?? 0,
+      requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
+      photoRequired: json['photoRequired'] ?? true,
+      tags: (json['tags'] as List? ?? [])
+          .map((t) => ChallengeTagModel.fromJson(t))
+          .toList(),
+    );
+  }
+}
+
+// 태그 모델
+class ChallengeTagModel {
+  final int tagId;
+  final String tag;
+  final String tagCategory;
+
+  ChallengeTagModel({
+    required this.tagId,
+    required this.tag,
+    required this.tagCategory,
+  });
+
+  factory ChallengeTagModel.fromJson(Map<String, dynamic> json) {
+    return ChallengeTagModel(
+      tagId: json['tagId'] ?? 0,
+      tag: json['tag'] ?? '',
+      tagCategory: json['tagCategory'] ?? 'AGE',
     );
   }
 }

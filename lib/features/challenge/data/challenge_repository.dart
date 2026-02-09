@@ -2,7 +2,9 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
@@ -40,6 +42,92 @@ class ChallengeRepository {
       print('❌ Repository 일반 에러: $e');
       throw Exception('알 수 없는 오류 발생');
     }
+  }
+
+  // 닉네임 업데이트 및 중복 체크
+  Future<void> updateNickname(String nickname) async {
+    await _dio.patch('/api/users/me/nickname', data: {"nickname": nickname});
+  }
+
+  // 프로필 이미지 업로드
+  Future<void> uploadProfileImage(File imageFile) async {
+    final formData = FormData.fromMap({
+      "image": await MultipartFile.fromFile(
+        imageFile.path,
+        filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
+      ),
+    });
+
+    await _dio.post(
+      '/api/users/me/profile-image',
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+  }
+
+  // 한 줄 소개 업데이트
+  Future<void> updateIntroduction(String introduction) async {
+    await _dio.patch(
+      '/api/users/me/introduction',
+      data: {"introduction": introduction},
+    );
+  }
+
+  // 전체 태그 조회
+  Future<List<ChallengeTagModel>> getAllTags() async {
+    try {
+      final response = await _dio.get('/api/tags');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => ChallengeTagModel.fromJson(json)).toList();
+      }
+      throw Exception('태그 목록 로드 실패');
+    } on DioException catch (e) {
+      throw Exception('네트워크 에러: ${e.message}');
+    }
+  }
+
+  // 유저 태그 선택 (회원가입/프로필 수정 시 사용)
+  Future<void> updateUserTags(List<int> tagIds) async {
+    try {
+      final response = await _dio.post(
+        '/api/users/me/tags',
+        data: {'tagIds': tagIds},
+      );
+
+      if (response.statusCode != 204) {
+        throw Exception('태그 업데이트 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 태그 업데이트 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '태그 저장 중 오류 발생');
+    }
+  }
+
+  Future<void> submitSignup({
+    required String nickname,
+    required String bio,
+    required List<String> tags,
+    File? profileImage,
+  }) async {
+    // 1. Multipart 데이터 준비
+    final formData = FormData.fromMap({
+      "nickname": nickname,
+      "bio": bio,
+      "tags": tags, // List<String> 형태
+      if (profileImage != null)
+        "profileImage": await MultipartFile.fromFile(
+          profileImage.path,
+          filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
+        ),
+    });
+
+    // 2. 요청 전송 (Interceptor 덕분에 토큰은 자동으로 붙습니다)
+    await _dio.post(
+      '/api/user/signup',
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
   }
 
   // 챌린지 생성 post 요청 보내기
@@ -113,44 +201,193 @@ class ChallengeRepository {
     }
   }
 
+  // 챌린지 달력 사진 가져오기
+  Future<List<ChallengeCalendarPhoto>> getChallengeCalendarPhotos({
+    required int challengeId,
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/challenges/$challengeId/calendar/photos',
+        queryParameters: {'year': year, 'month': month},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data
+            .map((json) => ChallengeCalendarPhoto.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('달력 사진 조회 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 달력 사진 API 에러: ${e.response?.data}');
+      return [];
+    }
+  }
+
+  // 인증글 상세 정보 가져오기
+  Future<CertificationPostModel> getArticleDetail(int postId) async {
+    try {
+      debugPrint('🚀 [GET Request] /api/articles/$postId');
+
+      final response = await _dio.get('/api/articles/$postId');
+
+      if (response.statusCode == 200) {
+        debugPrint('📥 상세조회 서버 응답 원본: ${response.data}');
+        return CertificationPostModel.fromJson(response.data);
+      } else {
+        throw Exception('인증글 상세 조회 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 상세 조회 에러: ${e.response?.data}');
+      throw Exception('정보를 불러오지 못했습니다.');
+    }
+  }
+
   // 인증글 생성
   Future<CertificationPostModel> createArticle({
     required int challengeId,
     required String content,
-    required List<String> imageUrls,
+    required List<File> imageFiles,
   }) async {
     try {
-      final Map<String, dynamic> requestBody = {
-        "data": {"content": content, "challengeId": challengeId},
-        "image": imageUrls, // 검증 완료된 이미지 URL 리스트
-      };
+      final formData = FormData();
 
-      debugPrint('🚀 [API Request] /api/articles Body: $requestBody');
+      // JSON 데이터를 파일 파트처럼 추가하여 타입을 명시
+      formData.files.add(
+        MapEntry(
+          'data',
+          MultipartFile.fromString(
+            jsonEncode({
+              "challengeId": challengeId,
+              "content": content,
+            }), // 필요한 데이터만
+            contentType: MediaType('application', 'json'),
+          ),
+        ),
+      );
 
-      final response = await _dio.post('/api/articles', data: requestBody);
+      // 이미지 파일 추가
+      for (var file in imageFiles) {
+        formData.files.add(
+          MapEntry(
+            'image',
+            await MultipartFile.fromFile(
+              file.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          ),
+        );
+      }
+
+      debugPrint('🚀 [API Request] /api/articles (Multipart 전송 시작)');
+
+      final response = await _dio.post('/api/articles', data: formData);
 
       if (response.statusCode == 201) {
         return CertificationPostModel.fromJson(response.data);
       } else {
-        throw Exception('인증글 생성 실패 (Status: ${response.statusCode})');
+        throw Exception('인증글 생성 실패: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 인증글 생성 에러: ${e.response?.data}');
+      debugPrint('❌ 서버 응답 에러 (${e.response?.statusCode}): ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '게시글 업로드 실패');
+    }
+  }
+
+  // 인증글 수정
+  Future<CertificationPostModel> updateArticle({
+    required int postId,
+    required String content,
+    required List<int> deleteImageIds, // 삭제할 이미지 ID들
+    required List<File> newImages, // 새로 추가할 이미지 파일들
+  }) async {
+    try {
+      final formData = FormData();
+
+      // 1. JSON 데이터 (request 파트)
+      formData.files.add(
+        MapEntry(
+          'request',
+          MultipartFile.fromString(
+            jsonEncode({"content": content, "deleteImageIds": deleteImageIds}),
+            contentType: MediaType('application', 'json'),
+          ),
+        ),
+      );
+
+      // 2. 새 이미지 파일들 (images 파트)
+      for (var file in newImages) {
+        formData.files.add(
+          MapEntry(
+            'images',
+            await MultipartFile.fromFile(
+              file.path,
+              filename: file.path.split('/').last,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          ),
+        );
+      }
+
+      debugPrint('🚀 [PATCH Request] /api/articles/$postId (Multipart)');
+
+      final response = await _dio.patch(
+        '/api/articles/$postId',
+        data: formData,
+      );
+
+      if (response.statusCode == 200) {
+        return CertificationPostModel.fromJson(response.data);
+      } else {
+        throw Exception('수정 실패: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 수정 에러: ${e.response?.data}');
+      throw Exception(e.response?.data?['message'] ?? '수정 중 오류 발생');
+    }
+  }
+
+  // 인증글 삭제
+  Future<void> deleteArticle(int postId) async {
+    try {
+      debugPrint('🚀 [DELETE Request] /api/articles/$postId');
+
+      final response = await _dio.delete('/api/articles/$postId');
+
+      // 204는 성공을 의미하지만 응답 본문이 없는 상태입니다.
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('삭제 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 인증글 삭제 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 인증글 삭제 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '삭제 중 오류가 발생했습니다.');
     }
   }
 
   // 인증 사진 검증
   Future<bool> verifyImage(File imageFile) async {
     try {
-      // 1. 파일 읽기 및 Base64 변환
-      final bytes = await imageFile.readAsBytes();
-      final String base64Image = base64Encode(bytes);
+      // 1. Multipart 데이터(FormData) 생성
+      final formData = FormData.fromMap({
+        // 스웨거 명세서의 키 이름이 "images"이므로 이를 따릅니다.
+        // 만약 백엔드에서 단수형 "image"를 원한다면 수정이 필요할 수 있습니다.
+        "images": await MultipartFile.fromFile(
+          imageFile.path,
+          filename: imageFile.path.split('/').last,
+        ),
+      });
+
+      debugPrint('🚀 [API Request] /api/image/verify (Multipart) 전송 시작');
 
       // 2. API 호출
       final response = await _dio.post(
         '/api/image/verify',
-        data: {"images": base64Image},
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'), // Multipart 형식 명시
       );
 
       // 3. 성공 처리 (204 No Content)
@@ -164,56 +401,268 @@ class ChallengeRepository {
       final statusCode = e.response?.statusCode;
       final errorData = e.response?.data;
 
-      // 4. 상태 코드별 구체적 핸들링
-      switch (statusCode) {
-        case 400:
-          // 이미지 크기, 포맷, 손상 등 정책 위반
-          debugPrint('⚠️ [400] 이미지 검증 실패: 규격에 맞지 않는 파일입니다. ($errorData)');
-          break;
+      debugPrint('❌ 이미지 검증 에러 ($statusCode): $errorData');
 
-        case 413:
-          // 파일 용량이 너무 커서 서버가 거부한 경우 (Base64 인코딩 시 자주 발생)
-          debugPrint('🚨 [413] 요청 용량 초과: 이미지 크기를 줄여야 합니다.');
-          break;
-
-        case 500:
-          // 서버 내부 로직 에러 (주로 클라우디너리 연동 실패 등)
-          debugPrint(
-            '🔥 [500] 서버 내부 오류: 백엔드 로직 혹은 클라우디너리 설정 확인 필요 ($errorData)',
-          );
-          break;
-
-        default:
-          debugPrint(
-            '❓ [Unknown] 알 수 없는 오류 발생 (Code: $statusCode, Data: $errorData)',
-          );
+      // 413 에러(용량 초과)가 난다면 이미지 압축이 필요할 수 있습니다.
+      if (statusCode == 413) {
+        debugPrint('🚨 요청 용량 초과: 이미지 리사이징을 고려하세요.');
       }
+
       return false;
     } catch (e) {
-      debugPrint('💻 [Client Error] 앱 내부 오류 혹은 네트워크 미연결: $e');
+      debugPrint('💻 [Client Error] 앱 내부 오류: $e');
       return false;
     }
   }
-  // Future<bool> verifyImage(File imageFile) async {
-  //   try {
-  //     // 파일을 바이트로 읽어 Base64 문자열로 변환 (명세서의 "string" 대응)
-  //     final bytes = await imageFile.readAsBytes();
-  //     final String base64Image = base64Encode(bytes);
 
-  //     final response = await _dio.post(
-  //       '/api/image/verify',
-  //       data: {
-  //         "images": base64Image, // 명세서 키값 "images"
-  //       },
-  //     );
+  // 특정 게시글의 댓글 목록을 가져오는 함수
+  Future<List<ChallengeComment>> getComments({
+    required int postId,
+    int page = 0,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/articles/$postId/comments',
+        queryParameters: {'page': page},
+      );
 
-  //     // 204 No Content는 성공을 의미함
-  //     return response.statusCode == 204;
-  //   } on DioException catch (e) {
-  //     debugPrint('❌ 이미지 검증 실패: ${e.response?.statusCode}');
-  //     return false; // 400 등 에러 발생 시 실패 처리
-  //   }
-  // }
+      if (response.statusCode == 200) {
+        // Page 객체의 'content' 배열을 가져옴
+        final List<dynamic> content = response.data['content'] ?? [];
+        return content.map((json) => ChallengeComment.fromJson(json)).toList();
+      } else {
+        throw Exception('댓글 목록 조회 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 조회 에러: ${e.response?.data}');
+      throw Exception('댓글을 불러오는 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 댓글 생성
+  Future<void> createComment({
+    required int postId,
+    required String contents,
+  }) async {
+    try {
+      final Map<String, dynamic> body = {
+        "contents": contents, // 명세서 기준 복수형 'contents'
+      };
+
+      final response = await _dio.post(
+        '/api/articles/$postId/comments',
+        data: body,
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception('댓글 생성 실패 (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 생성 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '댓글 작성 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 댓글 삭제
+  Future<void> deleteComment(int commentId) async {
+    try {
+      debugPrint('🚀 [DELETE Request] /api/comments/$commentId');
+
+      final response = await _dio.delete('/api/comments/$commentId');
+
+      // 204 No Content 성공 처리
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('댓글 삭제 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 댓글 삭제 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 삭제 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '댓글 삭제 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 댓글 수정
+  Future<void> updateComment({
+    required int commentId,
+    required String contents,
+  }) async {
+    try {
+      final Map<String, dynamic> body = {"contents": contents};
+
+      debugPrint('🚀 [PATCH Request] /api/comments/$commentId');
+
+      final response = await _dio.patch('/api/comments/$commentId', data: body);
+
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('댓글 수정 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 댓글 수정 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 수정 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '댓글 수정 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 인증글 좋아요 토글
+  Future<void> toggleLike({
+    required int postId,
+    required bool isCurrentlyLiked,
+  }) async {
+    try {
+      if (isCurrentlyLiked) {
+        // 이미 좋아요 상태라면 -> 취소
+        debugPrint('🚀 [DELETE Request] /api/article/$postId/like');
+        await _dio.delete('/api/article/$postId/like');
+      } else {
+        // 좋아요가 아니라면 -> 등록
+        debugPrint('🚀 [POST Request] /api/article/$postId/like');
+        await _dio.post('/api/article/$postId/like');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 좋아요 토글 에러: ${e.response?.data}');
+      throw Exception(e.response?.data?['message'] ?? '좋아요 처리 중 오류 발생');
+    }
+  }
+
+  // 챌린지 삭제
+  Future<void> deleteChallenge(int challengeId) async {
+    try {
+      debugPrint('🚀 [DELETE Request] /api/challenges/$challengeId');
+
+      final response = await _dio.delete('/api/challenges/$challengeId');
+
+      // 명세서 상 성공 시 204 반환
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('챌린지 삭제 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 챌린지 삭제 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 챌린지 삭제 API 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '챌린지 삭제 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 내 페이지 - 나의 챌린지 - 진행 중인 챌린지
+  Future<List<ChallengeInProgressModel>> getInProgressChallenges({
+    required bool onlyTwo,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/challenges/my/inProgress',
+        queryParameters: {'onlyTwo': onlyTwo},
+      );
+      if (response.statusCode == 200) {
+        return (response.data as List)
+            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .toList();
+      }
+      throw Exception('챌린지 로드 실패');
+    } on DioException catch (e) {
+      throw Exception('네트워크 에러: ${e.message}');
+    }
+  }
+
+  // 내 페이지 - 나의 챌린지 - 완료한 챌린지
+  Future<List<ChallengeInProgressModel>> getSuccessChallenges({
+    required bool onlyTwo,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/challenges/my/success',
+        queryParameters: {'onlyTwo': onlyTwo},
+      );
+      if (response.statusCode == 200) {
+        return (response.data as List)
+            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .toList();
+      }
+      throw Exception('완료된 챌린지 로드 실패');
+    } on DioException catch (e) {
+      throw Exception('네트워크 에러: ${e.message}');
+    }
+  }
+
+  // 내페이지 - 사용자 프로필 정보
+  Future<UserProfileModel> getMyProfile() async {
+    try {
+      final response = await _dio.get('/api/users/me/profile');
+
+      if (response.statusCode == 200) {
+        return UserProfileModel.fromJson(response.data);
+      } else {
+        throw Exception('프로필 조회 실패');
+      }
+    } on DioException catch (e) {
+      throw Exception('네트워크 에러: ${e.message}');
+    }
+  }
+
+  // 내페이지 - 나의 챌린지 - 실패한 챌린지
+  Future<List<ChallengeInProgressModel>> getFailedChallenges({
+    required bool onlyTwo,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/challenges/my/fail', // 💡 실패 챌린지 엔드포인트
+        queryParameters: {'onlyTwo': onlyTwo},
+      );
+      if (response.statusCode == 200) {
+        return (response.data as List)
+            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .toList();
+      }
+      throw Exception('실패한 챌린지 로드 실패');
+    } on DioException catch (e) {
+      throw Exception('네트워크 에러: ${e.message}');
+    }
+  }
+
+  // 챌린지 검색 API
+  Future<List<SearchChallengeModel>> searchChallenges({
+    required String keyword,
+    int page = 0,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/challenges/search',
+        queryParameters: {'keyword': keyword, 'page': page},
+      );
+
+      if (response.statusCode == 200) {
+        // API 명세상 페이징 객체 내부의 'content' 리스트를 파싱합니다.
+        final List<dynamic> content = response.data['content'] ?? [];
+        return content
+            .map((json) => SearchChallengeModel.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('검색 결과 조회 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 검색 API 에러: ${e.response?.data}');
+      throw Exception('검색 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 챌린지 참여하기 api
+  Future<void> participateChallenge(int challengeId) async {
+    try {
+      debugPrint('🚀 [POST Request] /api/challenges/$challengeId/participate');
+
+      final response = await _dio.post(
+        '/api/challenges/$challengeId/participate',
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('챌린지 참여에 실패했습니다.');
+      }
+      debugPrint('✅ 챌린지 참여 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 챌린지 참여 API 에러: ${e.response?.data}');
+      throw Exception(
+        e.response?.data?['message'] ?? '이미 참여 중이거나 참여할 수 없는 챌린지입니다.',
+      );
+    }
+  }
 }
 
 // Riverpod Provider 설정
@@ -267,73 +716,3 @@ ChallengeRepository challengeRepository(ChallengeRepositoryRef ref) {
 
   return ChallengeRepository(dio);
 }
-
-
-
-
-
-
-
-// 서버로부터 사용자의 챌린지 메인 데이터를 가져오는 함수
-
-// Future<ChallengeMainModel> getChallengeMainData(String date) async {
-//   // 👈 테스트를 위한 가짜(Mock) 데이터 생성
-//   await Future.delayed(const Duration(milliseconds: 500)); // 로딩 효과를 위해 약간의 지연
-
-//   final mockData = {
-//     "myChallenges": [
-//       {
-//         "challengeId": 1,
-//         "title": "아침 6시 미라클 모닝",
-//         "content": "매일 일찍 일어나기",
-//         "maxParticipantNumber": 10,
-//         "participantNumber": 6,
-//         "duringDate": 5,
-//         "doIt": true, // 오늘 완료! (초록색 카드)
-//         "warning": false,
-//       },
-//       {
-//         "challengeId": 2,
-//         "title": "졸업 프로젝트 코딩",
-//         "content": "빡코딩 가즈아",
-//         "maxParticipantNumber": 3,
-//         "participantNumber": 2,
-//         "duringDate": 12,
-//         "doIt": false, // 아직 안 함
-//         "warning": true, // 근데 마감 임박! (빨간색 카드)
-//       },
-//       {
-//         "challengeId": 3,
-//         "title": "주 3회 헬스장 가기",
-//         "content": "득근득근",
-//         "maxParticipantNumber": 5,
-//         "participantNumber": 1,
-//         "duringDate": 0,
-//         "doIt": false,
-//         "warning": false, // 일반 상태 (회색 카드)
-//       },
-//     ],
-//     "notificationNumber": 3, // 알림 배지 테스트용
-//   };
-
-//   return ChallengeMainModel.fromJson(mockData);
-
-//   // 추후 필요한 기능들(예: 챌린지 생성, 인증 등)도 이곳에 추가하면 됩니다.
-// }
-
-// try {
-//   // 실제 API 엔드포인트 주소로 변경 필요
-//   final response = await _dio.get('/api/mainHome');
-
-//   if (response.statusCode == 200) {
-//     // 성공 시 JSON 데이터를 모델로 변환
-//     return ChallengeMainModel.fromJson(response.data);
-//   } else {
-//     throw Exception('데이터를 불러오는데 실패했습니다.');
-//   }
-// } catch (e) {
-//   // 에러 핸들링 (네트워크 오류 등)
-//   print('❌ Repository 에러 발생: $e');
-//   throw Exception('네트워크 오류: $e');
-// }
-
