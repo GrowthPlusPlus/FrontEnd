@@ -10,6 +10,7 @@ import 'social_repository.dart';
 import 'social_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import '../../core/utils/korean_string_utils.dart';
 
 // --- 메인 화면 ---
 
@@ -95,9 +96,16 @@ class FriendAddScreenState extends ConsumerState<FriendAddScreen>
     });
 
     try {
+      // 1. 서버로부터 검색 결과 리스트를 받아옴
       final results = await ref
           .read(socialRepositoryProvider)
           .searchUsers(query);
+
+      // [추가됨] KoreanStringUtils를 사용하여 검색 결과 정렬
+      // 정렬 순서: 한글 > 영문 대문자 > 영문 소문자 > 숫자 > 특수문자
+      results.sort(
+        (a, b) => KoreanStringUtils.compareKoreanFirst(a.nickname, b.nickname),
+      );
 
       if (!mounted) return;
       setState(() {
