@@ -57,7 +57,9 @@ class FeedPostCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        post.challengeTitle,
+                        // 유저 칭호 부분
+                        // API 구현이 안돼서 하드코딩
+                        "명예 해냄 개발자",
                         style: AppTypography.c1.copyWith(
                           color: AppColors.gray2,
                         ),
@@ -71,24 +73,33 @@ class FeedPostCard extends StatelessWidget {
             ),
           ),
 
-          // 2. 본문 텍스트
+          // 2. 제목 및 본문 텍스트 섹션
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 5),
+                // 인증글 제목: {챌린지 이름} {인증경과일}일차
+                Text(
+                  '${post.challengeTitle} ${post.totalSuccessDays}일차',
+                  style: AppTypography.b3.copyWith(
+                    color: AppColors.black,
+                    fontWeight: FontWeight.bold, // 디자인처럼 강조
+                  ),
+                ),
+
+                // 본문 내용
                 Text(
                   post.content,
                   style: AppTypography.b2.copyWith(color: AppColors.gray1),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
+
                 const SizedBox(height: 15),
               ],
             ),
           ),
-
           // 3. 이미지 (Getter 활용)
           if (post.hasImage && post.imageUrl != null)
             Image.network(

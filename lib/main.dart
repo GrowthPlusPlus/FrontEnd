@@ -18,7 +18,7 @@ import 'features/challenge/create/widgets/challenge_create_success_dialog.dart';
 import 'features/main/screens/main_screen.dart';
 import 'features/challenge/calendar/ChallengeCalendarScreen.dart';
 import 'features/challenge/verification/screens/challenge_verification_screen.dart';
-import 'package:haenaem/features/feed/screens/FeedScreen.dart';
+import 'package:haenaem/features/feed/screens/feed_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() async {
