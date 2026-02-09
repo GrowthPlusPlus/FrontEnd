@@ -36,6 +36,7 @@ class SearchResultUser {
   final String? profileImageUrl;
   final String? createdAt;
   bool isRequested;
+  bool isFriend;
 
   /// 함수의 용도: SearchResultUser 클래스의 생성자
   /// 매개 변수: nickname, title, profileImage, isRequested, requestTime
@@ -46,6 +47,7 @@ class SearchResultUser {
     this.profileImageUrl,
     this.createdAt,
     this.isRequested = false,
+    this.isFriend = false,
   });
 
   factory SearchResultUser.fromSearchJson(Map<String, dynamic> json) {
@@ -59,7 +61,9 @@ class SearchResultUser {
       userId: json['userId'],
       nickname: json['nickname'],
       profileImageUrl: json['profileImageUrl'],
-      // 🔥 서버 응답 상태가 'PENDING_SENT'인 경우 신청 완료 상태로 판단
+      // 1. 이미 친구인 경우 [추가]
+      isFriend: json['relationshipStatus'] == 'FRIEND',
+      // 2. 내가 이미 신청을 보낸 경우
       isRequested: json['relationshipStatus'] == 'PENDING_SENT',
       requestId: json['requestId'], // 취소를 위해 ID도 저장
     );

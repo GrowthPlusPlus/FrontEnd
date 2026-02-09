@@ -183,7 +183,12 @@ class FriendAddScreenState extends ConsumerState<FriendAddScreen>
       // PATCH /api/users/friend/request/accept/{requestId}
       await ref.read(socialRepositoryProvider).acceptRequest(req.requestId);
       if (!mounted) return;
-      _fetchInitialData(); // 목록 갱신
+
+      // 보낸/받은 요청 목록 갱신
+      _fetchInitialData();
+      // 실제 친구 목록(SocialScreen용)도 새로고침하여 데이터 일치화
+      ref.invalidate(friendListProvider);
+
       displayToast('${req.nickname} 님과 친구가 되었습니다!');
     } on DioException catch (e) {
       if (!mounted) return;
@@ -632,8 +637,13 @@ class FriendAddScreenState extends ConsumerState<FriendAddScreen>
   /// 함수의 용도: 검색 결과의 친구 신청/신청됨 버튼 생성
   /// 매개 변수: SearchResultUser user (대상 유저)
   Widget buildRequestButton(SearchResultUser user) {
+    // 1. 이미 친구인 유저는 버튼 자체를 노출하지 않음 [추가]
+    if (user.isFriend) {
+      return const SizedBox.shrink();
+    }
+
     return GestureDetector(
-      // 🔥 이미 신청된 상태(isRequested)면 클릭 이벤트를 null로 설정하여 비활성화
+      // 2. 이미 신청된 상태(isRequested)면 클릭 방지
       onTap: user.isRequested ? null : () => sendFriendRequestAction(user),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
