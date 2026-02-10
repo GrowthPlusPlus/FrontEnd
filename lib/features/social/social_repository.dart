@@ -1,97 +1,137 @@
 /// 최초 작성자: 정승빈
 library;
 
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'social_model.dart';
+import '../auth/services/auth_service.dart';
+import 'package:flutter/material.dart';
 
-/// 클래스의 용도: 친구 목록 및 친구 요청 데이터를 관리하는 리포지토리
+// Dio Provider with Interceptor for adding Authorization header
+final dioProvider = Provider<Dio>((ref) {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: 'https://hanaem.onrender.com', // 서버 주소
+      connectTimeout: const Duration(seconds: 5),
+    ),
+  );
+
+  // 요청 인터셉터 추가
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // 1. 저장소에서 액세스 토큰 읽기
+        final String? accessToken = await AuthService.getAccessToken();
+        debugPrint("🔍 저장소에서 꺼낸 토큰: $accessToken"); // 이 값이 null인지 확인!
+
+        // 2. 토큰이 있다면 헤더에 Bearer 토큰 주입
+        if (accessToken != null) {
+          options.headers['Authorization'] = 'Bearer $accessToken';
+          debugPrint("🔑 API 요청에 토큰 주입 완료");
+        }
+
+        return handler.next(options); // 다음 단계로 진행
+      },
+      onError: (DioException e, handler) async {
+        // 만약 401 에러가 나면 여기서 refreshTokens()를 호출하는 로직을 추가할 수도 있습니다.
+        return handler.next(e);
+      },
+    ),
+  );
+
+  return dio;
+});
+
+// Repository Provider
+final socialRepositoryProvider = Provider<SocialRepository>((ref) {
+  return SocialRepository(ref.watch(dioProvider));
+});
+
 class SocialRepository {
-  static final SocialRepository instance = SocialRepository.internal();
-  factory SocialRepository() => instance;
-  SocialRepository.internal();
+  final Dio _dio;
+  SocialRepository(this._dio);
 
-  // 실제 친구 목록 (SocialScreen에서 사용)
-  final List<Friend> friends = [
-    Friend(
-      name: '김해냄',
-      title: '성실한 새싹',
-      profileImage: "assets/images/profiles/user1.png",
-    ),
-    Friend(name: '이졸업', title: '코딩 마스터'),
-    Friend(name: 'Apple', title: '아이폰 유저'),
-    Friend(name: '박프로', title: '해냄의 기둥'),
-    Friend(name: 'Gemini', title: 'AI 조력자'),
-    Friend(name: '1등해냄', title: '숫자 우선?'),
-  ];
-
-  // 보낸 요청 리스트
-  final List<SearchResultUser> sentRequests = [];
-
-  // 받은 요청 리스트 (FriendAddScreen에서 이동)
-  final List<ReceivedRequest> receivedRequests = [
-    ReceivedRequest(
-      name: '여하늘',
-      mutualFriends: 2,
-      time: '2025년 12월 24일 15:48',
-      title: '코딩 천재',
-    ),
-    ReceivedRequest(
-      name: '정승빈',
-      mutualFriends: 5,
-      profileImage: 'assets/images/profiles/user1.png',
-      time: '2025년 12월 24일 15:48',
-      title: '코딩 천재',
-    ),
-    ReceivedRequest(
-      name: '강선욱',
-      mutualFriends: 2,
-      profileImage: 'assets/images/profiles/user1.png',
-      time: '2025년 12월 24일 15:48',
-      title: '플러터 개발자',
-    ),
-    ReceivedRequest(
-      name: '정성우',
-      mutualFriends: 2,
-      time: '2025년 12월 23일 15:48',
-      title: '플러터 개발자',
-    ),
-  ];
-
-  /// 함수의 용도: 새로운 친구 신청을 보낸 요청 목록에 추가
-  /// 매개 변수: SearchResultUser user (신청 대상 유저 정보)
-  /// 반환 값: 없음
-  void addRequest(SearchResultUser user) {
-    if (!sentRequests.any((item) => item.name == user.name)) {
-      sentRequests.add(user);
-    }
+  // 1. 친구 목록 조회 (GET /api/users/friend/list)
+  Future<List<Friend>> getFriendList() async {
+    final response = await _dio.get('/api/users/friend/list');
+    // 응답 데이터가 null일 경우를 대비해 빈 리스트 처리를 추가합니다.
+    return (response.data as List?)?.map((e) => Friend.fromJson(e)).toList() ??
+        [];
   }
 
-  /// 함수의 용도: 보낸 신청 목록에서 특정 유저의 요청을 삭제
-  /// 매개 변수: String name (대상 유저 이름)
-  /// 반환 값: 없음
-  void removeRequest(String name) {
-    sentRequests.removeWhere((item) => item.name == name);
-  }
-
-  /// 함수의 용도: 받은 친구 요청을 수락하여 친구 목록에 추가하고 요청 삭제
-  /// 매개 변수: ReceivedRequest request (수락할 요청 정보)
-  /// 반환 값: 없음
-  void acceptFriendRequest(ReceivedRequest request) {
-    // 친구 목록에 추가
-    friends.add(
-      Friend(
-        name: request.name,
-        title: request.title,
-        profileImage: request.profileImage,
-      ),
+  // 2. 유저 검색 (GET /api/users/search)
+  Future<List<SearchResultUser>> searchUsers(String nickname) async {
+    final response = await _dio.get(
+      '/api/users/search',
+      queryParameters: {'nickname': nickname},
     );
-    // 받은 요청에서 삭제
-    receivedRequests.removeWhere((item) => item.name == request.name);
+    return (response.data as List?)
+            ?.map((e) => SearchResultUser.fromSearchJson(e))
+            .toList() ??
+        [];
   }
 
-  /// 함수의 용도: 받은 친구 요청을 거절하여 목록에서 삭제
-  /// 매개 변수: ReceivedRequest request (거절할 요청 정보)
-  /// 반환 값: 없음
-  void rejectFriendRequest(ReceivedRequest request) {
-    receivedRequests.removeWhere((item) => item.name == request.name);
+  // 3. 친구 신청 보내기 (POST /api/users/friend/request/{toUserNickName})
+  Future<void> sendFriendRequest(String nickname) async {
+    // Swagger operationId: sendFriendRequest
+    await _dio.post('/api/users/friend/request/$nickname');
+  }
+
+  // 4. 보낸 신청 목록 조회 (GET /api/users/friend/request/sent)
+  Future<List<SearchResultUser>> getSentRequests() async {
+    // Swagger operationId: getSentRequests
+    final response = await _dio.get('/api/users/friend/request/sent');
+    return (response.data as List?)
+            ?.map((e) => SearchResultUser.fromSentJson(e))
+            .toList() ??
+        [];
+  }
+
+  // 5. 보낸 신청 취소 (PATCH /api/users/friend/request/sent/cancel/{requestId})
+  Future<void> cancelRequest(int requestId) async {
+    // Swagger operationId: cancelFriendRequest
+    await _dio.patch('/api/users/friend/request/sent/cancel/$requestId');
+  }
+
+  // 6. 받은 신청 목록 조회 (GET /api/users/friend/request/received)
+  Future<List<ReceivedRequest>> getReceivedRequests() async {
+    // Swagger operationId: getReceivedRequests
+    final response = await _dio.get('/api/users/friend/request/received');
+    return (response.data as List?)
+            ?.map((e) => ReceivedRequest.fromJson(e))
+            .toList() ??
+        [];
+  }
+
+  // 7. 친구 신청 수락 (PATCH /api/users/friend/request/accept/{requestId})
+  Future<void> acceptRequest(int requestId) async {
+    // Swagger operationId: acceptRequest
+    await _dio.patch('/api/users/friend/request/accept/$requestId');
+  }
+
+  // 8. 친구 신청 거절 (PATCH /api/users/friend/request/reject/{rejectId})
+  Future<void> rejectRequest(int rejectId) async {
+    // Swagger operationId: rejectRequest
+    await _dio.patch('/api/users/friend/request/reject/$rejectId');
+  }
+
+  // 9. 친구 삭제 (DELETE /api/users/friend/delete/{friendNickname})
+  Future<void> deleteFriend(String nickname) async {
+    // Swagger operationId: deleteFriend
+    await _dio.delete('/api/users/friend/delete/$nickname');
   }
 }
+
+// 1. 친구 목록을 서버에서 가져오는 FutureProvider
+// SocialScreen에서 ref.watch(friendListProvider)로 사용합니다.
+final friendListProvider = FutureProvider<List<Friend>>((ref) async {
+  final repo = ref.watch(socialRepositoryProvider);
+  return await repo.getFriendList(); // GET /api/users/friend/list 호출
+});
+
+// 2. (옵션) 보낸/받은 요청 목록도 Provider로 관리하면 화면 갱신이 더 편해집니다.
+final receivedRequestsProvider = FutureProvider<List<ReceivedRequest>>((
+  ref,
+) async {
+  return await ref.watch(socialRepositoryProvider).getReceivedRequests();
+});

@@ -49,8 +49,8 @@ class _ChallengeCreatePageState extends State<ChallengeCreatePage> {
         _selectedFrequency != null && // 빈도 선택됨
         _selectedTags.isNotEmpty && // 태그 1개 이상
         _descriptionController.text.trim().isNotEmpty && // 설명 입력
-        selectedType != 0; // 인증 방식 선택
-    selectedVisibility != 0; // 공개범위 선택
+        selectedType != 0 && // 인증 방식 선택
+        selectedVisibility != 0; // 공개범위 선택
   }
 
   // 선택된 태그들을 담을 리스트

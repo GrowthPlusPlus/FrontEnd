@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:dio/dio.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 
-// 소셜 로그인 로그인 화면
+// 소셜 로그인 화면
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -66,14 +68,26 @@ class LoginScreen extends StatelessWidget {
                   textColor: const Color(0xFF0A0A0A),
                   iconPath: 'assets/images/icons/google_logo.svg',
                   borderColor: const Color(0xFFD1D5DC),
-                  onTap: navigateToSignup,
-                  //onTap: () async {
-                  // final idToken = await AuthService.signInWithGoogle();
-                  // if (idToken != null) {
-                  //   // TODO: 백엔드 API 호출하여 idToken 전달
-                  //   print("백엔드로 보낼 토큰: $idToken");
-                  // }
-                  //},
+                  onTap: () async {
+                    try {
+                      final authResult = await AuthService.signInWithGoogle();
+
+                      if (authResult != null) {
+                        await AuthService.sendTokenToBackend(
+                          code: authResult['code']!,
+                          codeVerifier: authResult['codeVerifier']!,
+                          context: context,
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint('========= [UI 레이어] 에러 포착 =========');
+                      debugPrint('에러 내용: $e');
+                      if (e is DioException) {
+                        debugPrint('서버가 준 데이터: ${e.response?.data}');
+                      }
+                      debugPrint('=======================================');
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 _buildSocialButton(

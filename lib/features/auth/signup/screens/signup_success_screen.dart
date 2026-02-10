@@ -2,21 +2,24 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/signup_provider.dart';
 import '../widgets/emoji_firework_widget.dart';
 import 'package:haenaem/features/auth/signup/widgets/signup_progress.bar.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
 
 // 회원가입 4단계를 모두 끝낸 후 띄우는 가입 성공 화면
-class SignupSuccessScreen extends StatefulWidget {
+class SignupSuccessScreen extends ConsumerStatefulWidget {
   final VoidCallback onFinish;
 
   const SignupSuccessScreen({super.key, required this.onFinish});
 
   @override
-  State<SignupSuccessScreen> createState() => _SignupSuccessScreenState();
+  ConsumerState<SignupSuccessScreen> createState() =>
+      _SignupSuccessScreenState();
 }
 
-class _SignupSuccessScreenState extends State<SignupSuccessScreen> {
+class _SignupSuccessScreenState extends ConsumerState<SignupSuccessScreen> {
   // 폭죽 애니메이션 관리 객체
   final EmojiFireWork _firework = EmojiFireWork(
     emojiAsset: const AssetImage('assets/images/illustrations/heart_icon.png'),
@@ -123,8 +126,9 @@ class _SignupSuccessScreenState extends State<SignupSuccessScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                     child: GestureDetector(
                       onTap: () {
-                        // 만약 외부에서 넘겨준 추가 로직이 있다면 실행
-                        // if (widget.onFinish != null) widget.onFinish!();
+                        // 리버팟 상태 초기화 (다음 가입자를 위해!)
+                        ref.read(signupProvider.notifier).resetState();
+
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
