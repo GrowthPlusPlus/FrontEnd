@@ -1,10 +1,10 @@
 // 최초 작성자 : 김채영
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
-// 하단 내비게이션바 (홈, 통계, 피드, 친구, 내 페이지)
 class MainBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;

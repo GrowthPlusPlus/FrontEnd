@@ -17,17 +17,18 @@ class MockData {
     return [_getRunningData(), _getStudyData(), _getCodingData()];
   }
 
-  // --- 1. 매일 10분 러닝 (김해냄: 12회 인증, 5일 연속) ---
+  // --- 1. 매일 10분 러닝 (Growth: 12회 인증, 5일 연속) ---
   static UserChallengeData _getRunningData() {
     return UserChallengeData(
-      challengeName: "졸업 프로젝트 코딩",
+      challengeName: "매일 10분 러닝",
       isHost: false,
       totalCertCount: 12,
       continuousCertCount: 5,
       posts: [
         CertificationPost(
-          userName: "김해냄",
-          content: "sprint2가 끝났네요. 확실히 초반보다 코딩 속도가 붙는 것 같아요.",
+          userName: "Growth",
+          content:
+              "오늘로 12번째 인증 완료! 5일 연속으로 뛰니까 이제 몸이 좀 가벼워지는 것 같아요. 확실히 초반보다 숨이 덜 차네요. 다들 끝까지 포기하지 마세요! 🏃‍♂️",
           date: DateTime(2026, 1, 20, 07, 30),
           hasImage: true,
           imageUrl: imgUrl,
@@ -37,7 +38,7 @@ class MockData {
               id: "rc_1",
               userName: "러닝메이트",
               userBadge: "열정러너",
-              content: "팀원들 모두 끝까지 포기하지 마세요! 💻",
+              content: "벌써 12회차라니 대단하세요! 저도 자극받고 지금 나갑니다.",
               createdAt: DateTime(2026, 1, 20, 08, 05),
             ),
             ChallengeComment(
@@ -64,7 +65,7 @@ class MockData {
           likeCount: 15,
         ),
         CertificationPost(
-          content: "10일차 인증. 인증하기 기능 구현 완료.",
+          content: "10일차 인증. 주말 러닝 완료.",
           date: DateTime(2026, 1, 18, 08, 45),
           hasImage: true,
           imageUrl: imgUrl,
@@ -77,7 +78,7 @@ class MockData {
           likeCount: 8,
         ),
         CertificationPost(
-          content: "8일차 인증. 새로운 버그 발견!",
+          content: "8일차 인증. 새로운 코스 발견!",
           date: DateTime(2026, 1, 16, 07, 00),
           hasImage: true,
           imageUrl: imgUrl,
@@ -91,7 +92,7 @@ class MockData {
           likeCount: 20,
         ),
         CertificationPost(
-          content: "6일차 인증. 오늘은 가볍게 2시간만 코딩.",
+          content: "6일차 인증. 오늘은 가볍게 조깅.",
           date: DateTime(2026, 1, 14, 07, 50),
           hasImage: false,
           likeCount: 6,
@@ -104,7 +105,7 @@ class MockData {
           likeCount: 14,
         ),
         CertificationPost(
-          content: "4일차 인증. 추위을 뚫고 카페에서 코딩!",
+          content: "4일차 인증. 근육통을 뚫고 성공!",
           date: DateTime(2026, 1, 12, 07, 15),
           hasImage: true,
           imageUrl: imgUrl,
@@ -134,7 +135,7 @@ class MockData {
     );
   }
 
-  // --- 2. 모각공 (김해냄: 8회 인증) ---
+  // --- 2. 모각공 (Growth: 8회 인증) ---
   static UserChallengeData _getStudyData() {
     return UserChallengeData(
       challengeName: "모각공",
@@ -144,7 +145,7 @@ class MockData {
       posts: List.generate(8, (index) {
         int day = 19 - index;
         return CertificationPost(
-          userName: "김해냄",
+          userName: "Growth",
           content: "${8 - index}회차 공부 인증입니다. 오늘도 집중 성공!",
           date: DateTime(2026, 1, day, 15, 00),
           hasImage: index % 2 == 0,
@@ -166,7 +167,7 @@ class MockData {
     );
   }
 
-  // --- 3. 모각코 (김해냄 : 20회 인증, 방장) ---
+  // --- 3. 모각코 (Growth: 20회 인증, 방장) ---
   static UserChallengeData _getCodingData() {
     return UserChallengeData(
       challengeName: "모각코",
@@ -176,7 +177,7 @@ class MockData {
       posts: List.generate(20, (index) {
         int day = 20 - index;
         return CertificationPost(
-          userName: "김해냄",
+          userName: "Growth",
           content: "${20 - index}회차 코딩 인증. 데이터 모델링 작업 중입니다.",
           date: DateTime(2026, 1, day, 23, 00),
           hasImage: index < 5, // 최근 5개만 이미지 있음

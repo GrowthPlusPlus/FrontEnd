@@ -2,25 +2,22 @@
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/signup_provider.dart';
-import '../models/signup_state.dart';
 import '../widgets/signup_page_layout.dart';
 
 // 한줄소개 화면
-class BioSetupScreen extends ConsumerStatefulWidget {
+class BioSetupScreen extends StatefulWidget {
   final VoidCallback onNext;
 
   const BioSetupScreen({super.key, required this.onNext});
 
   @override
-  ConsumerState<BioSetupScreen> createState() => _BioSetupScreenState();
+  State<BioSetupScreen> createState() => _BioSetupScreenState();
 }
 
 // 한 줄 소개 설정 화면의 상태 관리 클래스
-class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
+class _BioSetupScreenState extends State<BioSetupScreen> {
   final TextEditingController _bioController = TextEditingController();
-  final bool _isButtonEnabled = false;
+  bool _isButtonEnabled = false;
 
   @override
   void initState() {
@@ -28,45 +25,14 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
 
     // 텍스트 입력 시마다 버튼 상태와 글자 수를 업데이트하기 위해 리스너 등록
     _bioController.addListener(_validateInput);
-
-    // 만약 사용자가 뒤로 돌아왔을 때 이전에 쓴 내용이 있다면 다시 채워줌
-    Future.microtask(() {
-      final savedBio = ref.read(signupProvider).bio;
-      if (savedBio.isNotEmpty) {
-        _bioController.text = savedBio;
-      }
-    });
   }
 
   void _validateInput() {
     final text = _bioController.text;
     setState(() {
-      // 리스너가 호출될 때마다 화면을 다시 그려 글자 수와 버튼 텍스트 업데이트
+      // 한 글자라도 입력되면 다음 버튼 활성화
+      _isButtonEnabled = text.isNotEmpty && text.length <= 50;
     });
-  }
-
-  // 다음 버튼 클릭 시 프로바이더에 데이터 저장 후 이동
-  Future<void> _handleNext() async {
-    final bio = _bioController.text;
-
-    // 1. 먼저 프로바이더 상태 업데이트
-    ref.read(signupProvider.notifier).updateBio(bio);
-
-    // 2. 서버에 한 줄 소개 전송
-    // (빈 문자열이어도 명세상 전송 가능하므로 그대로 보냅니다.)
-    final success = await ref
-        .read(signupProvider.notifier)
-        .updateIntroduction(bio);
-
-    if (!mounted) return;
-
-    if (success) {
-      widget.onNext(); // 성공 시 다음 단계(태그 선택)로 이동
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('한 줄 소개 등록에 실패했습니다. 다시 시도해주세요.')),
-      );
-    }
   }
 
   @override
@@ -87,7 +53,7 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
       subTitle: '나의 도전이나 다짐을 한 줄로 적어주세요\n(공백 포함 최대 50자)',
       isButtonEnabled: true, // 입력 유무와 상관없이 항상 활성화 (건너뛰기 허용)
       buttonText: dynamicButtonText,
-      onNext: _handleNext,
+      onNext: widget.onNext,
       child: Column(
         children: [
           Column(
@@ -109,7 +75,7 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.gray4),
+                    borderSide: BorderSide(color: AppColors.gray4),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),

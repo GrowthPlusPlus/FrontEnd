@@ -31,14 +31,16 @@ class UserChallengeData {
   /// 3. 특정 날짜(일)에 딱 맞는 인증글 찾기 (캘린더 클릭용)
   /// 해당 날짜에 글이 없으면 null을 반환합니다.
   CertificationPost? getPostByDay(DateTime day) {
-    final filtered = posts.where(
-      (post) =>
-          post.date.year == day.year &&
-          post.date.month == day.month &&
-          post.date.day == day.day,
-    );
-
-    return filtered.isEmpty ? null : filtered.first;
+    try {
+      return posts.firstWhere(
+        (post) =>
+            post.date.year == day.year &&
+            post.date.month == day.month &&
+            post.date.day == day.day,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 }
 
@@ -53,7 +55,7 @@ class CertificationPost {
   final List<ChallengeComment> comments; // 해당 글에 달린 댓글 리스트
 
   CertificationPost({
-    this.userName = "김해냄", // 기본값 설정 가능
+    this.userName = "Growth", // 기본값 설정 가능
     required this.content,
     required this.date,
     required this.hasImage,

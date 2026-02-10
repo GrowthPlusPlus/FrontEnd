@@ -1,7 +1,7 @@
 // 최초 작성자: 김채영
 
 import 'package:flutter/material.dart';
-import 'features/challenge/create/screens/challenge_create_page.dart';
+import 'features/challenge/create/challenge_create_page.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
