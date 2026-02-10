@@ -8,37 +8,31 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'social_repository.dart';
 import 'social_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import '../../core/utils/korean_string_utils.dart';
 
 // --- 메인 화면 ---
 
 /// 클래스의 용도: 친구 검색, 받은 요청, 보낸 요청을 관리하는 친구 추가 메인 화면
-class FriendAddScreen extends StatefulWidget {
+class FriendAddScreen extends ConsumerStatefulWidget {
   const FriendAddScreen({super.key});
 
   @override
-  State<FriendAddScreen> createState() => FriendAddScreenState();
+  ConsumerState<FriendAddScreen> createState() => FriendAddScreenState();
 }
 
-class FriendAddScreenState extends State<FriendAddScreen>
+class FriendAddScreenState extends ConsumerState<FriendAddScreen>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
   final TextEditingController searchController = TextEditingController();
-  final SocialRepository repository = SocialRepository();
 
-  final List<SearchResultUser> userDatabase = [
-    SearchResultUser(
-      name: '장영실',
-      title: '사용자 칭호',
-      profileImage: 'assets/images/profiles/user1.png',
-    ),
-    SearchResultUser(name: '장영실입니다', title: '사용자 칭호'),
-    SearchResultUser(name: '장영실입니다요', title: '사용자 칭호'),
-    SearchResultUser(name: '장영실_123', title: '사용자 칭호'),
-    SearchResultUser(name: '장영실_12345', title: '사용자 칭호'),
-  ];
-
+  // 서버로부터 받아올 데이터 리스트
   List<SearchResultUser> filteredResults = [];
+  List<ReceivedRequest> receivedRequests = [];
+  List<SearchResultUser> sentRequests = [];
   bool isSearchPerformed = false;
+  bool isLoading = false;
 
   /// 함수의 용도: 컨트롤러 및 리포지토리 데이터 상태 복구
   /// 매개 변수: 없음
@@ -47,16 +41,37 @@ class FriendAddScreenState extends State<FriendAddScreen>
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
+    // 화면 진입 시 받은 요청과 보낸 요청 목록을 먼저 불러옵니다.
+    _fetchInitialData();
+  }
 
-    for (var user in userDatabase) {
-      user.isRequested = repository.sentRequests.any(
-        (res) => res.name == user.name,
-      );
-      if (user.isRequested) {
-        user.requestTime = repository.sentRequests
-            .firstWhere((res) => res.name == user.name)
-            .requestTime;
-      }
+  /// 초기 데이터(받은/보낸 요청) 로드
+  Future<void> _fetchInitialData() async {
+    final repo = ref.read(socialRepositoryProvider);
+    try {
+      final received = await repo
+          .getReceivedRequests(); // GET /api/users/friend/request/received
+      final sent = await repo
+          .getSentRequests(); // GET /api/users/friend/request/sent
+      setState(() {
+        receivedRequests = received;
+        sentRequests = sent;
+      });
+    } on DioException catch (e) {
+      if (!mounted) return;
+
+      // 개발자를 위한 상세 로그
+      debugPrint('---------- [초기 데이터 로드 오류] ----------');
+      debugPrint('상태 코드: ${e.response?.statusCode}');
+      debugPrint('에러 경로: ${e.requestOptions.path}');
+      debugPrint('에러 내용: ${e.response?.data}');
+      debugPrint('-----------------------------------------');
+
+      displayToast('데이터를 불러오는데 실패했습니다.');
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('초기 데이터 로드 중 알 수 없는 에러: $e');
+      displayToast('데이터 로딩 중 오류가 발생했습니다.');
     }
   }
 
@@ -70,44 +85,185 @@ class FriendAddScreenState extends State<FriendAddScreen>
     super.dispose();
   }
 
-  /// 함수의 용도: 입력된 쿼리를 기반으로 유저 데이터베이스 검색
-  /// 매개 변수: String query (검색어)
-  /// 반환 값: 없음
-  void performSearch(String query) {
-    if (query.trim().isEmpty) return;
+  /// 닉네임 유저 검색 수행
+  Future<void> performSearch() async {
+    final query = searchController.text.trim();
+    if (query.isEmpty) return;
+
     setState(() {
+      isLoading = true;
       isSearchPerformed = true;
-      filteredResults = userDatabase
-          .where((user) => user.name.contains(query.trim()))
-          .toList();
     });
+
+    try {
+      // 1. 서버로부터 검색 결과 리스트를 받아옴
+      // 서버 API가 초성 검색을 지원하지 않더라도, 결과 목록을 받아온 뒤
+      // 클라이언트에서 2차 필터링을 수행할 수 있도록 raw 데이터를 받습니다.
+      final rawResults = await ref
+          .read(socialRepositoryProvider)
+          .searchUsers("");
+      // TODO: [성능 최적화 필요] 현재 서버 API가 초성 검색을 지원하지 않아,
+      // 임시로 전체 유저 목록을 받아와 클라이언트에서 필터링하고 있습니다.
+      // 유저 수가 늘어나면 앱 속도가 느려질 수 있으므로,
+      // 추후 백엔드에 초성 검색 기능(DB 쿼리 수정 등)을 요청하여
+      // 서버 사이드 필터링으로 교체해야 합니다.
+
+      // 2. 클라이언트 사이드 필터링 (social_screen.dart와 동일 로직 적용)
+      // 서버에서 'ㅎㄴ'으로 검색 시 결과가 없더라도, 만약 서버가 전체 유저나
+      // 유사 유저를 반환한다면 이 로직이 '해냄'을 찾아냅니다.
+      final filtered = rawResults.where((user) {
+        final name = user.nickname.toLowerCase();
+        final searchLower = query.toLowerCase();
+
+        // 닉네임 포함 여부 OR 초성 포함 여부 확인
+        return name.contains(searchLower) ||
+            KoreanStringUtils.getChoseongString(name).contains(searchLower);
+      }).toList();
+
+      // 3. 정렬 (social_screen.dart와 동일 로직 적용)
+      // 순서: 한글 > 영문 대문자 > 영문 소문자 > 숫자 > 특수문자
+      filtered.sort(
+        (a, b) => KoreanStringUtils.compareKoreanFirst(a.nickname, b.nickname),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        filteredResults = filtered;
+        isLoading = false;
+      });
+    } on DioException catch (e) {
+      // DioException을 직접 잡아 구체적인 원인 파악
+      if (!mounted) return;
+
+      // 디버그 콘솔에 상세 오류 출력
+      debugPrint('---------- [검색 오류 발생] ----------');
+      debugPrint('상태 코드: ${e.response?.statusCode}');
+      debugPrint('에러 데이터: ${e.response?.data}');
+      debugPrint('에러 메시지: ${e.message}');
+      debugPrint('------------------------------------');
+
+      setState(() => isLoading = false);
+
+      // 사용자에게는 최소한의 정보만 전달
+      displayToast('검색 결과가 없거나 오류가 발생했습니다.');
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('시스템 오류: $e');
+      setState(() => isLoading = false);
+      displayToast('잠시 후 다시 시도해 주세요.');
+    }
   }
 
-  /// 함수의 용도: 선택한 유저에게 친구 신청을 보내고 저장소에 기록
-  /// 매개 변수: SearchResultUser user (대상 유저)
-  /// 반환 값: 없음
-  void sendFriendRequest(SearchResultUser user) {
+  /// 친구 신청 보내기
+  Future<void> sendFriendRequestAction(SearchResultUser user) async {
+    // 1. 이미 신청된 상태면 아무 작업도 하지 않음 (중복 방지)
     if (user.isRequested) return;
-    setState(() {
-      user.isRequested = true;
-      user.requestTime = DateFormat(
-        'yyyy년 MM월 dd일 HH:mm',
-      ).format(DateTime.now());
-      repository.addRequest(user);
-    });
-    displayToast('${user.name} 님에게 친구 신청을 보냈습니다!');
+
+    try {
+      // POST /api/users/friend/request/{toUserNickName}
+      await ref.read(socialRepositoryProvider).sendFriendRequest(user.nickname);
+
+      // 2. 비동기 작업 후 위젯이 여전히 화면에 있는지 확인 (unmounted 에러 방지)
+      if (!mounted) return;
+
+      setState(() {
+        user.isRequested = true; // 로컬 상태 즉시 반영
+      });
+
+      _fetchInitialData(); // 보낸 요청 목록 갱신
+      displayToast('${user.nickname} 님에게 친구 신청을 보냈습니다!');
+    } on DioException catch (e) {
+      if (!mounted) return;
+
+      // 🔥 [디버깅용 로그] 정확한 에러 원인 확인
+      debugPrint('---------- [친구 신청 실패] ----------');
+      debugPrint('대상 닉네임: ${user.nickname}');
+      debugPrint('상태 코드: ${e.response?.statusCode}');
+      debugPrint('서버 응답: ${e.response?.data}'); // 에러 메시지나 코드 확인
+      debugPrint('------------------------------------');
+
+      // 사용자에게는 기존과 동일하게 안내
+      displayToast('이미 신청되었거나 신청에 실패했습니다.');
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('친구 신청 중 알 수 없는 에러: $e');
+      displayToast('신청 중 오류가 발생했습니다.');
+    }
   }
 
-  /// 함수의 용도: 보낸 친구 신청을 취소하고 저장소에서 삭제
-  /// 매개 변수: SearchResultUser user (대상 유저)
-  /// 반환 값: 없음
-  void cancelFriendRequest(SearchResultUser user) {
-    setState(() {
-      user.isRequested = false;
-      user.requestTime = null;
-      repository.removeRequest(user.name);
-    });
-    displayToast('친구 신청을 취소했습니다.');
+  /// 신청 취소하기
+  Future<void> cancelFriendRequestAction(SearchResultUser user) async {
+    if (user.requestId == null) return;
+    try {
+      // PATCH /api/users/friend/request/sent/cancel/{requestId}
+      await ref.read(socialRepositoryProvider).cancelRequest(user.requestId!);
+      _fetchInitialData();
+      displayToast('친구 신청을 취소했습니다.');
+    } catch (e) {
+      displayToast('취소에 실패했습니다.');
+    }
+  }
+
+  /// 친구 수락하기
+  Future<void> acceptFriendRequestAction(ReceivedRequest req) async {
+    try {
+      // PATCH /api/users/friend/request/accept/{requestId}
+      await ref.read(socialRepositoryProvider).acceptRequest(req.requestId);
+      if (!mounted) return;
+
+      // 보낸/받은 요청 목록 갱신
+      _fetchInitialData();
+      // 실제 친구 목록(SocialScreen용)도 새로고침하여 데이터 일치화
+      ref.invalidate(friendListProvider);
+
+      displayToast('${req.nickname} 님과 친구가 되었습니다!');
+    } on DioException catch (e) {
+      if (!mounted) return;
+
+      // 🔥 [수락 실패 디버그]
+      debugPrint('---------- [친구 수락 실패] ----------');
+      debugPrint('대상 닉네임: ${req.nickname}');
+      debugPrint('대상 Request ID: ${req.requestId}');
+      debugPrint('상태 코드: ${e.response?.statusCode}');
+      debugPrint('에러 메시지: ${e.response?.data}');
+      debugPrint('요청 경로: ${e.requestOptions.path}');
+      debugPrint('------------------------------------');
+
+      displayToast('수락 처리에 실패했습니다. (코드: ${e.response?.statusCode})');
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('수락 중 알 수 없는 에러: $e');
+      displayToast('수락 중 오류가 발생했습니다.');
+    }
+  }
+
+  /// 친구 거절하기
+  Future<void> rejectFriendRequestAction(ReceivedRequest req) async {
+    try {
+      // PATCH /api/users/friend/request/reject/{rejectId}
+      // 주의: requestId가 null인지 확인이 필요할 수 있습니다.
+      await ref.read(socialRepositoryProvider).rejectRequest(req.requestId);
+
+      if (!mounted) return;
+      _fetchInitialData(); // 목록 갱신
+      displayToast('요청을 거절했습니다.');
+    } on DioException catch (e) {
+      if (!mounted) return;
+
+      // 🔥 [거절 실패 디버그]
+      debugPrint('---------- [친구 거절 실패] ----------');
+      debugPrint('거절할 ID: ${req.requestId}');
+      debugPrint('상태 코드: ${e.response?.statusCode}');
+      debugPrint('에러 메시지: ${e.response?.data}');
+      debugPrint('요청 경로: ${e.requestOptions.path}');
+      debugPrint('------------------------------------');
+
+      displayToast('거절 처리에 실패했습니다. (코드: ${e.response?.statusCode})');
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('거절 중 알 수 없는 에러: $e');
+      displayToast('거절 중 오류가 발생했습니다.');
+    }
   }
 
   /// 함수의 용도: 커스텀 Overlay 애니메이션 토스트 표시
@@ -187,31 +343,36 @@ class FriendAddScreenState extends State<FriendAddScreen>
 
   /// 함수의 용도: 받은 요청 목록을 포함하는 탭 빌드
   Widget buildReceivedTab() {
-    final receivedList = repository.receivedRequests;
     return Container(
       color: const Color(0x7FDFE1DC),
-      child: receivedList.isEmpty
+      child: receivedRequests.isEmpty
           ? const Center(child: Text('받은 요청이 없습니다.', style: AppTypography.b2))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: receivedList.length,
-              itemBuilder: (context, index) =>
-                  buildReceivedCard(receivedList[index]),
+              itemCount: receivedRequests.length,
+              itemBuilder: (context, index) {
+                final req = receivedRequests[index];
+                return buildReceivedCard(
+                  req,
+                  onAccept: () => acceptFriendRequestAction(req),
+                  onReject: () => rejectFriendRequestAction(req),
+                );
+              },
             ),
     );
   }
 
   /// 함수의 용도: 보낸 요청 목록을 포함하는 탭 빌드
   Widget buildSentTab() {
-    final sentList = repository.sentRequests;
     return Container(
       color: const Color(0x7FDFE1DC),
-      child: sentList.isEmpty
+      child: sentRequests.isEmpty
           ? const Center(child: Text('보낸 요청이 없습니다.', style: AppTypography.b2))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: sentList.length,
-              itemBuilder: (context, index) => buildSentCard(sentList[index]),
+              itemCount: sentRequests.length,
+              itemBuilder: (context, index) =>
+                  buildSentCard(sentRequests[index]),
             ),
     );
   }
@@ -241,7 +402,7 @@ class FriendAddScreenState extends State<FriendAddScreen>
             Expanded(
               child: TextField(
                 controller: searchController,
-                onSubmitted: performSearch,
+                onSubmitted: (query) => performSearch(),
                 textInputAction: TextInputAction.search,
                 decoration: const InputDecoration(
                   hintText: '닉네임을 검색하세요',
@@ -278,18 +439,19 @@ class FriendAddScreenState extends State<FriendAddScreen>
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
             children: [
-              buildProfileCircle(user.profileImage, 44),
+              buildProfileCircle(user.profileImageUrl, 44),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.name,
+                      user.nickname,
                       style: AppTypography.h3.copyWith(fontSize: 15),
                     ),
                     Text(
-                      user.title,
+                      "해냄 메이트", // api에 title이 없으므로 기본값 설정
+                      //TODO: 추후 title 필드가 추가되면 반영
                       style: AppTypography.c1.copyWith(color: AppColors.gray2),
                     ),
                   ],
@@ -304,7 +466,11 @@ class FriendAddScreenState extends State<FriendAddScreen>
   }
 
   /// 함수의 용도: 받은 요청 카드 위젯 생성
-  Widget buildReceivedCard(ReceivedRequest req) {
+  Widget buildReceivedCard(
+    ReceivedRequest req, {
+    required VoidCallback onAccept,
+    required VoidCallback onReject,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(20),
@@ -316,19 +482,23 @@ class FriendAddScreenState extends State<FriendAddScreen>
         children: [
           Row(
             children: [
-              buildProfileCircle(req.profileImage, 48),
+              buildProfileCircle(req.profileImageUrl, 48),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(req.name, style: AppTypography.h3),
+                    Text(req.nickname, style: AppTypography.h3),
                     Text(
-                      '함께 아는 친구 ${req.mutualFriends}명',
+                      "함께 아는 친구 0명",
+                      //"함께 아는 친구 ${req.mutualFriends}명",
+                      //TODO: 추후 mutualFriends 필드가 추가되면 반영
                       style: AppTypography.c1.copyWith(color: AppColors.gray2),
                     ),
                     Text(
-                      req.time,
+                      DateFormat(
+                        'yyyy년 MM월 dd일',
+                      ).format(DateTime.parse(req.createdAt)),
                       style: AppTypography.c2.copyWith(color: AppColors.gray3),
                     ),
                   ],
@@ -344,12 +514,7 @@ class FriendAddScreenState extends State<FriendAddScreen>
                   '거절',
                   const Color(0x7FDFE1DC),
                   AppColors.gray2,
-                  () {
-                    setState(() {
-                      repository.rejectFriendRequest(req);
-                    });
-                    displayToast('${req.name} 님의 요청을 거절했습니다.');
-                  },
+                  onReject, // 전달받은 거절 액션 연결
                 ),
               ),
               const SizedBox(width: 10),
@@ -358,12 +523,7 @@ class FriendAddScreenState extends State<FriendAddScreen>
                   '수락',
                   AppColors.primaryAble,
                   Colors.white,
-                  () {
-                    setState(() {
-                      repository.acceptFriendRequest(req);
-                    });
-                    displayToast('${req.name} 님과 친구가 되었습니다!');
-                  },
+                  onAccept, // 전달받은 수락 액션 연결
                 ),
               ),
             ],
@@ -391,14 +551,18 @@ class FriendAddScreenState extends State<FriendAddScreen>
             children: [
               Row(
                 children: [
-                  buildProfileCircle(user.profileImage, 48),
+                  buildProfileCircle(user.profileImageUrl, 48),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.name, style: AppTypography.h3),
+                      Text(user.nickname, style: AppTypography.h3),
                       Text(
-                        user.requestTime ?? '',
+                        user.createdAt != null
+                            ? DateFormat(
+                                'yyyy년 MM월 dd일',
+                              ).format(DateTime.parse(user.createdAt!))
+                            : '',
                         style: AppTypography.c2.copyWith(
                           color: AppColors.gray3,
                         ),
@@ -415,7 +579,7 @@ class FriendAddScreenState extends State<FriendAddScreen>
             '요청 취소',
             const Color(0x7FDFE1DC),
             AppColors.gray2,
-            () => cancelFriendRequest(user),
+            () => cancelFriendRequestAction(user), // 위에서 만든 취소 액션 연결
           ),
         ],
       ),
@@ -467,20 +631,26 @@ class FriendAddScreenState extends State<FriendAddScreen>
     );
   }
 
-  /// 함수의 용도: 유저 프로필 이미지 원형 위젯 생성
+  /// 함수의 용도: 유저 프로필 이미지 원형 위젯 생성 (Asset -> Network 이미지 대응)
   /// 매개 변수: String? imagePath, double size
-  Widget buildProfileCircle(String? imagePath, double size) {
+  Widget buildProfileCircle(String? imageUrl, double size) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         color: const Color(0x7FDFE1DC),
         shape: BoxShape.circle,
-        image: imagePath != null
-            ? DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover)
-            : null,
+        // 서버에서 오는 이미지는 NetworkImage로 처리해야 합니다.
+        image: imageUrl != null && imageUrl.startsWith('http')
+            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
+            : (imageUrl != null
+                  ? DecorationImage(
+                      image: AssetImage(imageUrl),
+                      fit: BoxFit.cover,
+                    )
+                  : null),
       ),
-      child: imagePath == null
+      child: imageUrl == null
           ? Center(
               child: SvgPicture.asset(
                 'assets/images/icons/default_profile_icon.svg',
@@ -494,8 +664,14 @@ class FriendAddScreenState extends State<FriendAddScreen>
   /// 함수의 용도: 검색 결과의 친구 신청/신청됨 버튼 생성
   /// 매개 변수: SearchResultUser user (대상 유저)
   Widget buildRequestButton(SearchResultUser user) {
+    // 1. 이미 친구인 유저는 버튼 자체를 노출하지 않음 [추가]
+    if (user.isFriend) {
+      return const SizedBox.shrink();
+    }
+
     return GestureDetector(
-      onTap: () => sendFriendRequest(user),
+      // 2. 이미 신청된 상태(isRequested)면 클릭 방지
+      onTap: user.isRequested ? null : () => sendFriendRequestAction(user),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
