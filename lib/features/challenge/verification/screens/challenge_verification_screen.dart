@@ -27,6 +27,7 @@ import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/features/challenge/widgets/verification_cancel_dialog.dart';
+import 'package:haenaem/features/feed/model/feed_model.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationPage extends ConsumerStatefulWidget {

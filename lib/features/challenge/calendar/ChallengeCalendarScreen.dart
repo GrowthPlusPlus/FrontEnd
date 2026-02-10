@@ -9,7 +9,7 @@ import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:intl/intl.dart';
 
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
-import 'package:haenaem/features/challenge/feed/ChallengeFeedScreen.dart';
+import 'package:haenaem/features/challenge/feed/challenge_feed_screen.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengePopupMenu.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';

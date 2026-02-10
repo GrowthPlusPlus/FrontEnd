@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/feed/screens/ChallengeSearchScreen.dart';
+import 'package:haenaem/features/challenge/feed/challenge_search_screen.dart';
 import 'package:haenaem/features/feed/views/ExploreFeedView.dart';
 import 'package:haenaem/features/feed/views/FriendFeedView.dart';
 
