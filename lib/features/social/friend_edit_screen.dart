@@ -7,46 +7,25 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'social_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'social_repository.dart';
+import '../../core/utils/korean_string_utils.dart';
 
 /// 클래스의 용도: 기존 친구 목록을 검색하고 삭제할 수 있는 편집 화면
-class FriendEditScreen extends StatefulWidget {
+class FriendEditScreen extends ConsumerStatefulWidget {
+  // ConsumerStatefulWidget으로 변경
   final List<Friend> initialFriends;
 
   const FriendEditScreen({super.key, required this.initialFriends});
 
   @override
-  State<FriendEditScreen> createState() => FriendEditScreenState();
+  ConsumerState<FriendEditScreen> createState() => FriendEditScreenState();
 }
 
-class FriendEditScreenState extends State<FriendEditScreen> {
+class FriendEditScreenState extends ConsumerState<FriendEditScreen> {
   final TextEditingController searchController = TextEditingController();
   late List<Friend> totalList;
   List<Friend> filteredList = [];
-
-  // 한글 정규표현식 및 초성 추출 관련 상수
-  static const String KOREAN_REGEX = r'^[가-힣]';
-  static const int HANGEUL_BASE = 0xAC00;
-  static const List<String> CHOSEONG_LIST = [
-    'ㄱ',
-    'ㄲ',
-    'ㄴ',
-    'ㄷ',
-    'ㄸ',
-    'ㄹ',
-    'ㅁ',
-    'ㅂ',
-    'ㅃ',
-    'ㅅ',
-    'ㅆ',
-    'ㅇ',
-    'ㅈ',
-    'ㅉ',
-    'ㅊ',
-    'ㅋ',
-    'ㅌ',
-    'ㅍ',
-    'ㅎ',
-  ];
 
   /// 함수의 용도: 초기 상태 설정 및 원본 리스트 복사
   /// 매개 변수: 없음
@@ -56,7 +35,7 @@ class FriendEditScreenState extends State<FriendEditScreen> {
     super.initState();
     totalList = List.from(widget.initialFriends);
     filteredList = List.from(totalList);
-    sortFriendList(filteredList);
+    _applySortAndState();
   }
 
   /// 함수의 용도: 입력 쿼리에 따라 리스트 필터링
@@ -69,57 +48,22 @@ class FriendEditScreenState extends State<FriendEditScreen> {
         filteredList = List.from(totalList);
       } else {
         filteredList = totalList.where((friend) {
-          String friendName = friend.name.toLowerCase();
-          if (friendName.contains(trimmedQuery)) return true;
-          return getChoseongString(friendName).contains(trimmedQuery);
+          String nickname = friend.nickname.toLowerCase();
+          return nickname.contains(trimmedQuery) ||
+              KoreanStringUtils.getChoseongString(
+                nickname,
+              ).contains(trimmedQuery);
         }).toList();
       }
-      sortFriendList(filteredList);
+      _applySortAndState();
     });
   }
 
-  /// 함수의 용도: 한글 문자열에서 초성만 추출하여 반환
-  /// 매개 변수: String text (원본 문자열)
-  /// 반환 값: String (추출된 초성 문자열)
-  String getChoseongString(String text) {
-    String result = "";
-    for (int i = 0; i < text.length; i++) {
-      int charCode = text.codeUnitAt(i);
-      // 한글 유니코드 범위 내에 있는지 확인
-      if (charCode >= 0xAC00 && charCode <= 0xD7A3) {
-        int choseongIndex = (charCode - HANGEUL_BASE) ~/ (21 * 28);
-        result += CHOSEONG_LIST[choseongIndex];
-      } else {
-        result += text[i];
-      }
-    }
-    return result;
-  }
-
-  /// 함수의 용도: 제공된 리스트를 가나다순으로 정렬
-  /// 매개 변수: List<Friend> list (정렬할 리스트)
-  /// 반환 값: 없음
-  void sortFriendList(List<Friend> list) {
-    list.sort((a, b) => compareKoreanFirst(a.name, b.name));
-  }
-
-  /// 함수의 용도: 한글을 우선순위로 두는 비교 로직 수행
-  /// 매개 변수: String a, String b (비교 대상 문자열)
-  /// 반환 값: int (비교 결과 값)
-  static int compareKoreanFirst(String a, String b) {
-    bool isAKorean = checkIsKorean(a);
-    bool isBKorean = checkIsKorean(b);
-    if (isAKorean && !isBKorean) return -1;
-    if (!isAKorean && isBKorean) return 1;
-    return a.compareTo(b);
-  }
-
-  /// 함수의 용도: 정규표현식을 통해 한글 여부 확인
-  /// 매개 변수: String text
-  /// 반환 값: bool (한글 포함 여부)
-  static bool checkIsKorean(String text) {
-    if (text.isEmpty) return false;
-    return RegExp(KOREAN_REGEX).hasMatch(text);
+  /// 정렬 로직 호출 및 상태 반영
+  void _applySortAndState() {
+    filteredList.sort(
+      (a, b) => KoreanStringUtils.compareKoreanFirst(a.nickname, b.nickname),
+    );
   }
 
   /// 함수의 용도: 커스텀 Overlay 애니메이션 토스트 표시
@@ -147,15 +91,41 @@ class FriendEditScreenState extends State<FriendEditScreen> {
   void showDeleteDialog(Friend friend) {
     showDialog(
       context: context,
-      builder: (context) => DeleteConfirmDialog(
-        userName: friend.name,
-        onDelete: () {
-          setState(() {
-            totalList.removeWhere((f) => f.name == friend.name);
-            filterList(searchController.text);
-          });
-          Navigator.pop(context);
-          displayToast('${friend.name} 님이 삭제되었습니다.');
+      // 1. 여기서 context 이름을 dialogContext로 변경하여 혼동 방지
+      builder: (dialogContext) => DeleteConfirmDialog(
+        usernickName: friend.nickname,
+        onDelete: () async {
+          try {
+            await ref
+                .read(socialRepositoryProvider)
+                .deleteFriend(friend.nickname);
+
+            // 2. 화면(FriendEditScreen)이 살아있는지 확인 (setState용)
+            if (!mounted) return;
+
+            setState(() {
+              totalList.removeWhere((f) => f.nickname == friend.nickname);
+              filterList(searchController.text);
+            });
+
+            // 3. 다이얼로그가 아직 열려있는지 확인 후 닫기 (Navigator용)
+            // 'context' 대신 'dialogContext'를 사용하세요.
+            if (dialogContext.mounted) {
+              Navigator.pop(dialogContext);
+            }
+
+            displayToast('${friend.nickname} 님이 삭제되었습니다.');
+          } catch (e) {
+            if (!mounted) return;
+
+            // 여기서도 dialogContext가 살아있는지 확인하면 더 안전합니다.
+            if (dialogContext.mounted) {
+              Navigator.pop(dialogContext);
+            }
+
+            displayToast('삭제에 실패했습니다. 다시 시도해 주세요.');
+            debugPrint('친구 삭제 실패: $e');
+          }
         },
       ),
     );
@@ -256,14 +226,14 @@ class FriendEditScreenState extends State<FriendEditScreen> {
             decoration: BoxDecoration(
               color: const Color(0x7FDFE1DC),
               shape: BoxShape.circle,
-              image: friend.profileImage != null
+              image: friend.profileImageUrl != null
                   ? DecorationImage(
-                      image: AssetImage(friend.profileImage!),
+                      image: AssetImage(friend.profileImageUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: friend.profileImage == null
+            child: friend.profileImageUrl == null
                 ? Center(
                     child: SvgPicture.asset(
                       'assets/images/icons/default_profile_icon.svg',
@@ -278,7 +248,7 @@ class FriendEditScreenState extends State<FriendEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  friend.name,
+                  friend.nickname,
                   style: AppTypography.h3.copyWith(fontSize: 15),
                 ),
                 Text(
@@ -307,12 +277,12 @@ class FriendEditScreenState extends State<FriendEditScreen> {
 
 /// 클래스의 용도: 친구 삭제 여부를 묻는 팝업 다이얼로그
 class DeleteConfirmDialog extends StatelessWidget {
-  final String userName;
+  final String usernickName;
   final VoidCallback onDelete;
 
   const DeleteConfirmDialog({
     super.key,
-    required this.userName,
+    required this.usernickName,
     required this.onDelete,
   });
 
@@ -329,7 +299,7 @@ class DeleteConfirmDialog extends StatelessWidget {
             const Text('친구 삭제', style: AppTypography.h2),
             const SizedBox(height: 12),
             Text(
-              '$userName 님을 삭제하시겠습니까?',
+              '$usernickName 님을 삭제하시겠습니까?',
               style: AppTypography.b2.copyWith(color: AppColors.gray2),
               textAlign: TextAlign.center,
             ),
