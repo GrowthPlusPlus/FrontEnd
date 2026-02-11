@@ -9,9 +9,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/social/social_model.dart'; // Friend 모델
 import 'package:haenaem/features/social/social_repository.dart'; // friendListProvider
 import 'package:haenaem/core/utils/korean_string_utils.dart'; // 한글 검색 유틸
+import 'package:haenaem/features/challenge/data/challenge_repository.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
 class ChallengeInviteScreen extends ConsumerStatefulWidget {
-  const ChallengeInviteScreen({super.key});
+  // 1. 외부에서 챌린지 ID를 받아오도록 필드 추가
+  final int challengeId;
+
+  const ChallengeInviteScreen({
+    super.key,
+    required this.challengeId, // 필수값 지정
+  });
 
   @override
   ConsumerState<ChallengeInviteScreen> createState() =>
@@ -427,42 +435,64 @@ class _ChallengeInviteScreenState extends ConsumerState<ChallengeInviteScreen> {
             child: ElevatedButton(
               onPressed: isInvited
                   ? null
-                  : () {
-                      // 1. 상태 변경 (ID 저장)
-                      setState(() => _invitedFriends.add(friend.id));
+                  : () async {
+                      try {
+                        // 2. API 호출
+                        // (Provider 이름은 프로젝트 설정에 따라 다를 수 있습니다.
+                        //  보통 challengeRepositoryProvider 혹은 challengeProvider 안에 선언된 repository를 사용합니다.)
 
-                      // TODO: 여기에 실제 초대 API 호출 로직 추가 가능
-                      // 예: ref.read(socialRepositoryProvider).inviteFriendToChallenge(friend.id, challengeId);
+                        // 예시 1: Repository Provider를 직접 부르는 경우
+                        await ref
+                            .read(challengeRepositoryProvider)
+                            .inviteFriend(
+                              widget.challengeId, // 받아온 챌린지 ID 사용
+                              friend.nickname,
+                            );
 
-                      // 2. 안내 팝업 띄우기
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${friend.nickname} 님에게 챌린지 초대를 보냈습니다!',
-                                style: AppTypography.b2.copyWith(
-                                  color: Colors.white,
+                        // 예시 2: Service나 Controller를 거치는 경우라면 해당 메서드 호출
+
+                        // 3. 성공 시 UI 업데이트
+                        if (!mounted) return;
+
+                        setState(() => _invitedFriends.add(friend.id));
+                        // 2. 안내 팝업 띄우기
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${friend.nickname} 님에게 챌린지 초대를 보냈습니다!',
+                                  style: AppTypography.b2.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                            backgroundColor: const Color(
+                              0xFF424242,
+                            ), // 어두운 회색 (이미지 색상)
+                            behavior: SnackBarBehavior.floating, // 하단에서 떠있는 형태
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            duration: const Duration(seconds: 1), // 1초 후 자동 소멸
+                            margin: const EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              bottom: 30, // 화면 아래쪽 여백 조절
+                            ),
                           ),
-                          backgroundColor: const Color(
-                            0xFF424242,
-                          ), // 어두운 회색 (이미지 색상)
-                          behavior: SnackBarBehavior.floating, // 하단에서 떠있는 형태
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                        );
+                      } catch (e) {
+                        // 4. 실패 시 처리
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('초대 전송에 실패했습니다. 다시 시도해주세요.'),
                           ),
-                          duration: const Duration(seconds: 1), // 1초 후 자동 소멸
-                          margin: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            bottom: 30, // 화면 아래쪽 여백 조절
-                          ),
-                        ),
-                      );
+                        );
+                      }
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: isInvited

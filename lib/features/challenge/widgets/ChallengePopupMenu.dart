@@ -121,7 +121,14 @@ class ChallengePopupMenu extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const ChallengeInviteScreen(),
+            // [수정 전]
+            // builder: (context) => const ChallengeInviteScreen(),
+
+            // [수정 후] 현재 위젯이 가지고 있는 challengeId를 전달해야 합니다.
+            builder: (context) => ChallengeInviteScreen(
+              challengeId:
+                  challengeId, // 만약 변수명이 challengeId가 아니라면 해당 변수명(예: widget.challenge.id)으로 넣어주세요.
+            ),
           ),
         );
         break;
