@@ -52,6 +52,45 @@ class _ChallengeInviteContentState
     });
   }
 
+  // 초대 버튼 누를 경우 뜨는 토스트 메시지
+  void _showToast(BuildContext context, String name) {
+    // 토스트 위젯 생성
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: 100,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: ShapeDecoration(
+                color: const Color(0xff1B1D1B).withAlpha(200),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                '$name 님에게 챌린지 초대를 보냈습니다!',
+                textAlign: TextAlign.center,
+                style: AppTypography.b1.copyWith(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // 화면에 추가
+    Overlay.of(context).insert(overlayEntry);
+
+    // 2초 후 자동으로 사라지게 설정
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   // 클립보드 복사
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: widget.challengeUrl)).then((_) {
@@ -327,33 +366,8 @@ class _ChallengeInviteContentState
                         if (!mounted) return;
                         setState(() => _invitedFriends.add(friend.id));
 
-                        // ★ 커스텀 스낵바 디자인 복구 완료
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${friend.nickname} 님에게 챌린지 초대를 보냈습니다!',
-                                  style: AppTypography.b2.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            backgroundColor: const Color(0xFF424242),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            duration: const Duration(seconds: 1),
-                            margin: const EdgeInsets.only(
-                              left: 20,
-                              right: 20,
-                              bottom: 30,
-                            ),
-                          ),
-                        );
+                        // 커스텀 Toast 사용
+                        _showToast(context, friend.nickname);
                       } catch (e) {
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(

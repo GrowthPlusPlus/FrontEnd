@@ -50,8 +50,15 @@ class _ChallengeCalendarScreenState
           context: context,
           barrierColor: const Color(0x7F1A1D1B),
           builder: (context) => ChallengeCreateSuccessDialog(
+            // [수정 1] friends 파라미터 삭제 (이제 필요 없음)
+            // friends: widget.createdData!.friends,
+
+            // [수정 2] challengeId 추가 (필수)
+            // 주의: createdData 객체 안에 있는 ID 변수명을 정확히 적어주세요. (예: .id 또는 .challengeId)
+            challengeId: widget.createdData!.id,
+
+            // 기존 유지
             challengeLink: widget.createdData!.challengeLink,
-            friends: widget.createdData!.friends,
           ),
         );
       });
