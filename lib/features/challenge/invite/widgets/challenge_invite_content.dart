@@ -53,7 +53,7 @@ class _ChallengeInviteContentState
   }
 
   // 초대 버튼 누를 경우 뜨는 토스트 메시지
-  void _showToast(BuildContext context, String name) {
+  void _showToast(BuildContext context, String message) {
     // 토스트 위젯 생성
     OverlayEntry overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
@@ -72,7 +72,8 @@ class _ChallengeInviteContentState
                 ),
               ),
               child: Text(
-                '$name 님에게 챌린지 초대를 보냈습니다!',
+                //'$name 님에게 챌린지 초대를 보냈습니다!',
+                message, // 전달받은 메시지 그대로 출력
                 textAlign: TextAlign.center,
                 style: AppTypography.b1.copyWith(color: Colors.white),
               ),
@@ -94,9 +95,9 @@ class _ChallengeInviteContentState
   // 클립보드 복사
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: widget.challengeUrl)).then((_) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('링크가 복사되었습니다.')));
+      if (!mounted) return;
+      // 스낵바 대신 토스트 사용
+      _showToast(context, '링크가 복사되었습니다.');
     });
   }
 
@@ -367,7 +368,10 @@ class _ChallengeInviteContentState
                         setState(() => _invitedFriends.add(friend.id));
 
                         // 커스텀 Toast 사용
-                        _showToast(context, friend.nickname);
+                        _showToast(
+                          context,
+                          '${friend.nickname} 님에게 챌린지 초대를 보냈습니다!',
+                        );
                       } catch (e) {
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
