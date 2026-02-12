@@ -663,6 +663,18 @@ class ChallengeRepository {
       );
     }
   }
+
+  /// 챌린지 친구 초대
+  /// API: POST /api/challenges/{challengeId}/invite/{friendNickname}
+  Future<void> inviteFriend(int challengeId, String friendNickname) async {
+    try {
+      // POST 요청 전송
+      await _dio.post('/api/challenges/$challengeId/invite/$friendNickname');
+    } catch (e) {
+      // 에러 발생 시 호출한 곳(UI)으로 에러를 던짐
+      rethrow;
+    }
+  }
 }
 
 // Riverpod Provider 설정
