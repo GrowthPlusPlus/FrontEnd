@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/feed/widgets/EnterConfirmDialog.dart';
+import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
 
 class ChallengeDetailPage extends StatelessWidget {
   final int challengeId; // 검색 결과에서 넘겨받을 ID

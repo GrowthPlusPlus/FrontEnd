@@ -71,11 +71,11 @@ class FeedPostCard extends StatelessWidget {
               children: [
                 Text(
                   '${post.challengeTitle} ${post.totalSuccessDays}일차',
-                  style: AppTypography.b3.copyWith(fontWeight: FontWeight.bold),
+                  style: AppTypography.b3.copyWith(color: AppColors.black),
                 ),
                 Text(
                   post.content,
-                  style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                  style: AppTypography.b1.copyWith(color: AppColors.gray1),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -121,7 +121,6 @@ class FeedPostCard extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.gray4), // 피드 간 구분선
         ],
       ),
     );
