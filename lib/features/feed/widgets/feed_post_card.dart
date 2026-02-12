@@ -1,38 +1,55 @@
-// 최초 작성자 : 강선욱 (수정: 통합 모델 CertificationPostModel 적용)
+// 최초 작성자 : 강선욱
+// 피드 인증글의 스타일을 정의한 클래스
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
-import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart'; // 주석 해제 대비 임포트
+import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
+import 'package:haenaem/features/challenge/feed/challenge_feed_screen.dart'; // 인증글 상세 정보 불러오기에 만들어져 있는 ChallengeFeedScreen 사용
 
-class FeedPostCard extends StatelessWidget {
+class FeedPostCard extends ConsumerWidget {
   final CertificationPostModel post;
   final VoidCallback? onTap;
+  final dynamic provider; // 어떤 Provider(친구/둘러보기)인지 받음
 
-  const FeedPostCard({super.key, required this.post, this.onTap});
+  const FeedPostCard({
+    super.key,
+    required this.post,
+    this.onTap,
+    this.provider,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    // createdAt이 null일 경우를 대비한 처리
+  Widget build(BuildContext context, WidgetRef ref) {
     String formattedDate = post.createdAt != null
         ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(post.createdAt!)
         : "";
 
     return InkWell(
-      onTap: onTap,
+      onTap:
+          onTap ??
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ChallengeFeedScreen(post: post, feedProvider: provider),
+              ),
+            );
+          },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. 헤더 (프로필 정보)
+          // 1. 헤더
           Padding(
             padding: const EdgeInsets.fromLTRB(15, 12, 5, 10),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 18,
-                  // Getter가 아닌 필드 직접 접근 시 Null 처리 필요
                   backgroundImage:
                       (post.userImageUrl != null &&
                           post.userImageUrl!.isNotEmpty)
@@ -50,15 +67,8 @@ class FeedPostCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(post.userName ?? '해냄', style: AppTypography.b1),
                       Text(
-                        post.userName ?? '이름 없음', // Getter 활용 및 Null 처리
-                        style: AppTypography.b1.copyWith(
-                          color: AppColors.black,
-                        ),
-                      ),
-                      Text(
-                        // 유저 칭호 부분
-                        // API 구현이 안돼서 하드코딩
                         "명예 해냄 개발자",
                         style: AppTypography.c1.copyWith(
                           color: AppColors.gray2,
@@ -67,43 +77,34 @@ class FeedPostCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // 팝업 메뉴 연결 (CertificationPostModel을 사용하므로 이제 에러가 없을 것입니다)
                 ChallengeFeedPopupMenu(post: post),
               ],
             ),
           ),
-
-          // 2. 제목 및 본문 텍스트 섹션
+          // 2. 텍스트 본문
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 인증글 제목: {챌린지 이름} {인증경과일}일차
                 Text(
                   '${post.challengeTitle} ${post.totalSuccessDays}일차',
-                  style: AppTypography.b3.copyWith(
-                    color: AppColors.black,
-                    fontWeight: FontWeight.bold, // 디자인처럼 강조
-                  ),
+                  style: AppTypography.b3.copyWith(color: AppColors.black),
                 ),
-
-                // 본문 내용
                 Text(
                   post.content,
-                  style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                  style: AppTypography.b1.copyWith(color: AppColors.gray1),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
-
                 const SizedBox(height: 15),
               ],
             ),
           ),
-          // 3. 이미지 (Getter 활용)
+          // 3. 이미지
           if (post.hasImage && post.imageUrl != null)
             Image.network(
-              post.imageUrl!, // Getter를 통해 첫 번째 이미지 URL을 가져옴
+              post.imageUrl!,
               width: double.infinity,
               height: 375,
               fit: BoxFit.cover,
@@ -113,18 +114,42 @@ class FeedPostCard extends StatelessWidget {
                 child: const Icon(Icons.error),
               ),
             ),
-
-          // 4. 하단 정보 (좋아요, 댓글, 날짜)
+          // 4. 하단 아이콘 정보
           Padding(
             padding: const EdgeInsets.fromLTRB(15, 12, 15, 16),
             child: Row(
               children: [
-                _buildIconInfo(
-                  post.liked
-                      ? 'assets/images/icons/like_filled_icon.svg'
-                      : 'assets/images/icons/like_icon.svg',
-                  post.likeCount.toString(), // Getter 활용
-                  color: post.liked ? AppColors.notification : AppColors.gray2,
+                GestureDetector(
+                  onTap: () {
+                    print("좋아요 버튼 클릭됨! ID: ${post.postId}");
+                    if (provider != null) {
+                      ref.read(provider.notifier).toggleLike(post.postId);
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        post.liked
+                            ? 'assets/images/icons/like_filled_icon.svg'
+                            : 'assets/images/icons/like_icon.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          post.liked ? AppColors.notification : AppColors.gray2,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        post.likeCount.toString(),
+                        style: AppTypography.b2.copyWith(
+                          color: post.liked
+                              ? AppColors.notification
+                              : AppColors.gray2,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 16),
                 _buildIconInfo(

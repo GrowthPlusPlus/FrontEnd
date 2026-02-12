@@ -13,11 +13,13 @@ import 'edit_article_dialog.dart';
 class CommentPopupMenu extends ConsumerWidget {
   final int postId;
   final ChallengeComment comment;
+  final dynamic feedProvider;
 
   const CommentPopupMenu({
     super.key,
     required this.postId,
     required this.comment,
+    this.feedProvider,
   });
 
   @override
@@ -144,6 +146,13 @@ class CommentPopupMenu extends ConsumerWidget {
               .removeComment(postId: postId, commentId: comment.commentId);
 
           if (success && context.mounted) {
+            // 피드 화면 댓글 수 감소를 위해 필요한 코드
+            if (feedProvider != null) {
+              ref
+                  .read(feedProvider.notifier)
+                  .decrementCommentCountLocally(postId);
+            }
+
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(const SnackBar(content: Text("댓글이 삭제되었습니다.")));
