@@ -1,259 +1,512 @@
 // 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/feed/widgets/EnterConfirmDialog.dart';
 
-class ChallengeDetailPage extends StatelessWidget {
-  final int challengeId; // 검색 결과에서 넘겨받을 ID
-  const ChallengeDetailPage({super.key, required this.challengeId});
+import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/widgets/comment_popup_menu.dart';
+
+class PostDetailScreen extends ConsumerStatefulWidget {
+  final CertificationPostModel post;
+  final dynamic feedProvider;
+  const PostDetailScreen({super.key, required this.post, this.feedProvider});
+
+  @override
+  ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
+}
+
+class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
+  // 1. 텍스트 제어를 위한 컨트롤러 선언
+  final TextEditingController _commentController = TextEditingController();
+  bool _isButtonActive = false; // 버튼 활성화 상태 추적
+  int _currentImagePage = 0; // 현재 보고 있는 이미지의 인덱스를 저장할 변수
+
+  @override
+  void initState() {
+    super.initState();
+    // 2. 리스너를 추가하여 텍스트가 바뀔 때마다 버튼 상태 업데이트
+    _commentController.addListener(() {
+      setState(() {
+        _isButtonActive = _commentController.text.trim().isNotEmpty;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose(); // 메모리 누수 방지
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // 데이터 구독
+    final detailAsync = ref.watch(
+      articleDetailProvider(postId: widget.post.postId),
+    );
+    final commentsAsync = ref.watch(
+      articleCommentsProvider(postId: widget.post.postId),
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
         surfaceTintColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.black,
-              BlendMode.srcIn,
-            ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '챌린지 상세정보',
+          '피드',
           style: AppTypography.h3.copyWith(color: AppColors.black),
         ),
         centerTitle: true,
       ),
-      body: Column(
+      // 로딩/에러/데이터 처리
+      body: detailAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('데이터를 불러올 수 없습니다: $err')),
+        data: (latestPost) {
+          // 상세 조회의 날짜 사용
+          String formattedDate = latestPost.createdAt != null
+              ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(latestPost.createdAt!)
+              : "";
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- 게시글 상단 (프로필/헤더) ---
+                _buildPostHeader(latestPost),
+                _buildPostContent(latestPost),
+                _buildPostImage(latestPost),
+                _buildPostStats(formattedDate, latestPost),
+
+                const Divider(thickness: 1),
+
+                // --- 댓글 리스트 영역 ---
+                commentsAsync.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (err, stack) => const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(child: Text('댓글 로드 실패')),
+                  ),
+                  data: (comments) {
+                    if (comments.isEmpty) return _buildEmptyComments();
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) =>
+                          _buildCommentItem(comments[index]),
+                    );
+                  },
+                ),
+                const SizedBox(height: 80),
+              ],
+            ),
+          );
+        },
+      ),
+      bottomSheet: _buildCommentInputField(),
+    );
+  }
+
+  Widget _buildPostHeader(CertificationPostModel post) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 5, 5, 10),
+      child: Row(
         children: [
-          const Divider(
-            height: 1,
-            color: AppColors.gray4, //
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '토익 단어 매일 20개 외우기',
-                    style: AppTypography.h3.copyWith(color: AppColors.black),
-                  ),
-                  const SizedBox(height: 25),
-
-                  _buildInfoSection('챌린지 시작일', '0000년 00월 00일'),
-                  _buildInfoSection('챌린지 마감일', '0000년 00월 00일 (D-000)'),
-                  _buildInfoSection('인증 빈도', '매일'),
-                  _buildInfoSection('챌린지 인증 방식', '사진 첨부 필수'),
-
-                  Text(
-                    '챌린지 태그',
-                    style: AppTypography.b1.copyWith(color: AppColors.gray2),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _buildTag('label'),
-                      const SizedBox(width: 8),
-                      _buildTag('label'),
-                    ],
-                  ),
-
-                  const Divider(
-                    height: 40,
-                    thickness: 1,
-                    color: AppColors.gray4, //
-                  ),
-
-                  Text(
-                    '챌린지 설명',
-                    style: AppTypography.b1.copyWith(color: AppColors.gray2),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    '오늘의 단어 하나 공유하기\n하루에 한 번 인증 게시물 올리기',
-                    style: AppTypography.b1.copyWith(color: AppColors.black),
-                  ),
-
-                  const Divider(
-                    height: 40,
-                    thickness: 1,
-                    color: AppColors.gray4, //
-                  ),
-
-                  Text(
-                    '방장',
-                    style: AppTypography.b1.copyWith(color: AppColors.gray2),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildChallengeManager('김민수'),
-
-                  const Divider(
-                    height: 40,
-                    thickness: 1,
-                    color: AppColors.gray4, //
-                  ),
-
-                  Row(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/icons/person_icon.svg',
-                        width: 18,
-                        height: 18,
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: ClipOval(
+              child: post.userImageUrl != null && post.userImageUrl!.isNotEmpty
+                  ? Image.network(
+                      post.userImageUrl!,
+                      fit: BoxFit.cover, // 사진이 찌그러지지 않게 꽉 채움
+                      errorBuilder: (_, __, ___) => SvgPicture.asset(
+                        'assets/images/icons/default_profile_icon.svg',
+                        width: 40,
+                        height: 40,
                       ),
-                      const SizedBox(width: 3),
-                      Text(
-                        '참여자 수',
-                        style: AppTypography.b1.copyWith(
-                          color: AppColors.gray2,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '00명',
-                    style: AppTypography.b1.copyWith(color: AppColors.black),
-                  ),
-
-                  const Divider(
-                    height: 40,
-                    thickness: 1,
-                    color: AppColors.gray4, //
-                  ),
-
-                  Text(
-                    '오늘의 인증자',
-                    style: AppTypography.b1.copyWith(color: AppColors.gray2),
-                  ),
-                  const SizedBox(height: 10),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildAttendee('user1'),
-                        _buildAttendee('user2'),
-                        _buildAttendee('user3'),
-                        _buildAttendee('user4'),
-                        _buildAttendee('user5'),
-                        _buildAttendee('user6'),
-                        _buildAttendee('user7'),
-                        _buildAttendee('user8'),
-                        _buildAttendee('user9'),
-                        _buildAttendee('user10'),
-                      ],
+                    )
+                  : SvgPicture.asset(
+                      'assets/images/icons/default_profile_icon.svg',
+                      width: 40,
+                      height: 40,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Divider(
-                    height: 40,
-                    thickness: 1,
-                    color: AppColors.gray4, //
-                  ),
-                ],
-              ),
             ),
           ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(post.userName ?? '익명', style: AppTypography.b1),
+                Text(
+                  '챌린지 모험가',
+                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                ),
+              ],
+            ),
+          ),
+          // 팝업 메뉴에도 최신 정보 전달
+          ChallengeFeedPopupMenu(post: post),
         ],
       ),
+    );
+  }
 
-      // 하단 고정 - 참여하기하기 버튼
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: ElevatedButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return EnterConfirmDialog(challengeId: challengeId);
+  Widget _buildPostContent(CertificationPostModel post) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Text(
+        post.content,
+        style: AppTypography.b2.copyWith(color: AppColors.gray1),
+      ),
+    );
+  }
+
+  Widget _buildPostImage(CertificationPostModel post) {
+    debugPrint('📸 이미지 경로: ${post.imageUrl}');
+    debugPrint('📸 이미지 존재 여부: ${post.hasImage}');
+
+    // hasImage가 false이거나 url이 없으면 안 보임
+    if (post.images.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 300, // 기존 높이 유지
+          width: double.infinity,
+          child: PageView.builder(
+            itemCount: post.images.length,
+            onPageChanged: (index) {
+              // 💡 페이지가 바뀔 때마다 상태 업데이트 (인디케이터용)
+              setState(() {
+                _currentImagePage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final String path = post.images[index].imageUrl;
+              // 💡 경로 처리: http로 시작하지 않으면 서버 주소 붙여주기
+              final String fullUrl = path.startsWith('http')
+                  ? path
+                  : 'https://hanaem.onrender.com$path';
+
+              return Image.network(
+                fullUrl,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: AppColors.gray5,
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: AppColors.gray5,
+                    child: const Center(
+                      child: Icon(Icons.broken_image, color: AppColors.gray3),
+                    ),
+                  );
                 },
               );
             },
+          ),
+        ),
 
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryAble,
-              minimumSize: const Size(double.infinity, 60),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 8,
-            ),
-            child: Text(
-              '챌린지 참여하기',
-              style: AppTypography.h3.copyWith(
-                color: Colors.white,
-              ), // 문법 수정: = -> :
+        // 💡 이미지가 2장 이상일 때만 하단에 페이지 점(Indicator) 표시
+        if (post.images.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(post.images.length, (index) {
+                return Container(
+                  width: 6,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    // 현재 페이지면 브랜드 컬러, 아니면 회색
+                    color: _currentImagePage == index
+                        ? AppColors.primaryAble
+                        : AppColors.gray4,
+                  ),
+                );
+              }),
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildPostStats(String date, CertificationPostModel post) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 15, 15, 10),
+      child: Row(
+        children: [
+          // 💡 좋아요 아이콘 영역
+          GestureDetector(
+            onTap: () {
+              // 좋아요 토글 호출
+              ref
+                  .read(articleLikeNotifierProvider.notifier)
+                  .toggleLike(
+                    postId: post.postId,
+                    isCurrentlyLiked: post.liked,
+                  );
+            },
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  post.liked
+                      ? 'assets/images/icons/like_filled_icon.svg' // 빨간 하트
+                      : 'assets/images/icons/like_icon.svg', // 안 채워진 하트
+                  width: 20,
+                  colorFilter: ColorFilter.mode(
+                    post.liked ? AppColors.notification : AppColors.gray2,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  post.likeNumber.toString(),
+                  style: AppTypography.b2.copyWith(
+                    color: post.liked
+                        ? AppColors.notification
+                        : AppColors.gray2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          _buildStatIcon(
+            'assets/images/icons/comment_icon.svg',
+            post.commentNumber.toString(),
+          ),
+          const Spacer(),
+          Text(date, style: AppTypography.b2.copyWith(color: AppColors.gray2)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatIcon(String iconPath, String count) {
+    return Row(
+      children: [
+        SvgPicture.asset(
+          iconPath,
+          width: 20,
+          colorFilter: const ColorFilter.mode(AppColors.gray2, BlendMode.srcIn),
+        ),
+        const SizedBox(width: 4),
+        Text(count, style: AppTypography.b2.copyWith(color: AppColors.gray2)),
+      ],
+    );
+  }
+
+  Widget _buildEmptyComments() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Text(
+          '첫 댓글을 남겨보세요!',
+          style: AppTypography.b2.copyWith(color: AppColors.gray1),
         ),
       ),
     );
   }
 
-  // 반복되는 정보 텍스트 위젯
-  Widget _buildInfoSection(String title, String content) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  // 댓글 입력창
+  Widget _buildCommentInputField() {
+    final double systemBottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 10,
+        bottom: systemBottomPadding + 10,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Row(
         children: [
-          Text(title, style: AppTypography.b1.copyWith(color: AppColors.gray2)),
-          Text(
-            content,
-            style: AppTypography.b1.copyWith(color: AppColors.black),
+          Expanded(
+            child: TextField(
+              controller: _commentController, // 컨트롤러 연결
+              autofocus: false, // 화면 리빌드될 때마다 키보드 불러오지 않기!
+              decoration: InputDecoration(
+                hintText: '댓글을 입력하세요...',
+                hintStyle: AppTypography.b2.copyWith(color: AppColors.gray3),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide(
+                    color: AppColors.gray4.withAlpha(150),
+                    width: 0.75,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide(
+                    color: AppColors.gray4.withAlpha(150),
+                    width: 0.75,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // 3. 버튼 활성화 상태에 따라 색상 및 동작 변경
+          GestureDetector(
+            onTap: _isButtonActive
+                ? () async {
+                    // 💡 댓글 작성 API 호출
+                    final contents = _commentController.text.trim();
+                    final success = await ref
+                        .read(articleCommentCreateNotifierProvider.notifier)
+                        .addComment(
+                          postId: widget.post.postId,
+                          contents: contents,
+                        );
+
+                    if (success && mounted) {
+                      // 피드 화면에서 댓글 수 업데이트를 위해 필요한 코드
+                      if (widget.feedProvider != null) {
+                        // 목록의 댓글 수를 로컬에서 +1 시켜서 UI를 즉시 갱신
+                        ref
+                            .read(widget.feedProvider.notifier)
+                            .incrementCommentCountLocally(widget.post.postId);
+                      }
+
+                      // 성공 시 입력창 초기화 및 키보드 내리기
+                      _commentController.clear();
+                      FocusScope.of(context).unfocus();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('댓글이 작성되었습니다.')),
+                      );
+                    }
+                  }
+                : null,
+            child: CircleAvatar(
+              radius: 22.5,
+              backgroundColor: _isButtonActive
+                  ? AppColors.primaryAble
+                  : AppColors.disable,
+              child: SvgPicture.asset(
+                'assets/images/icons/comment_upload_icon.svg',
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // 태그 위젯
-  Widget _buildTag(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppColors.selected,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Text(
-        text,
-        style: AppTypography.b1.copyWith(color: AppColors.primaryAble),
-      ),
-    );
-  }
+  // 댓글 아이템 빌더
+  Widget _buildCommentItem(ChallengeComment comment) {
+    String commentDate = DateFormat(
+      'yyyy년 MM월 dd일 HH:mm',
+    ).format(comment.createdAt);
 
-  // 방장 위젯
-  Widget _buildChallengeManager(String name) {
-    return Row(
-      children: [
-        SvgPicture.asset('assets/images/icons/default_profile_icon.svg'),
-        const SizedBox(width: 12),
-        Text(name, style: AppTypography.b1.copyWith(color: AppColors.black)),
-      ],
-    );
-  }
-
-  // 오늘의 인증자 아이템 위젯
-  Widget _buildAttendee(String name) {
     return Padding(
-      padding: const EdgeInsets.only(right: 15),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start, // 상단 정렬 유지
         children: [
-          SvgPicture.asset('assets/images/icons/default_profile_icon.svg'),
-          const SizedBox(height: 5),
-          Text(name, style: AppTypography.c1.copyWith(color: AppColors.black)),
+          // 프로필 이미지
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: ClipOval(
+              child:
+                  comment.userPicture != null && comment.userPicture!.isNotEmpty
+                  ? Image.network(
+                      comment.userPicture!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => SvgPicture.asset(
+                        'assets/images/icons/default_profile_icon.svg',
+                      ),
+                    )
+                  : SvgPicture.asset(
+                      'assets/images/icons/default_profile_icon.svg',
+                    ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // 댓글 본문 영역
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 이름과 뱃지를 하나의 Column으로 묶어 아이콘 공간 확보
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(comment.userNickname, style: AppTypography.b1),
+                          Text(
+                            '일반 모험가',
+                            style: AppTypography.c1.copyWith(
+                              color: AppColors.gray2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    CommentPopupMenu(
+                      postId: widget.post.postId, // 새로고침을 위해 필요
+                      comment: comment,
+                      // 피드 화면 댓글 수 업데이트를 위해 필요
+                      feedProvider: widget.feedProvider,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Text(comment.contents, style: AppTypography.b2),
+                const SizedBox(height: 5),
+                Text(
+                  commentDate,
+                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

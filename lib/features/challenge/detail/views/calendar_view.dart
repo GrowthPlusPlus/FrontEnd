@@ -9,7 +9,7 @@ import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:intl/intl.dart';
 
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
-import 'package:haenaem/features/challenge/feed/challenge_feed_screen.dart';
+import 'package:haenaem/features/challenge/feed/post_detail_screen.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
@@ -322,7 +322,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
               ? () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ChallengeFeedScreen(post: fullPost),
+                    builder: (_) => PostDetailScreen(post: fullPost),
                   ),
                 )
               : null,
@@ -391,7 +391,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => ChallengeFeedScreen(post: post)),
+        MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
       ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
