@@ -1,3 +1,6 @@
+/// 최초 작성자: 정승빈
+library;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/challenge_repository.dart';
 import '../model/challenge_member.dart';

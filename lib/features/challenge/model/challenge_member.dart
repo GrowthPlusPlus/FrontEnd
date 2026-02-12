@@ -1,3 +1,6 @@
+/// 최초 작성자: 정승빈
+library;
+
 class ChallengeMember {
   final int memberId;
   final String nickname;
