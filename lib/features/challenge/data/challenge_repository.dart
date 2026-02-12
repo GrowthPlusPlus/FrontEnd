@@ -746,6 +746,34 @@ class ChallengeRepository {
       throw Exception('멤버 정보를 불러오는데 실패했습니다.');
     }
   }
+
+  // 챌린지 멤버 추방 API
+  Future<void> kickMember(int challengeId, int targetUserId) async {
+    print('🔥 [API Request] 멤버 추방 요청: 챌린지 $challengeId, 타겟 $targetUserId');
+
+    try {
+      final response = await _dio.post(
+        '/api/challenges/$challengeId/members/kick',
+        data: {
+          // [체크 필요] 백엔드 DTO의 필드명과 일치해야 합니다. (예: targetUserId, memberId, kickUserId 등)
+          'targetUserId': targetUserId,
+        },
+      );
+
+      if (response.statusCode == 204) {
+        print('✅ [Success] 멤버 추방 성공');
+        return;
+      } else {
+        throw Exception('추방 실패 (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      print('🚨 [DioError] ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '서버 통신 오류');
+    } catch (e) {
+      print('🚫 [Exception] $e');
+      throw Exception('알 수 없는 오류가 발생했습니다.');
+    }
+  }
 }
 
 // Riverpod Provider 설정

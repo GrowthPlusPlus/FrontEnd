@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -34,6 +35,79 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
     super.dispose();
   }
 
+  // 멤버 강퇴 처리 함수
+  Future<void> _handleKickMember(int targetUserId, String nickname) async {
+    try {
+      // 1. Repository 메서드 호출 (강퇴 요청)
+      await ref
+          .read(challengeRepositoryProvider)
+          .kickMember(widget.challengeId, targetUserId);
+
+      // 2. 성공 시 목록 새로고침 (Provider 초기화 -> 다시 로딩됨)
+      // 현재 적용된 필터 조건 그대로 새로고침합니다.
+      final currentFilter = MemberFilter(
+        challengeId: widget.challengeId,
+        page: 0,
+        nickname: _searchQuery, // 현재 검색어 상태 유지
+      );
+
+      // 해당 필터에 대한 캐시를 날려서 다시 API를 호출하게 만듦
+      ref.invalidate(challengeMembersProvider(currentFilter));
+
+      if (mounted) {
+        _showToast(context, '$nickname 님을 내보냈습니다.');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppColors.notification,
+          ),
+        );
+      }
+    }
+  }
+
+  // 토스트 메시지
+  void _showToast(BuildContext context, String message) {
+    // 토스트 위젯 생성
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: 100,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: ShapeDecoration(
+                color: const Color(0xff1B1D1B).withAlpha(200),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                message, // 전달받은 메시지 그대로 출력
+                textAlign: TextAlign.center,
+                style: AppTypography.b1.copyWith(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // 화면에 추가
+    Overlay.of(context).insert(overlayEntry);
+
+    // 2초 후 자동으로 사라지게 설정
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // 클라이언트 필터링을 위해 nickname에 null 전달
@@ -46,6 +120,8 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
     final membersAsyncValue = ref.watch(challengeMembersProvider(filter));
 
     // TODO: 실제 앱의 UserProvider 등을 통해 현재 로그인한 유저의 ID를 가져오기.
+    // 현재는 테스트용 임시 ID가 '나' 역할로 사용되고 있습니다.
+    // 그렇기에 '승빈'은 항상 '챌린지장' 배지가 표시되며 강퇴 버튼이 나타나지 않습니다.
     // final currentUserId = ref.watch(userProvider).id;
     const int currentUserId = 14; // 테스트용 임시 ID (로그상의 '승빈'님 ID)
 
@@ -193,6 +269,11 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                             member: member,
                             isMe: isMe, // 상태 전달
                             notificationRed: AppColors.notification,
+                            // 콜백 함수 전달
+                            onKick: () => _handleKickMember(
+                              member.memberId,
+                              member.nickname,
+                            ),
                           );
                         },
                       ),
@@ -213,11 +294,13 @@ class _MemberTile extends StatelessWidget {
     required this.member,
     required this.isMe,
     required this.notificationRed,
+    required this.onKick,
   });
 
   final ChallengeMember member;
   final bool isMe;
   final Color notificationRed;
+  final VoidCallback onKick;
 
   @override
   Widget build(BuildContext context) {
@@ -266,7 +349,7 @@ class _MemberTile extends StatelessWidget {
                   builder: (context) => KickConfirmDialog(
                     nickname: member.nickname,
                     onConfirm: () {
-                      // TODO: 강퇴 API 호출
+                      onKick();
                       print('👋 \'${member.nickname}\' 강퇴 처리됨');
                     },
                   ),
