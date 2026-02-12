@@ -15,7 +15,6 @@ import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_create_success_dialog.dart';
-import 'package:haenaem/features/challenge/calendar/ChallengeCalendarScreen.dart';
 
 // -- 챌린지 생성 화면 --
 class ChallengeCreatePage extends ConsumerStatefulWidget {

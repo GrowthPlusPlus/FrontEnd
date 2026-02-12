@@ -7,7 +7,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:intl/intl.dart';
-import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/challenge/feed/challenge_feed_screen.dart';

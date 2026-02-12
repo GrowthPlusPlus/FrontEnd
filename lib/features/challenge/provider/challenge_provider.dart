@@ -35,6 +35,16 @@ class ChallengeHomeNotifier extends _$ChallengeHomeNotifier {
   }
 }
 
+// 특정 챌린지 상세 정보를 가져오는 Provider
+@riverpod
+Future<ChallengeDetailModel> challengeDetail(
+  Ref ref, {
+  required int challengeId,
+}) async {
+  final repository = ref.watch(challengeRepositoryProvider);
+  return repository.getChallengeDetail(challengeId); // 레포지토리 리턴 타입도 맞춰주세요.
+}
+
 // 오늘의 종합 상태만 따로 계산하는 파생 Provider
 @riverpod
 ChallengeStatus todayTotalStatus(TodayTotalStatusRef ref) {
