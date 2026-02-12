@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_detail_screen.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'dart:convert';
 
@@ -143,7 +144,7 @@ class _ChallengeCreatePageState extends ConsumerState<ChallengeCreatePage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ChallengeCalendarScreen(
+          builder: (context) => ChallengeDetailScreen(
             challengeId: response.id,
             challengeTitle: _nameController.text.trim(), // 💡 유저가 입력한 제목 전달!
             isJustCreated: true,
