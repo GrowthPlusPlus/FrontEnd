@@ -11,7 +11,7 @@ import 'package:haenaem/features/feed/model/feed_model.dart';
 
 class ShareFeedView extends ConsumerStatefulWidget {
   final ScrollController scrollController;
-  final AutoDisposeStateNotifierProvider<FeedNotifier, FeedState> provider;
+  final StateNotifierProvider<FeedNotifier, FeedState> provider;
   final String emptyMessage;
 
   const ShareFeedView({
@@ -106,7 +106,13 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
             );
           }
 
-          return FeedPostCard(post: feedState.posts[index]);
+          return FeedPostCard(
+            key: ValueKey(
+              '${feedState.posts[index].postId}_${feedState.posts[index].liked}_${feedState.posts[index].likeNumber}_${feedState.posts[index].commentNumber}',
+            ),
+            post: feedState.posts[index],
+            provider: widget.provider,
+          );
         },
       ),
     );

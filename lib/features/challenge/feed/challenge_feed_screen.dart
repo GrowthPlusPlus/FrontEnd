@@ -13,7 +13,8 @@ import 'package:haenaem/features/challenge/widgets/comment_popup_menu.dart';
 
 class ChallengeFeedScreen extends ConsumerStatefulWidget {
   final CertificationPostModel post;
-  const ChallengeFeedScreen({super.key, required this.post});
+  final dynamic feedProvider;
+  const ChallengeFeedScreen({super.key, required this.post, this.feedProvider});
 
   @override
   ConsumerState<ChallengeFeedScreen> createState() =>
@@ -400,6 +401,14 @@ class _ChallengeFeedScreenState extends ConsumerState<ChallengeFeedScreen> {
                         );
 
                     if (success && mounted) {
+                      // 피드 화면에서 댓글 수 업데이트를 위해 필요한 코드
+                      if (widget.feedProvider != null) {
+                        // 목록의 댓글 수를 로컬에서 +1 시켜서 UI를 즉시 갱신
+                        ref
+                            .read(widget.feedProvider.notifier)
+                            .incrementCommentCountLocally(widget.post.postId);
+                      }
+
                       // 성공 시 입력창 초기화 및 키보드 내리기
                       _commentController.clear();
                       FocusScope.of(context).unfocus();
@@ -484,6 +493,8 @@ class _ChallengeFeedScreenState extends ConsumerState<ChallengeFeedScreen> {
                     CommentPopupMenu(
                       postId: widget.post.postId, // 새로고침을 위해 필요
                       comment: comment,
+                      // 피드 화면 댓글 수 업데이트를 위해 필요
+                      feedProvider: widget.feedProvider,
                     ),
                   ],
                 ),

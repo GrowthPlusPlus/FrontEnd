@@ -1,27 +1,45 @@
 // 최초 작성자 : 강선욱
 // 피드 인증글의 스타일을 정의한 클래스
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
+import 'package:haenaem/features/challenge/feed/challenge_feed_screen.dart'; // 인증글 상세 정보 불러오기에 만들어져 있는 ChallengeFeedScreen 사용
 
-class FeedPostCard extends StatelessWidget {
+class FeedPostCard extends ConsumerWidget {
   final CertificationPostModel post;
   final VoidCallback? onTap;
+  final dynamic provider; // 어떤 Provider(친구/둘러보기)인지 받음
 
-  const FeedPostCard({super.key, required this.post, this.onTap});
+  const FeedPostCard({
+    super.key,
+    required this.post,
+    this.onTap,
+    this.provider,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     String formattedDate = post.createdAt != null
         ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(post.createdAt!)
         : "";
 
     return InkWell(
-      onTap: onTap,
+      onTap:
+          onTap ??
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ChallengeFeedScreen(post: post, feedProvider: provider),
+              ),
+            );
+          },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -101,12 +119,37 @@ class FeedPostCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(15, 12, 15, 16),
             child: Row(
               children: [
-                _buildIconInfo(
-                  post.liked
-                      ? 'assets/images/icons/like_filled_icon.svg'
-                      : 'assets/images/icons/like_icon.svg',
-                  post.likeCount.toString(),
-                  color: post.liked ? AppColors.notification : AppColors.gray2,
+                GestureDetector(
+                  onTap: () {
+                    print("좋아요 버튼 클릭됨! ID: ${post.postId}");
+                    if (provider != null) {
+                      ref.read(provider.notifier).toggleLike(post.postId);
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        post.liked
+                            ? 'assets/images/icons/like_filled_icon.svg'
+                            : 'assets/images/icons/like_icon.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          post.liked ? AppColors.notification : AppColors.gray2,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        post.likeCount.toString(),
+                        style: AppTypography.b2.copyWith(
+                          color: post.liked
+                              ? AppColors.notification
+                              : AppColors.gray2,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 16),
                 _buildIconInfo(
