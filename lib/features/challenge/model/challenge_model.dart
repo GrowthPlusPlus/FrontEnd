@@ -342,6 +342,37 @@ class CertificationPostModel {
     this.comments = const [],
   });
 
+  // 피드 탭에서 좋아요 수 업데이트를 위해 필요한 copyWith 메서드
+  CertificationPostModel copyWith({
+    int? postId,
+    String? challengeTitle,
+    int? totalSuccessDays,
+    String? content,
+    String? userNickname,
+    String? userImageUrl,
+    List<PostImage>? images,
+    DateTime? createdAt,
+    int? likeNumber,
+    int? commentNumber,
+    bool? liked,
+    List<ChallengeComment>? comments,
+  }) {
+    return CertificationPostModel(
+      postId: postId ?? this.postId,
+      challengeTitle: challengeTitle ?? this.challengeTitle,
+      totalSuccessDays: totalSuccessDays ?? this.totalSuccessDays,
+      content: content ?? this.content,
+      userNickname: userNickname ?? this.userNickname,
+      userImageUrl: userImageUrl ?? this.userImageUrl,
+      images: images ?? this.images,
+      createdAt: createdAt ?? this.createdAt,
+      likeNumber: likeNumber ?? this.likeNumber,
+      commentNumber: commentNumber ?? this.commentNumber,
+      liked: liked ?? this.liked,
+      comments: comments ?? this.comments,
+    );
+  }
+
   factory CertificationPostModel.fromJson(Map<String, dynamic> json) {
     // 1. 상세 조회용 'images' 리스트 처리 (객체 형태)
     List<PostImage> extractedImages = [];

@@ -33,4 +33,21 @@ class FeedRepository {
       throw Exception('네트워크 에러: $e');
     }
   }
+
+  Future<void> toggleLike(int postId, bool isCurrentlyLiked) async {
+    try {
+      if (isCurrentlyLiked) {
+        // 💡 이미 좋아요 상태라면 DELETE 요청을 보냅니다.
+        await _dio.delete('/api/article/$postId/like');
+        print("🗑️ [API] 좋아요 취소 성공 (DELETE)");
+      } else {
+        // 💡 좋아요 상태가 아니라면 POST 요청을 보냅니다.
+        await _dio.post('/api/article/$postId/like');
+        print("❤️ [API] 좋아요 등록 성공 (POST)");
+      }
+    } catch (e) {
+      print("❌ [API] 좋아요 토글 에러: $e");
+      rethrow;
+    }
+  }
 }

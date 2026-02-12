@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart'; // CertificationPostModel 가져오기
 import 'package:dio/dio.dart';
 import 'package:haenaem/features/feed/data/feed_repository.dart';
 import 'package:haenaem/features/feed/model/feed_model.dart';
@@ -58,14 +57,19 @@ class FeedNotifier extends StateNotifier<FeedState> {
        super(FeedState());
 
   Future<void> fetchFeeds() async {
-    print("🚀 [FeedNotifier] fetchFeeds 시작 (경로: $apiPath)"); // 호출 여부 확인
+    // [수정] 1. 중복 호출 방지 가드: 이미 로딩 중이거나 데이터가 있으면 중단
+    // (새로고침이 필요한 경우를 대비해 posts.isNotEmpty 조건은 상황에 따라 조절하세요)
+    if (state.isLoading) return;
 
+    // [수정] 2. 호출 시작 즉시 로딩 상태로 변경
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
       currentPage: 0,
       isLastPage: false,
+      // posts: [], // 필요하다면 초기화
     );
+
     try {
       print("📡 [FeedNotifier] Repository 데이터 요청 중...");
       final result = await _repository.getFeeds(apiPath, 0);
@@ -75,14 +79,14 @@ class FeedNotifier extends StateNotifier<FeedState> {
       state = state.copyWith(
         posts: result['posts'],
         isLastPage: result['isLast'],
-        isLoading: false,
+        isLoading: false, // 로딩 완료
       );
     } catch (e, stacktrace) {
-      // 💡 에러 내용과 에러가 발생한 코드 위치(stacktrace)를 출력합니다.
       print("❌ [FeedNotifier] 에러 발생: $e");
-      print("📂 스택트레이스: $stacktrace");
-
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false, // 에러 발생 시에도 로딩은 꺼줘야 함
+        errorMessage: e.toString(),
+      );
     }
   }
 
@@ -107,18 +111,78 @@ class FeedNotifier extends StateNotifier<FeedState> {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
+
+  // 좋아요 상태 변경 메서드
+  Future<void> toggleLike(int postId) async {
+    // 1. 상태 변경 전, 현재 해당 포스트의 좋아요 여부를 확인합니다.
+    final post = state.posts.firstWhere((p) => p.postId == postId);
+    final wasLiked = post.liked;
+
+    // 2. 로컬 UI 즉시 변경 (Optimistic Update)
+    toggleLikeLocally(postId);
+
+    try {
+      // 3. 확인한 'wasLiked' 상태를 리포지토리에 전달합니다.
+      await _repository.toggleLike(postId, wasLiked);
+    } catch (e) {
+      // 4. 서버 실패 시 다시 원래대로 롤백
+      toggleLikeLocally(postId);
+      print("좋아요 요청 실패로 롤백: $e");
+    }
+  }
+
+  void toggleLikeLocally(int postId) {
+    state = state.copyWith(
+      posts: state.posts.map((post) {
+        if (post.postId == postId) {
+          final isLiked = post.liked;
+          return post.copyWith(
+            liked: !isLiked,
+            likeNumber: isLiked ? post.likeNumber - 1 : post.likeNumber + 1,
+          );
+        }
+        return post;
+      }).toList(),
+    );
+  }
+
+  void incrementCommentCountLocally(int postId) {
+    state = state.copyWith(
+      posts: state.posts.map((post) {
+        if (post.postId == postId) {
+          // 기존 post를 복사하면서 commentNumber만 1 증가시킴
+          return post.copyWith(commentNumber: post.commentNumber + 1);
+        }
+        return post;
+      }).toList(),
+    );
+  }
+
+  void decrementCommentCountLocally(int postId) {
+    state = state.copyWith(
+      posts: state.posts.map((post) {
+        if (post.postId == postId) {
+          return post.copyWith(
+            // 💡 0보다 작아지지 않도록 처리하면서 -1
+            commentNumber: post.commentNumber > 0 ? post.commentNumber - 1 : 0,
+          );
+        }
+        return post;
+      }).toList(),
+    );
+  }
 }
 
 // 3. Provider 정의 부분 수정
 final friendFeedProvider = StateNotifierProvider<FeedNotifier, FeedState>((
-  ref,
+  ref, //
 ) {
   final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
-  return FeedNotifier(apiPath: '/api/v1/feeds/friends', repository: repository);
+  return FeedNotifier(apiPath: '/api/feed/friends', repository: repository);
 });
 
 final exploreFeedProvider = StateNotifierProvider<FeedNotifier, FeedState>((
-  ref,
+  ref, //
 ) {
   final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
   return FeedNotifier(apiPath: '/api/feed/public', repository: repository);
