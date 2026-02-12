@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart'; // CertificationPostModel 가져오기
 import 'package:dio/dio.dart';
 import 'package:haenaem/features/feed/data/feed_repository.dart';
 import 'package:haenaem/features/feed/model/feed_model.dart';
@@ -58,14 +57,19 @@ class FeedNotifier extends StateNotifier<FeedState> {
        super(FeedState());
 
   Future<void> fetchFeeds() async {
-    print("🚀 [FeedNotifier] fetchFeeds 시작 (경로: $apiPath)"); // 호출 여부 확인
+    // [수정] 1. 중복 호출 방지 가드: 이미 로딩 중이거나 데이터가 있으면 중단
+    // (새로고침이 필요한 경우를 대비해 posts.isNotEmpty 조건은 상황에 따라 조절하세요)
+    if (state.isLoading) return;
 
+    // [수정] 2. 호출 시작 즉시 로딩 상태로 변경
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
       currentPage: 0,
       isLastPage: false,
+      // posts: [], // 필요하다면 초기화
     );
+
     try {
       print("📡 [FeedNotifier] Repository 데이터 요청 중...");
       final result = await _repository.getFeeds(apiPath, 0);
@@ -75,14 +79,14 @@ class FeedNotifier extends StateNotifier<FeedState> {
       state = state.copyWith(
         posts: result['posts'],
         isLastPage: result['isLast'],
-        isLoading: false,
+        isLoading: false, // 로딩 완료
       );
     } catch (e, stacktrace) {
-      // 💡 에러 내용과 에러가 발생한 코드 위치(stacktrace)를 출력합니다.
       print("❌ [FeedNotifier] 에러 발생: $e");
-      print("📂 스택트레이스: $stacktrace");
-
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false, // 에러 발생 시에도 로딩은 꺼줘야 함
+        errorMessage: e.toString(),
+      );
     }
   }
 
@@ -110,16 +114,18 @@ class FeedNotifier extends StateNotifier<FeedState> {
 }
 
 // 3. Provider 정의 부분 수정
-final friendFeedProvider = StateNotifierProvider<FeedNotifier, FeedState>((
-  ref,
-) {
-  final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
-  return FeedNotifier(apiPath: '/api/v1/feeds/friends', repository: repository);
-});
+final friendFeedProvider =
+    StateNotifierProvider.autoDispose<FeedNotifier, FeedState>((
+      ref, //
+    ) {
+      final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
+      return FeedNotifier(apiPath: '/api/feed/friends', repository: repository);
+    });
 
-final exploreFeedProvider = StateNotifierProvider<FeedNotifier, FeedState>((
-  ref,
-) {
-  final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
-  return FeedNotifier(apiPath: '/api/feed/public', repository: repository);
-});
+final exploreFeedProvider =
+    StateNotifierProvider.autoDispose<FeedNotifier, FeedState>((
+      ref, //
+    ) {
+      final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
+      return FeedNotifier(apiPath: '/api/feed/public', repository: repository);
+    });
