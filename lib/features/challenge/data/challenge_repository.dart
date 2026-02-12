@@ -11,6 +11,7 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
+import 'package:haenaem/features/challenge/model/challenge_member.dart';
 part 'challenge_repository.g.dart';
 
 // 서버로부터 사용자의 챌린지 데이터를 가져오는 클래스
@@ -673,6 +674,76 @@ class ChallengeRepository {
     } catch (e) {
       // 에러 발생 시 호출한 곳(UI)으로 에러를 던짐
       rethrow;
+    }
+  }
+
+  // 챌린지 멤버 조회 API
+  // page: 필수 (0부터 시작)
+  // nickname: 선택 (검색어)
+  Future<List<ChallengeMember>> getChallengeMembers(
+    int challengeId, {
+    int page = 0,
+    String? nickname,
+  }) async {
+    print(
+      '🔥 [API Request] 챌린지($challengeId) 멤버 조회 요청 (Page: $page, Nickname: $nickname)',
+    );
+
+    try {
+      // 1. 쿼리 파라미터 구성
+      final Map<String, dynamic> queryParams = {
+        'page': page,
+        // 'size': 20, // 명세서에는 없지만, 보통 size도 같이 보냅니다. 필요시 주석 해제하세요.
+      };
+
+      // 닉네임이 있을 경우에만 파라미터에 추가
+      if (nickname != null && nickname.isNotEmpty) {
+        queryParams['nickname'] = nickname;
+      }
+
+      // 2. GET 요청 보내기
+      final response = await _dio.get(
+        '/api/challenges/$challengeId/members',
+        queryParameters: queryParams,
+      );
+
+      print('✨ [API Response] Status: ${response.statusCode}');
+      // 디버깅을 위해 서버가 주는 데이터 구조를 꼭 확인하세요!
+      print('📦 [API Response] Data: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> list = [];
+
+        // 3. 응답 데이터 파싱 (PageChallengeMemberResponse 대응)
+        if (data is Map<String, dynamic> && data.containsKey('content')) {
+          // Case A: Spring Boot Page 객체인 경우 ({ "content": [...], "totalPages": ... })
+          list = data['content'] as List;
+          print('✅ [Parsing] Page 객체 감지됨. content 리스트 추출.');
+        } else if (data is List) {
+          // Case B: 그냥 리스트인 경우 ([...])
+          list = data;
+          print('✅ [Parsing] 단순 리스트 감지됨.');
+        } else {
+          // Case C: 예상치 못한 구조
+          print('⚠️ [Parsing Warning] 예상치 못한 데이터 구조입니다. 확인이 필요합니다.');
+          // 일단 data 자체를 리스트로 시도하거나 빈 리스트 반환
+          if (data is List) list = data;
+        }
+
+        final members = list.map((e) => ChallengeMember.fromJson(e)).toList();
+        print('✅ [Success] 총 ${members.length}명의 멤버 로드 완료');
+
+        return members;
+      } else {
+        throw Exception('멤버 조회 실패 (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      print('🚨 [DioError] ${e.response?.statusCode} / ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '서버 요청 실패');
+    } catch (e) {
+      print('🚫 [Exception] $e');
+      throw Exception('멤버 정보를 불러오는데 실패했습니다.');
     }
   }
 }

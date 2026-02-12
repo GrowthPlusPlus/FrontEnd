@@ -1,0 +1,262 @@
+/// 최초 작성자: 정승빈
+library;
+
+import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:haenaem/core/utils/korean_string_utils.dart';
+import 'package:haenaem/features/challenge/model/challenge_member.dart';
+import 'package:haenaem/features/challenge/provider/challenge_member_provider.dart';
+
+// 1. StatefulWidget으로 변경 (검색어 상태 관리를 위해)
+class ChallengeMemberManagementScreen extends ConsumerStatefulWidget {
+  final int challengeId;
+
+  const ChallengeMemberManagementScreen({super.key, required this.challengeId});
+
+  @override
+  ConsumerState<ChallengeMemberManagementScreen> createState() =>
+      _ScreenState();
+}
+
+class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
+  // 2. 검색어 상태 변수
+  String? _searchQuery;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 3. 필터 객체 생성 및 Provider 구독
+    final filter = MemberFilter(
+      challengeId: widget.challengeId,
+      page: 0,
+      nickname: _searchQuery,
+    );
+    final membersAsyncValue = ref.watch(challengeMembersProvider(filter));
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/images/icons/arrow_left.svg',
+            width: 24,
+            height: 24,
+            colorFilter: const ColorFilter.mode(
+              AppColors.black,
+              BlendMode.srcIn,
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: true,
+        title: Text(
+          '챌린지 멤버 관리',
+          style: AppTypography.h3.copyWith(color: AppColors.black),
+        ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Text(
+              '멤버를 검색하고 관리할 수 있습니다.',
+              style: AppTypography.b2.copyWith(color: AppColors.gray2),
+            ),
+          ),
+          const SizedBox(height: 10),
+          // 1. 검색창 영역
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              height: 46,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(9.5),
+                border: Border.all(color: AppColors.gray4),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/icons/search_icon.svg',
+                    width: 18,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.gray2,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      // 4. 검색어 입력 시 상태 업데이트 -> Provider 재호출
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value.trim().isEmpty ? null : value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: '닉네임으로 검색',
+                        hintStyle: AppTypography.b2.copyWith(
+                          color: AppColors.gray3,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      style: AppTypography.b2.copyWith(color: AppColors.black),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 3. 데이터 상태에 따른 UI 분기 처리
+          Expanded(
+            child: membersAsyncValue.when(
+              // 로딩 중일 때
+              loading: () => const Center(child: CircularProgressIndicator()),
+
+              // 에러 발생 시
+              error: (err, stack) => Center(child: Text('에러가 발생했습니다: $err')),
+
+              // 데이터 로드 성공 시
+              data: (members) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 멤버 수 표시
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        '멤버 ${members.length}',
+                        style: AppTypography.b2.copyWith(
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // 리스트뷰
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: members.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final member = members[index];
+                          return _MemberTile(
+                            member: member,
+                            notificationRed: AppColors.notification,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MemberTile extends StatelessWidget {
+  const _MemberTile({required this.member, required this.notificationRed});
+
+  final ChallengeMember member;
+  final Color notificationRed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        children: [
+          // 프로필 이미지 (임시 플레이스홀더)
+          buildProfileCircle(member.profileImageUrl, 44),
+          const SizedBox(width: 10),
+          // 이름 및 칭호
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                member.nickname,
+                style: AppTypography.b2.copyWith(color: AppColors.black),
+              ),
+              Text(
+                '사용자 칭호',
+                // TODO: 실제 칭호 데이터로 교체 필요
+                style: AppTypography.c1.copyWith(color: AppColors.gray2),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // 강제 퇴장 버튼
+          InkWell(
+            onTap: () {
+              // TODO: 강제 퇴장 로직 구현 및 다이얼로그 표시
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border.all(color: notificationRed),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '강제 퇴장',
+                style: AppTypography.c1.copyWith(color: notificationRed),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 함수의 용도: 유저 프로필 이미지 원형 위젯 생성 (Asset -> Network 이미지 대응)
+  /// 매개 변수: String? imagePath, double size
+  Widget buildProfileCircle(String? imageUrl, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: const Color(0x7FDFE1DC),
+        shape: BoxShape.circle,
+        // 서버에서 오는 이미지는 NetworkImage로 처리해야 합니다.
+        image: imageUrl != null && imageUrl.startsWith('http')
+            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
+            : (imageUrl != null
+                  ? DecorationImage(
+                      image: AssetImage(imageUrl),
+                      fit: BoxFit.cover,
+                    )
+                  : null),
+      ),
+      child: imageUrl == null
+          ? Center(
+              child: SvgPicture.asset(
+                'assets/images/icons/default_profile_icon.svg',
+                width: size * 0.6,
+              ),
+            )
+          : null,
+    );
+  }
+}
