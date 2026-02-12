@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:haenaem/core/utils/korean_string_utils.dart';
 import 'package:haenaem/features/challenge/model/challenge_member.dart';
 import 'package:haenaem/features/challenge/provider/challenge_member_provider.dart';
+import 'widgets/kick_confirm_dialog.dart';
 
 // 1. StatefulWidget으로 변경 (검색어 상태 관리를 위해)
 class ChallengeMemberManagementScreen extends ConsumerStatefulWidget {
@@ -210,7 +211,16 @@ class _MemberTile extends StatelessWidget {
           // 강제 퇴장 버튼
           InkWell(
             onTap: () {
-              // TODO: 강제 퇴장 로직 구현 및 다이얼로그 표시
+              showDialog(
+                context: context,
+                builder: (context) => KickConfirmDialog(
+                  nickname: member.nickname, // 멤버 닉네임 전달
+                  onConfirm: () {
+                    // TODO: 실제 강퇴 API 호출 로직 작성
+                    print('👋 \'${member.nickname}\' 강퇴 처리됨');
+                  },
+                ),
+              );
             },
             borderRadius: BorderRadius.circular(8),
             child: Container(
