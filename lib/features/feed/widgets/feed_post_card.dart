@@ -3,12 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:haenaem/features/challenge/feed/post_detail_screen.dart'; // 인증글 상세 불러오기
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
-import 'package:haenaem/features/challenge/feed/challenge_feed_screen.dart'; // 인증글 상세 정보 불러오기에 만들어져 있는 ChallengeFeedScreen 사용
 
 class FeedPostCard extends ConsumerWidget {
   final CertificationPostModel post;
@@ -36,7 +36,7 @@ class FeedPostCard extends ConsumerWidget {
               context,
               MaterialPageRoute(
                 builder: (context) =>
-                    ChallengeFeedScreen(post: post, feedProvider: provider),
+                    PostDetailScreen(post: post, feedProvider: provider),
               ),
             );
           },

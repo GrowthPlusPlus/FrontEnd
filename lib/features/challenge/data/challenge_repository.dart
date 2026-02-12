@@ -73,6 +73,18 @@ class ChallengeRepository {
     );
   }
 
+  // 챌린지 상세정보 조회
+  Future<ChallengeDetailModel> getChallengeDetail(int challengeId) async {
+    try {
+      final response = await _dio.get('api/challenge/$challengeId');
+      // API 응답(response.data)을 새로운 상세 모델로 변환
+      return ChallengeDetailModel.fromJson(response.data);
+    } catch (e) {
+      // 에러 핸들링 로직 추가 가능
+      rethrow;
+    }
+  }
+
   // 전체 태그 조회
   Future<List<ChallengeTagModel>> getAllTags() async {
     try {

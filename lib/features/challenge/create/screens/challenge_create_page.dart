@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_detail_screen.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'dart:convert';
 
@@ -14,7 +15,6 @@ import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_create_success_dialog.dart';
-import 'package:haenaem/features/challenge/calendar/ChallengeCalendarScreen.dart';
 
 // -- 챌린지 생성 화면 --
 class ChallengeCreatePage extends ConsumerStatefulWidget {
@@ -143,7 +143,7 @@ class _ChallengeCreatePageState extends ConsumerState<ChallengeCreatePage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ChallengeCalendarScreen(
+          builder: (context) => ChallengeDetailScreen(
             challengeId: response.id,
             challengeTitle: _nameController.text.trim(), // 💡 유저가 입력한 제목 전달!
             isJustCreated: true,

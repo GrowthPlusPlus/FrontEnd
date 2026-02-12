@@ -57,6 +57,80 @@ class ChallengeModel {
   }
 }
 
+// 챌린지 상세정보 모델
+class ChallengeDetailModel {
+  final String title;
+  final String startDate;
+  final String endDate;
+  final int requiredWeeklyCount;
+  final bool photoRequired;
+  final List<String> tags;
+  final String description;
+  final HostModel host;
+  final int participantCount;
+  final List<ParticipantModel> todaySuccessUsers;
+
+  ChallengeDetailModel({
+    required this.title,
+    required this.startDate,
+    required this.endDate,
+    required this.requiredWeeklyCount,
+    required this.photoRequired,
+    required this.tags,
+    required this.description,
+    required this.host,
+    required this.participantCount,
+    required this.todaySuccessUsers,
+  });
+
+  factory ChallengeDetailModel.fromJson(Map<String, dynamic> json) {
+    return ChallengeDetailModel(
+      title: json['title'] ?? '',
+      startDate: json['startDate'] ?? '',
+      endDate: json['endDate'] ?? '',
+      requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
+      photoRequired: json['photoRequired'] ?? false,
+      tags: List<String>.from(json['tags'] ?? []),
+      description: json['description'] ?? '',
+      host: HostModel.fromJson(json['host'] ?? {}),
+      participantCount: json['participantCount'] ?? 0,
+      todaySuccessUsers:
+          (json['todaySuccessUsers'] as List?)
+              ?.map((e) => ParticipantModel.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class HostModel {
+  final String name;
+  final String profileImageUrl;
+
+  HostModel({required this.name, required this.profileImageUrl});
+
+  factory HostModel.fromJson(Map<String, dynamic> json) {
+    return HostModel(
+      name: json['name'] ?? '익명',
+      profileImageUrl: json['profileImageUrl'] ?? '',
+    );
+  }
+}
+
+class ParticipantModel {
+  final String name;
+  final String profileImageUrl;
+
+  ParticipantModel({required this.name, required this.profileImageUrl});
+
+  factory ParticipantModel.fromJson(Map<String, dynamic> json) {
+    return ParticipantModel(
+      name: json['name'] ?? '',
+      profileImageUrl: json['profileImageUrl'] ?? '',
+    );
+  }
+}
+
 // 2. 알림 데이터를 포함한 전체 데이터 관리 클래스 -> 메인(홈)화면에서 사용
 class ChallengeMainModel {
   final List<ChallengeModel> myChallenges;

@@ -11,17 +11,16 @@ import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/comment_popup_menu.dart';
 
-class ChallengeFeedScreen extends ConsumerStatefulWidget {
+class PostDetailScreen extends ConsumerStatefulWidget {
   final CertificationPostModel post;
   final dynamic feedProvider;
-  const ChallengeFeedScreen({super.key, required this.post, this.feedProvider});
+  const PostDetailScreen({super.key, required this.post, this.feedProvider});
 
   @override
-  ConsumerState<ChallengeFeedScreen> createState() =>
-      _ChallengeFeedScreenState();
+  ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
 }
 
-class _ChallengeFeedScreenState extends ConsumerState<ChallengeFeedScreen> {
+class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   // 1. 텍스트 제어를 위한 컨트롤러 선언
   final TextEditingController _commentController = TextEditingController();
   bool _isButtonActive = false; // 버튼 활성화 상태 추적

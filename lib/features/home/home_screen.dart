@@ -5,9 +5,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_detail_screen.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/calendar/ChallengeCalendarScreen.dart';
 
 class HomeScreen extends ConsumerWidget {
   // StatelessWidget -> ConsumerWidget 변경
@@ -368,7 +368,7 @@ class ChallengeCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChallengeCalendarScreen(
+            builder: (context) => ChallengeDetailScreen(
               challengeId: challenge.challengeId, // 필수로 필요한 ID 전달
               challengeTitle: challenge.title, // 상단 앱바에 표시할 타이틀 전달
             ),
