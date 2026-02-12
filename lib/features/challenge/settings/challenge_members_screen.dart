@@ -36,13 +36,18 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 3. 필터 객체 생성 및 Provider 구독
+    // 클라이언트 필터링을 위해 nickname에 null 전달
+    // (서버에서 전체 목록을 받아온 후 앱 내에서 초성 검색 수행)
     final filter = MemberFilter(
       challengeId: widget.challengeId,
       page: 0,
-      nickname: _searchQuery,
+      nickname: null,
     );
     final membersAsyncValue = ref.watch(challengeMembersProvider(filter));
+
+    // TODO: 실제 앱의 UserProvider 등을 통해 현재 로그인한 유저의 ID를 가져오기.
+    // final currentUserId = ref.watch(userProvider).id;
+    const int currentUserId = 14; // 테스트용 임시 ID (로그상의 '승빈'님 ID)
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -101,7 +106,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                   Expanded(
                     child: TextField(
                       controller: _searchController,
-                      // 4. 검색어 입력 시 상태 업데이트 -> Provider 재호출
+                      // 검색어 입력 시 상태 업데이트 -> UI 다시 그리기 (API 재호출 X)
                       onChanged: (value) {
                         setState(() {
                           _searchQuery = value.trim().isEmpty ? null : value;
@@ -125,7 +130,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
           ),
           const SizedBox(height: 20),
 
-          // 3. 데이터 상태에 따른 UI 분기 처리
+          // 데이터 상태에 따른 UI 분기 처리
           Expanded(
             child: membersAsyncValue.when(
               // 로딩 중일 때
@@ -136,6 +141,28 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
 
               // 데이터 로드 성공 시
               data: (members) {
+                // 검색어 필터링 (초성 검색 포함)
+                final filteredMembers = members.where((member) {
+                  if (_searchQuery == null) return true;
+                  final query = _searchQuery!.toLowerCase();
+                  final nickname = member.nickname;
+                  final nicknameLower = nickname.toLowerCase();
+
+                  // 일반 텍스트 포함 여부 OR 2. 초성 포함 여부
+                  return nicknameLower.contains(query) ||
+                      KoreanStringUtils.getChoseongString(
+                        nickname,
+                      ).contains(query);
+                }).toList();
+
+                // 정렬 (한글 > 영어 > 숫자 > 특수문자)
+                filteredMembers.sort((a, b) {
+                  return KoreanStringUtils.compareKoreanFirst(
+                    a.nickname,
+                    b.nickname,
+                  );
+                });
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -143,7 +170,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        '멤버 ${members.length}',
+                        '멤버 ${filteredMembers.length}',
                         style: AppTypography.b2.copyWith(
                           color: AppColors.black,
                         ),
@@ -154,13 +181,17 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                     // 리스트뷰
                     Expanded(
                       child: ListView.separated(
-                        itemCount: members.length,
+                        itemCount: filteredMembers.length,
                         separatorBuilder: (context, index) =>
                             const SizedBox(height: 8),
                         itemBuilder: (context, index) {
-                          final member = members[index];
+                          final member = filteredMembers[index];
+                          // 현재 렌더링 중인 멤버가 '나'인지 확인
+                          final isMe = member.memberId == currentUserId;
+
                           return _MemberTile(
                             member: member,
+                            isMe: isMe, // 상태 전달
                             notificationRed: AppColors.notification,
                           );
                         },
@@ -178,9 +209,14 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
 }
 
 class _MemberTile extends StatelessWidget {
-  const _MemberTile({required this.member, required this.notificationRed});
+  const _MemberTile({
+    required this.member,
+    required this.isMe,
+    required this.notificationRed,
+  });
 
   final ChallengeMember member;
+  final bool isMe;
   final Color notificationRed;
 
   @override
@@ -209,32 +245,49 @@ class _MemberTile extends StatelessWidget {
           ),
           const Spacer(),
           // 강제 퇴장 버튼
-          InkWell(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => KickConfirmDialog(
-                  nickname: member.nickname, // 멤버 닉네임 전달
-                  onConfirm: () {
-                    // TODO: 실제 강퇴 API 호출 로직 작성
-                    print('👋 \'${member.nickname}\' 강퇴 처리됨');
-                  },
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
+          // 본인일 경우 '챌린지장' 배지 표시, 아닐 경우 '강제 퇴장' 버튼 표시
+          if (isMe)
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                border: Border.all(color: notificationRed),
+                color: AppColors.selected,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '강제 퇴장',
-                style: AppTypography.c1.copyWith(color: notificationRed),
+                '챌린지장',
+                style: AppTypography.c1.copyWith(color: AppColors.primaryAble),
+              ),
+            )
+          else
+            InkWell(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => KickConfirmDialog(
+                    nickname: member.nickname,
+                    onConfirm: () {
+                      // TODO: 강퇴 API 호출
+                      print('👋 \'${member.nickname}\' 강퇴 처리됨');
+                    },
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: notificationRed),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '강제 퇴장',
+                  style: AppTypography.c1.copyWith(color: notificationRed),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
