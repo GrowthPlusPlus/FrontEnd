@@ -54,3 +54,28 @@ class FriendModel {
     );
   }
 }
+
+// 챌린지 멤버 정보를 관리하는 클래스 (memberId 포함)
+// 챌린지 멤버 관리 기능에 쓰임
+// challenge_member_provider.dart
+// challenge_repository.dart
+// challenge_members_screen.dart
+class ChallengeMember {
+  final int memberId;
+  final String nickname;
+  final String? profileImageUrl;
+
+  ChallengeMember({
+    required this.memberId,
+    required this.nickname,
+    this.profileImageUrl,
+  });
+
+  factory ChallengeMember.fromJson(Map<String, dynamic> json) {
+    return ChallengeMember(
+      memberId: json['userId'] as int,
+      nickname: json['nickname'] as String,
+      profileImageUrl: json['profileImageUrl'] as String?,
+    );
+  }
+}
