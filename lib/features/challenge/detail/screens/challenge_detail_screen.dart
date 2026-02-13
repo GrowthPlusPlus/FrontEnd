@@ -8,6 +8,8 @@ import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengePopupMenu.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
+import 'package:haenaem/shared/widgets/bottom_action_button.dart';
+import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 
 // 분리된 뷰 파일들 (아래 2번 단계에서 생성/수정할 파일들)
 import 'package:haenaem/features/challenge/detail/views/calendar_view.dart';
@@ -47,6 +49,12 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen>
     super.initState();
     // 탭 3개: 소개(0), 내 현황(1), 멤버 현황(2)
     _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {}); // 인덱스 변경 완료 시 UI 업데이트
+      }
+    });
 
     // 챌린지 생성 직후라면 생성 성공 다이얼로그 실행
     if (widget.isJustCreated && widget.createdData != null) {
@@ -155,6 +163,53 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen>
           ),
         ],
       ),
+      bottomNavigationBar: _buildBottomButton(),
+    );
+  }
+
+  Widget _buildBottomButton() {
+    // 0: 소개, 1: 내 현황 -> '인증하기'
+    // 2: 멤버 현황 -> '내 순위 확인하기'
+    final bool isMemberTab = _tabController.index == 2;
+
+    return BottomActionButton(
+      // 1. 텍스트 분기
+      text: isMemberTab ? '내 순위 확인하기' : '인증하기',
+
+      // 2. 배경색: 멤버 탭이면 흰색, 아니면 기본색(초록)
+      backgroundColor: isMemberTab ? Colors.white : AppColors.primaryAble,
+
+      // 3. 글자색: 멤버 탭이면 초록색, 아니면 흰색
+      textColor: isMemberTab ? AppColors.primaryAble : Colors.white,
+
+      // 4. 테두리색: 멤버 탭일 때만 초록색 테두리 추가
+      borderColor: isMemberTab ? AppColors.primaryAble : null,
+
+      onPressed: () {
+        if (isMemberTab) {
+          // 멤버 순위 페이지 이동 로직
+          _scrollToMyRank();
+        } else {
+          // 인증 페이지 이동 로직
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  ChallengeVerificationPage(challengeId: widget.challengeId),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  void _scrollToMyRank() {
+    // MemberView에서 내 순위를 찾는 로직을 구현하거나
+    // scrollController를 통해 하단으로 이동시키는 로직 등을 수행합니다.
+    _memberScrollController.animateTo(
+      500, // 예시 값
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOut,
     );
   }
 }

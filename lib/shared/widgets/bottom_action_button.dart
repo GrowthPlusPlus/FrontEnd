@@ -1,3 +1,5 @@
+// 최초 작성자: 강선욱
+// 화면 하단에 표시되는 버튼을 커스텀할 수 있는 클래스
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
@@ -50,7 +52,7 @@ class BottomActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             // 테두리 조건부 렌더링
             side: borderColor != null
-                ? BorderSide(color: borderColor!, width: 1)
+                ? BorderSide(color: borderColor!, width: 2)
                 : BorderSide.none,
           ),
         ),

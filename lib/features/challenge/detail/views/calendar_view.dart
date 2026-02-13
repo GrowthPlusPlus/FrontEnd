@@ -114,46 +114,6 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
             ],
           ),
         ),
-        // [수정 포인트 2] 버튼을 Scaffold의 바닥 속성에 배치하여 물리적으로 고정합니다.
-        bottomNavigationBar: _buildBottomButton(context),
-      ),
-    );
-  }
-
-  // --- 위젯 빌더 메서드들 (기존 코드와 동일) ---
-
-  Widget _buildBottomButton(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 30), // 하단 여백 추가
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.white.withOpacity(0), Colors.white],
-        ),
-      ),
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  ChallengeVerificationPage(challengeId: widget.challengeId),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryAble,
-          minimumSize: const Size(double.infinity, 60),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          elevation: 0,
-        ),
-        child: Text(
-          '인증하기',
-          style: AppTypography.h3.copyWith(color: Colors.white),
-        ),
       ),
     );
   }
