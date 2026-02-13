@@ -15,6 +15,7 @@ class ChallengeHomeNotifier extends _$ChallengeHomeNotifier {
     // Repository를 통해 데이터를 가져옵니다.
     final repository = ref.watch(challengeRepositoryProvider);
     final String todayDate = _getFormattedDate(DateTime.now());
+    // print(repository.getChallengeMainData(todayDate));
     return repository.getChallengeMainData(todayDate);
   }
 
@@ -56,10 +57,11 @@ ChallengeStatus todayTotalStatus(TodayTotalStatusRef ref) {
       if (challenges.isEmpty) return ChallengeStatus.normal;
 
       // 하나라도 긴급(warning)이 있으면 Urgent
-      if (challenges.any((c) => c.isUrgent)) return ChallengeStatus.urgent;
+      if (challenges.any((c) => c['warning'] == true))
+        return ChallengeStatus.urgent;
 
       // 모든 챌린지가 오늘 완료(doIt)되었으면 Completed
-      if (challenges.every((c) => c.isDoneToday))
+      if (challenges.every((c) => c['doIt'] == true))
         return ChallengeStatus.completed;
 
       return ChallengeStatus.normal;
