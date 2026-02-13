@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/feed/challenge_detail_screen.dart';
+import 'package:haenaem/features/challenge/feed/challenge_detail_screen.dart'; // 챌린지 소개 화면 뷰 재활용
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
@@ -289,12 +289,12 @@ class ChallengeCard extends StatelessWidget {
               alignment: Alignment.center,
               child: IconButton(
                 onPressed: () {
-                  // 상세 페이지로 이동
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ChallengeDetailPage(
-                        challengeId: challenge.challengeId,
+                      builder: (context) => const ChallengeDetailScreen(
+                        // ChallengeSearchModel을 쓸 수가 없어서 일단 하드 코딩
+                        challengeId: 56,
                       ),
                     ),
                   );

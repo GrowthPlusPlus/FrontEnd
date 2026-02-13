@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/detail/screens/challenge_detail_screen.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'dart:convert';
 
