@@ -8,6 +8,7 @@ import '../provider/challenge_provider.dart';
 
 import '../widgets/delegate_dialog.dart';
 import '../widgets/delete_challenge_dialog.dart';
+import 'challenge_members_screen.dart';
 
 // 챌린지 설정화면
 class ChallengeSettingsScreen extends ConsumerWidget {
@@ -61,7 +62,14 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                 title: '챌린지 멤버 관리',
                 iconPath: 'assets/images/icons/friend_icon_on.svg',
                 onTap: () {
-                  /* 멤버 관리 로직 */
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChallengeMemberManagementScreen(
+                        challengeId: challengeId,
+                      ),
+                    ),
+                  );
                 },
               ),
 
