@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/model/image_model.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
