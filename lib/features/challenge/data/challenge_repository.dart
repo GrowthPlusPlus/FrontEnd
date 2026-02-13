@@ -11,7 +11,7 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
-import 'package:haenaem/features/challenge/model/challenge_member.dart';
+import 'package:haenaem/features/challenge/model/user_model.dart';
 part 'challenge_repository.g.dart';
 
 // 서버로부터 사용자의 챌린지 데이터를 가져오는 클래스
