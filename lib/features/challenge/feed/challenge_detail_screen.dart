@@ -52,7 +52,11 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '챌린지 상세정보',
+          challengeAsync.when(
+            data: (challenge) => challenge.title,
+            loading: () => '로딩 중...',
+            error: (_, __) => '챌린지 상세정보',
+          ),
           style: AppTypography.h3.copyWith(color: AppColors.black),
         ),
         centerTitle: true,
@@ -82,6 +86,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
               data: (challenge) => ChallengeDetailContent(
                 challenge: challenge,
                 scrollController: _scrollController,
+                showTitle: false,
               ),
             ),
           ),

@@ -8,11 +8,13 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart'; // 상�
 class ChallengeDetailContent extends StatelessWidget {
   final ChallengeDetailModel challenge;
   final ScrollController scrollController;
+  final bool showTitle; // ✅ 제목 노출 여부 추가
 
   const ChallengeDetailContent({
     super.key,
     required this.challenge,
     required this.scrollController,
+    this.showTitle = true,
   });
 
   @override
@@ -53,11 +55,13 @@ class ChallengeDetailContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 챌린지 제목
-          Text(
-            challenge.title,
-            style: AppTypography.h3.copyWith(color: AppColors.black),
-          ),
-          const SizedBox(height: 24),
+          if (showTitle) ...[
+            Text(
+              challenge.title,
+              style: AppTypography.h3.copyWith(color: AppColors.black),
+            ),
+            const SizedBox(height: 24),
+          ],
 
           _buildInfoSection('챌린지 시작일', formattedStart),
           _buildInfoSection('챌린지 마감일', '$formattedEnd $dDayString'),
