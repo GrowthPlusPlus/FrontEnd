@@ -555,6 +555,26 @@ class ChallengeRepository {
     }
   }
 
+  Future<void> leaveChallenge(int challengeId) async {
+    try {
+      // 1. API 경로 설정: /api/challenges/{challengeId}/leaveChallenge
+      final response = await _dio.delete(
+        '/api/challenges/$challengeId/leaveChallenge',
+      );
+
+      // 2. 응답 상태 코드 확인 (서버 설계에 따라 200 또는 204)
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        debugPrint("챌린지 퇴장 성공: $challengeId");
+      } else {
+        // 서버에서 에러 메시지를 주는 경우 처리
+        throw Exception(response.data['message'] ?? '챌린지 나가기에 실패했습니다.');
+      }
+    } catch (e) {
+      debugPrint("챌린지 퇴장 API 에러: $e");
+      rethrow; // Provider의 AsyncValue.guard에서 잡을 수 있도록 던져줍니다.
+    }
+  }
+
   // 내 페이지 - 나의 챌린지 - 진행 중인 챌린지
   Future<List<ChallengeInProgressModel>> getInProgressChallenges({
     required bool onlyTwo,

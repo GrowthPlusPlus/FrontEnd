@@ -1,15 +1,18 @@
 // 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/invite/challengeInviteScreen.dart';
-import 'package:haenaem/features/challenge/widgets/ExitConfirmDialog.dart';
+import 'package:haenaem/features/challenge/widgets/exit_confirm_dialog.dart';
 import 'package:haenaem/features/challenge/widgets/NotificationSettingsDialog.dart';
 import 'package:haenaem/features/challenge/settings/challenge_settings_screen.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart'; // 추가
 
 // 챌린지방 팝업 (방장일 경우/멤버일 경우)
-class ChallengePopupMenu extends StatelessWidget {
+class ChallengePopupMenu extends ConsumerWidget {
+  // ConsumerWidget으로 변경
   final bool isHost; // 방장 여부
   final int challengeId;
 
@@ -20,7 +23,8 @@ class ChallengePopupMenu extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // WidgetRef 추가
     return PopupMenuButton<String>(
       popUpAnimationStyle: const AnimationStyle(
         duration: Duration.zero,
@@ -65,13 +69,14 @@ class ChallengePopupMenu extends StatelessWidget {
             _buildPopupItem(
               '챌린지 나가기',
               'assets/images/icons/exit_icon.svg',
-              'exit',
+              'leave',
               isDanger: true,
             ),
         ];
       },
 
-      onSelected: (String value) => _handleMenuSelection(context, value),
+      onSelected: (String value) =>
+          _handleMenuSelection(context, ref, value), // ref 전달
     );
   }
 
@@ -107,7 +112,12 @@ class ChallengePopupMenu extends StatelessWidget {
   }
 
   // 메뉴 선택 핸들러
-  void _handleMenuSelection(BuildContext context, String value) {
+  void _handleMenuSelection(
+    BuildContext context,
+    WidgetRef ref,
+    String value,
+  ) async {
+    // async 추가
     switch (value) {
       case 'notification':
         // 알림 설정 로직 호출
@@ -142,17 +152,35 @@ class ChallengePopupMenu extends StatelessWidget {
           ),
         );
         break;
-      case 'exit':
+      case 'leave':
         // 참여자 전용: 나가기 컨펌 다이얼로그
-        showDialog<bool>(
+        final bool? confirmed = await showDialog<bool>(
+          // await로 변경
           context: context,
           builder: (context) => const ExitConfirmDialog(),
-        ).then((confirmed) {
-          if (confirmed == true) {
-            // 사용자가 '나가기'를 확정했을 때의 로직
-            print("챌린지 나가기 처리됨");
+        );
+
+        if (confirmed == true) {
+          // 사용자가 '나가기'를 확정했을 때의 로직
+          // 💡 ChallengeLeaveNotifier를 통해 API 호출
+          final bool success = await ref
+              .read(challengeLeaveNotifierProvider.notifier)
+              .leaveChallenge(challengeId);
+
+          if (success && context.mounted) {
+            // 성공 시 메시지 표시 및 화면 이동 처리
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('챌린지에서 성공적으로 나갔습니다.')));
+            // 홈 화면으로 이동
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          } else if (context.mounted) {
+            // 실패 시 에러 메시지
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('나가기 처리 중 오류가 발생했습니다.')),
+            );
           }
-        });
+        }
         break;
     }
   }
