@@ -81,7 +81,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         data: (latestPost) {
           // 상세 조회의 날짜 사용
           String formattedDate = latestPost.createdAt != null
-              ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(latestPost.createdAt!)
+              ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(latestPost.updatedAt!)
               : "";
 
           return SingleChildScrollView(

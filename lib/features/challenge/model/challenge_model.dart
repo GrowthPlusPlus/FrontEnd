@@ -260,6 +260,7 @@ class CertificationPostModel {
   final String? userImageUrl;
   final List<PostImage> images;
   final DateTime? createdAt;
+  final DateTime? updatedAt;
   final int likeNumber;
   final int commentNumber;
   final bool liked;
@@ -268,6 +269,9 @@ class CertificationPostModel {
   // 기존 UI 코드 호환성을 위한 Getter
   String get postDate =>
       createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt!) : "";
+  // 수정 여부를 확인하는 Getter (필요 시 활용)
+  // bool get isEdited => updatedAt != null && updatedAt != createdAt;
+
   String? get imageUrl => images.isNotEmpty ? images.first.imageUrl : null;
   String? get userName => userNickname;
   int get likeCount => likeNumber;
@@ -282,6 +286,7 @@ class CertificationPostModel {
     this.userNickname,
     this.userImageUrl,
     this.createdAt,
+    this.updatedAt,
     this.likeNumber = 0,
     this.commentNumber = 0,
     this.liked = false,
@@ -298,6 +303,7 @@ class CertificationPostModel {
     String? userImageUrl,
     List<PostImage>? images,
     DateTime? createdAt,
+    DateTime? updatedAt,
     int? likeNumber,
     int? commentNumber,
     bool? liked,
@@ -312,6 +318,7 @@ class CertificationPostModel {
       userImageUrl: userImageUrl ?? this.userImageUrl,
       images: images ?? this.images,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       likeNumber: likeNumber ?? this.likeNumber,
       commentNumber: commentNumber ?? this.commentNumber,
       liked: liked ?? this.liked,
@@ -352,6 +359,9 @@ class CertificationPostModel {
       createdAt: json['postDate'] != null
           ? DateTime.tryParse(json['postDate'])
           : DateTime.tryParse(json['createdAt'] ?? ''),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : null,
       likeNumber: json['likeNumber'] ?? 0,
       commentNumber: json['commentNumber'] ?? 0,
       liked: json['liked'] ?? false,
