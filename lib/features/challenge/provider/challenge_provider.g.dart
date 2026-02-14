@@ -151,7 +151,7 @@ class _ChallengeDetailProviderElement
   int get challengeId => (origin as ChallengeDetailProvider).challengeId;
 }
 
-String _$todayTotalStatusHash() => r'b51b5f01e4941d5d5f4382e00fc586324187176d';
+String _$todayTotalStatusHash() => r'538019eb21a25b4148687cc999fca4c729a86b93';
 
 /// See also [todayTotalStatus].
 @ProviderFor(todayTotalStatus)
@@ -1481,6 +1481,26 @@ final challengeHomeNotifierProvider =
     );
 
 typedef _$ChallengeHomeNotifier = AutoDisposeAsyncNotifier<ChallengeMainModel>;
+String _$challengeLeaveNotifierHash() =>
+    r'b3730af90553c42993450f3f38cb24c564a3ff8a';
+
+/// See also [ChallengeLeaveNotifier].
+@ProviderFor(ChallengeLeaveNotifier)
+final challengeLeaveNotifierProvider =
+    AutoDisposeNotifierProvider<
+      ChallengeLeaveNotifier,
+      AsyncValue<void>
+    >.internal(
+      ChallengeLeaveNotifier.new,
+      name: r'challengeLeaveNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$challengeLeaveNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ChallengeLeaveNotifier = AutoDisposeNotifier<AsyncValue<void>>;
 String _$challengeCreateNotifierHash() =>
     r'cbc4cd944ef88513ff25539f16dbe448af4446e6';
 
