@@ -267,14 +267,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         children: [
           // 💡 좋아요 아이콘 영역
           GestureDetector(
-            onTap: () {
-              // 좋아요 토글 호출
-              ref
+            onTap: () async {
+              await ref
                   .read(articleLikeNotifierProvider.notifier)
                   .toggleLike(
                     postId: post.postId,
                     isCurrentlyLiked: post.liked,
                   );
+
+              if (widget.feedProvider != null) {
+                ref
+                    .read(widget.feedProvider.notifier)
+                    .toggleLikeLocally(post.postId);
+              }
             },
             child: Row(
               children: [
