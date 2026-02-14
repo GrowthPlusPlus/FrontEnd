@@ -227,6 +227,7 @@ class ChallengeComment {
   final String? userPicture;
   final String contents;
   final DateTime createdAt;
+  final DateTime? updatedAt;
   final bool mine;
 
   ChallengeComment({
@@ -235,6 +236,7 @@ class ChallengeComment {
     this.userPicture,
     required this.contents,
     required this.createdAt,
+    required this.updatedAt,
     required this.mine,
   });
 
@@ -245,7 +247,31 @@ class ChallengeComment {
       userPicture: json['userPicture'],
       contents: json['contents'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : null,
       mine: json['mine'] ?? false,
+    );
+  }
+
+  // 업데이트 시 상태 유지를 위한 copyWith
+  ChallengeComment copyWith({
+    int? commentId,
+    String? userNickname,
+    String? userPicture,
+    String? contents,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? mine,
+  }) {
+    return ChallengeComment(
+      commentId: commentId ?? this.commentId,
+      userNickname: userNickname ?? this.userNickname,
+      userPicture: userPicture ?? this.userPicture,
+      contents: contents ?? this.contents,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      mine: mine ?? this.mine,
     );
   }
 }
