@@ -24,8 +24,10 @@ class FeedPostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    String formattedDate = post.createdAt != null
-        ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(post.createdAt!)
+    final displayDate = post.updatedAt ?? post.createdAt;
+
+    String formattedDate = displayDate != null
+        ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(displayDate)
         : "";
 
     return InkWell(

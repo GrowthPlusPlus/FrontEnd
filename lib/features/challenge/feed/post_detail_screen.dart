@@ -79,9 +79,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('데이터를 불러올 수 없습니다: $err')),
         data: (latestPost) {
-          // 상세 조회의 날짜 사용
-          String formattedDate = latestPost.createdAt != null
-              ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(latestPost.createdAt!)
+          final displayDate = latestPost.updatedAt ?? latestPost.createdAt;
+
+          String formattedDate = displayDate != null
+              ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(displayDate)
               : "";
 
           return SingleChildScrollView(
@@ -437,7 +438,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Widget _buildCommentItem(ChallengeComment comment) {
     String commentDate = DateFormat(
       'yyyy년 MM월 dd일 HH:mm',
-    ).format(comment.createdAt);
+    ).format(comment.updatedAt ?? comment.createdAt);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
