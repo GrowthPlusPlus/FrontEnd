@@ -33,12 +33,15 @@ class FeedPostCard extends ConsumerWidget {
     return InkWell(
       onTap:
           onTap ??
-          () {
-            Navigator.push(
+          () async {
+            // 상세 페이지로 이동하고, 상세 페이지가 pop(닫힘) 될 때까지 기다립니다.
+            await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    PostDetailScreen(post: post, feedProvider: provider),
+                builder: (context) => PostDetailScreen(
+                  post: post,
+                  feedProvider: provider, // 기존에 넘겨주던 프로바이더
+                ),
               ),
             );
           },
