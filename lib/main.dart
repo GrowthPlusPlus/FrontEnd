@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
-import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
+import 'package:haenaem/features/challenge/create/screens/challenge_create_screen.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 import 'features/challenge/create/widgets/challenge_create_success_dialog.dart';

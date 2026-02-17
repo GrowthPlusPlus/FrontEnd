@@ -1,12 +1,20 @@
 // 최초 작성자 : 김채영
-// 태그 데이터
-class TagData {
-  static const Map<String, List<String>> categories = {
-    '연령/상태': ['10대', '20대', '30대', '고3', '편준생', 'n수생'],
-    '운동/건강': ['운동', '러닝', '홈트', '다이어트', '건강', '식단', '수면패턴'],
-    '학업/시험': ['입시', '공시', '시험', '어학', '자격증', '취준', '과제'],
-    '취미/여가': ['취미', '독서', '악기', '그림/드로잉', '필사/글쓰기'],
-    '그룹 활동': ['스터디', '동아리'],
-    '기타': ['기타'],
-  };
+// 서버의 영문 카테고리를 앱 내 한글 명칭으로 변환
+class TagMapper {
+  static String getKoreanCategory(String englishCategory) {
+    switch (englishCategory.toUpperCase()) {
+      case 'AGE':
+        return '연령/상태';
+      case 'HEALTH':
+        return '운동/건강';
+      case 'STUDY':
+        return '학업/시험';
+      case 'HOBBY':
+        return '취미/여가';
+      case 'GROUP':
+        return '그룹 활동';
+      default:
+        return englishCategory; // 매핑되지 않은 경우 원래 문자열 반환
+    }
+  }
 }

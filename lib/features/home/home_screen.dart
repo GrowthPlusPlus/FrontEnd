@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/create/screens/challenge_create_page.dart';
+import 'package:haenaem/features/challenge/create/screens/challenge_create_screen.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_detail_screen.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
@@ -140,7 +140,9 @@ class HomeScreen extends ConsumerWidget {
       child: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ChallengeCreatePage()),
+          MaterialPageRoute(
+            builder: (context) => const ChallengeCreateScreen(),
+          ),
         ),
         backgroundColor: Colors.white,
         shape: const CircleBorder(),

@@ -89,7 +89,7 @@ class ChallengeRepository {
   // 전체 태그 조회
   Future<List<ChallengeTagModel>> getAllTags() async {
     try {
-      final response = await _dio.get('/api/tags');
+      final response = await _dio.get('/api/tags/all');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => ChallengeTagModel.fromJson(json)).toList();
@@ -134,13 +134,6 @@ class ChallengeRepository {
           filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
         ),
     });
-
-    // 2. 요청 전송 (Interceptor 덕분에 토큰은 자동으로 붙습니다)
-    await _dio.post(
-      '/api/user/signup',
-      data: formData,
-      options: Options(contentType: 'multipart/form-data'),
-    );
   }
 
   // 챌린지 생성 post 요청 보내기
@@ -814,8 +807,11 @@ ChallengeRepository challengeRepository(ChallengeRepositoryRef ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: 'https://hanaem.onrender.com/',
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      //baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
+      connectTimeout: const Duration(seconds: 45),
+      receiveTimeout: const Duration(seconds: 45),
+      // ngrok 경고창을 무시하는 헤더 추가
+      //headers: {'ngrok-skip-browser-warning': 'true'},
     ),
   );
 

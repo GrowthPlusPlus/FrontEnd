@@ -47,27 +47,9 @@ class _ProfileImageScreenState extends ConsumerState<ProfileImageScreen> {
 
   // "다음" 버튼 클릭 시 실행될 핸들러
   Future<void> _handleNext() async {
-    final selectedImage = ref.read(signupProvider).profileImage;
-
-    if (selectedImage != null) {
-      // 이미지가 있다면 서버에 업로드 시도
-      final success = await ref
-          .read(signupProvider.notifier)
-          .uploadProfileImage(selectedImage);
-
-      if (!mounted) return;
-
-      if (success) {
-        widget.onNext();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미지 등록에 실패했습니다. 다시 시도해주세요.')),
-        );
-      }
-    } else {
-      // 이미지가 없으면 '건너뛰기'이므로 바로 다음 단계로 이동
-      widget.onNext();
-    }
+    // 💡 이미지 업로드 API(uploadProfileImage) 호출을 아예 지웁니다.
+    // 이미지는 이미 _getImage 단계에서 notifier.updateImage로 로컬에 저장되었습니다.
+    widget.onNext();
   }
 
   @override

@@ -403,11 +403,13 @@ class UserProfileModel {
   final String nickname;
   final String introduction;
   final String profileImageUrl;
+  final List<String> tags;
 
   UserProfileModel({
     required this.nickname,
     required this.introduction,
     required this.profileImageUrl,
+    required this.tags,
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
@@ -415,6 +417,7 @@ class UserProfileModel {
       nickname: json['nickname'] ?? '',
       introduction: json['introduction'] ?? '',
       profileImageUrl: json['profileImageUrl'] ?? '',
+      tags: List<String>.from(json['tags'] ?? []),
     );
   }
 }

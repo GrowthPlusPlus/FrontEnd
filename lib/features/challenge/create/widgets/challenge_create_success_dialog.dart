@@ -4,7 +4,6 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/features/challenge/invite/widgets/challenge_invite_content.dart';
-//import 'package:share_plus/share_plus.dart'; // 공유
 
 // 챌린지 생성 성공했을 경우 띄우는 작은 화면
 class ChallengeCreateSuccessDialog extends StatelessWidget {
@@ -15,7 +14,6 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
     super.key,
     required this.challengeId, // 필수
     required this.challengeLink,
-    // required this.friends, // <-- 더 이상 필요 없음 (API로 직접 조회)
   });
 
   @override
