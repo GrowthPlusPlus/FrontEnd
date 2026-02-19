@@ -21,6 +21,14 @@ class AuthService {
 
   static final Dio _dio = Dio(
     BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
+    // BaseOptions(
+    //   // 1. 서버 주소를 팀원이 준 ngrok 주소로 변경
+    //   baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
+    //connectTimeout: const Duration(seconds: 30),
+    //receiveTimeout: const Duration(seconds: 30),
+    //   // 2. ngrok 경고창 우회를 위한 헤더 필수 추가
+    //   headers: {'ngrok-skip-browser-warning': 'true'},
+    // ),
   );
 
   // 구글로부터 인가 코드 획득

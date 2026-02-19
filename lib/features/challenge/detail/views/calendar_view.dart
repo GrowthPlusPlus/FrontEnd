@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:intl/intl.dart';
 
-import 'package:haenaem/features/challenge/feed/post_detail_screen.dart';
+import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 
 class CalendarView extends ConsumerStatefulWidget {

@@ -66,29 +66,12 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
   }
 
   Future<void> _checkNickname() async {
-    if (_isInvalidFormat) return;
-
     final nickname = _nicknameController.text;
+    // 💡 서버에 찌르지 않고 로컬 상태만 바꾼 뒤 다음 페이지로!
+    ref.read(signupProvider.notifier).updateNickname(nickname);
+    widget.onNext();
 
-    try {
-      // 💡 업데이트와 중복 체크를 동시에 수행합니다.
-      final isDup = await ref
-          .read(signupProvider.notifier)
-          .updateNicknameAndCheckDuplicate(nickname);
-
-      if (isDup) {
-        setState(() {
-          _isDuplicate = true; // 화면에 "중복된 닉네임이에요" 표시
-        });
-      } else {
-        // 성공했다면 이미 프로바이더에 저장되었으므로 바로 다음 단계로!
-        widget.onNext();
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('서버와 통신 중 에러가 발생했습니다. 다시 시도해주세요.')),
-      );
-    }
+    // TODO: 닉네임 중복 체크 API가 나오면 그때 여기에 중복 체크 로직만 추가하면 됩니다.
   }
 
   @override

@@ -11,7 +11,7 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
-import 'package:haenaem/features/challenge/model/challenge_member.dart';
+import 'package:haenaem/features/challenge/model/user_model.dart';
 part 'challenge_repository.g.dart';
 
 // 서버로부터 사용자의 챌린지 데이터를 가져오는 클래스
@@ -89,7 +89,7 @@ class ChallengeRepository {
   // 전체 태그 조회
   Future<List<ChallengeTagModel>> getAllTags() async {
     try {
-      final response = await _dio.get('/api/tags');
+      final response = await _dio.get('/api/tags/all');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => ChallengeTagModel.fromJson(json)).toList();
@@ -134,13 +134,6 @@ class ChallengeRepository {
           filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
         ),
     });
-
-    // 2. 요청 전송 (Interceptor 덕분에 토큰은 자동으로 붙습니다)
-    await _dio.post(
-      '/api/user/signup',
-      data: formData,
-      options: Options(contentType: 'multipart/form-data'),
-    );
   }
 
   // 챌린지 생성 post 요청 보내기
@@ -555,6 +548,26 @@ class ChallengeRepository {
     }
   }
 
+  Future<void> leaveChallenge(int challengeId) async {
+    try {
+      // 1. API 경로 설정: /api/challenges/{challengeId}/leaveChallenge
+      final response = await _dio.delete(
+        '/api/challenges/$challengeId/leaveChallenge',
+      );
+
+      // 2. 응답 상태 코드 확인 (서버 설계에 따라 200 또는 204)
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        debugPrint("챌린지 퇴장 성공: $challengeId");
+      } else {
+        // 서버에서 에러 메시지를 주는 경우 처리
+        throw Exception(response.data['message'] ?? '챌린지 나가기에 실패했습니다.');
+      }
+    } catch (e) {
+      debugPrint("챌린지 퇴장 API 에러: $e");
+      rethrow; // Provider의 AsyncValue.guard에서 잡을 수 있도록 던져줍니다.
+    }
+  }
+
   // 내 페이지 - 나의 챌린지 - 진행 중인 챌린지
   Future<List<ChallengeInProgressModel>> getInProgressChallenges({
     required bool onlyTwo,
@@ -794,8 +807,11 @@ ChallengeRepository challengeRepository(ChallengeRepositoryRef ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: 'https://hanaem.onrender.com/',
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      //baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
+      connectTimeout: const Duration(seconds: 45),
+      receiveTimeout: const Duration(seconds: 45),
+      // ngrok 경고창을 무시하는 헤더 추가
+      //headers: {'ngrok-skip-browser-warning': 'true'},
     ),
   );
 

@@ -29,18 +29,49 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profileAsync = ref.watch(myProfileProvider); // 사용자 프로필 정보 구독
+    final profileAsync = ref.watch(myProfileProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
-        title: Text(
-          '내 페이지',
-          style: AppTypography.h2.copyWith(color: AppColors.black),
+        automaticallyImplyLeading: false, // 기본 뒤로가기 버튼 제거
+        title: SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 왼쪽: 좌우 균형을 위한 더미 공간 (24px)
+              const SizedBox(width: 24),
+
+              // 중앙: 타이틀
+              Text(
+                '내 페이지',
+                style: AppTypography.h3.copyWith(color: AppColors.black),
+              ),
+
+              // 오른쪽: 설정 아이콘
+              InkWell(
+                onTap: () {
+                  // TODO: 설정 페이지 이동 로직
+                },
+                child: SvgPicture.asset(
+                  'assets/images/icons/settings.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.black,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -57,26 +88,16 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     _buildProfileImage(profile.profileImageUrl), // 이미지 URL 전달
                     const SizedBox(height: 17),
                     _buildProfileInfo(profile.nickname, isName: true), // 닉네임 전달
-                    const SizedBox(height: 3),
-                    _buildProfileInfo(
-                      profile.introduction,
-                      isName: false,
-                    ), // 소개글 전달
+                    const SizedBox(height: 2),
+                    _buildProfileInfo(profile.introduction, isName: false),
+                    const SizedBox(height: 17),
+                    _buildTagList(profile.tags),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 17),
-              _buildRankBadge('초보 모험가'),
               const SizedBox(height: 40),
               _buildChallengeSection(), // 나의 챌린지 영역
               const SizedBox(height: 16),
-              _buildMenuItem(
-                title: '로그아웃',
-                textColor: AppColors.black,
-                onTap: () => _showLogoutDialog(context),
-              ),
-              const SizedBox(height: 12),
               _buildMenuItem(
                 title: '회원 탈퇴',
                 textColor: AppColors.notification,
@@ -90,11 +111,54 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 },
                 showArrow: true,
               ),
+              const SizedBox(height: 10),
+              _buildMenuItem(
+                title: '로그아웃',
+                textColor: AppColors.black,
+                onTap: () => _showLogoutDialog(context),
+              ),
+
               const SizedBox(height: 30),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTagList(List<String> tags) {
+    if (tags.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 10, // 가로 간격
+      runSpacing: 8, // 세로 간격 (줄바꿈 시)
+      alignment: WrapAlignment.center,
+      children: tags
+          .map(
+            (tag) => Container(
+              height: 28,
+              padding: const EdgeInsets.symmetric(horizontal: 11),
+              decoration: ShapeDecoration(
+                color: AppColors.selected,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tag,
+                    style: AppTypography.b2.copyWith(
+                      color: AppColors.primaryAble,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -443,18 +507,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            color: AppColors.black,
-            shape: BoxShape.circle,
-          ),
-          child: SvgPicture.asset(
-            'assets/images/icons/black_settings_icon.svg',
-            width: 20,
-            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          ),
-        ),
       ],
     );
   }
@@ -463,34 +515,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(width: 24),
         Text(
           text,
           style: isName
-              ? AppTypography.h3
-              : AppTypography.b1.copyWith(color: AppColors.gray2),
-        ),
-        const SizedBox(width: 4),
-        SvgPicture.asset(
-          'assets/images/icons/edit.svg',
-          width: 16,
-          colorFilter: const ColorFilter.mode(AppColors.gray3, BlendMode.srcIn),
+              ? AppTypography.h2
+              : AppTypography.b1.copyWith(color: AppColors.gray3),
         ),
       ],
-    );
-  }
-
-  Widget _buildRankBadge(String rank) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.selected,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        rank,
-        style: AppTypography.b1.copyWith(color: AppColors.primaryAble),
-      ),
     );
   }
 
@@ -505,21 +536,15 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       borderRadius: BorderRadius.circular(10),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFDFE1DC).withAlpha(128),
+          color: AppColors.gray5,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: AppTypography.b1.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(title, style: AppTypography.b1.copyWith(color: textColor)),
             if (showArrow)
               const Icon(
                 Icons.arrow_forward_ios,

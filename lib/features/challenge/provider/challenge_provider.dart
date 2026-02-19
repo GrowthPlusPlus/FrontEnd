@@ -15,6 +15,7 @@ class ChallengeHomeNotifier extends _$ChallengeHomeNotifier {
     // Repository를 통해 데이터를 가져옵니다.
     final repository = ref.watch(challengeRepositoryProvider);
     final String todayDate = _getFormattedDate(DateTime.now());
+    // print(repository.getChallengeMainData(todayDate));
     return repository.getChallengeMainData(todayDate);
   }
 
@@ -32,6 +33,33 @@ class ChallengeHomeNotifier extends _$ChallengeHomeNotifier {
   // 내부 날짜 포맷팅 유틸리티
   String _getFormattedDate(DateTime dateTime) {
     return "${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}";
+  }
+}
+
+// 챌린지 나가기 로직 (일반 멤버용)
+@riverpod
+class ChallengeLeaveNotifier extends _$ChallengeLeaveNotifier {
+  @override
+  AsyncValue<void> build() => const AsyncValue.data(null);
+
+  Future<bool> leaveChallenge(int challengeId) async {
+    state = const AsyncValue.loading();
+
+    final result = await AsyncValue.guard(
+      () => ref.read(challengeRepositoryProvider).leaveChallenge(challengeId),
+    );
+
+    state = result;
+
+    if (!result.hasError) {
+      // 💡 나가기 성공 시 관련 데이터들을 무효화하여 UI를 갱신합니다.
+      ref.invalidate(challengeHomeNotifierProvider); // 홈 리스트 갱신
+      // 나갔을 때 실패한 챌린지로 넣을거면 로직을 추가해야함
+      ref.invalidate(myInProgressChallengesProvider); // 내 페이지 리스트 갱신
+      return true;
+    }
+
+    return false;
   }
 }
 
@@ -56,10 +84,11 @@ ChallengeStatus todayTotalStatus(TodayTotalStatusRef ref) {
       if (challenges.isEmpty) return ChallengeStatus.normal;
 
       // 하나라도 긴급(warning)이 있으면 Urgent
-      if (challenges.any((c) => c.isUrgent)) return ChallengeStatus.urgent;
+      if (challenges.any((c) => c['warning'] == true))
+        return ChallengeStatus.urgent;
 
       // 모든 챌린지가 오늘 완료(doIt)되었으면 Completed
-      if (challenges.every((c) => c.isDoneToday))
+      if (challenges.every((c) => c['doIt'] == true))
         return ChallengeStatus.completed;
 
       return ChallengeStatus.normal;

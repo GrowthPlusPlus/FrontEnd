@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/widgets/ChallengePopupMenu.dart';
+import 'package:haenaem/features/challenge/widgets/challenge_popup_menu.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
@@ -16,13 +16,13 @@ import 'package:haenaem/features/challenge/detail/views/calendar_view.dart';
 import 'package:haenaem/features/challenge/detail/views/information_view.dart';
 import 'package:haenaem/features/challenge/detail/views/member_view.dart';
 
-class ChallengeDetailScreen extends ConsumerStatefulWidget {
+class ChallengeMainScreen extends ConsumerStatefulWidget {
   final int challengeId;
   final String? challengeTitle;
   final bool isJustCreated;
   final ChallengeCreateResponse? createdData;
 
-  const ChallengeDetailScreen({
+  const ChallengeMainScreen({
     super.key,
     required this.challengeId,
     this.challengeTitle,
@@ -31,11 +31,11 @@ class ChallengeDetailScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ChallengeDetailScreen> createState() =>
+  ConsumerState<ChallengeMainScreen> createState() =>
       _ChallengeDetailScreenState();
 }
 
-class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen>
+class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 

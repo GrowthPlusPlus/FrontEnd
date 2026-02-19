@@ -1,7 +1,9 @@
 // 최초 작성자: 강선욱
-// 챌린지 데이터 관리 모델 클래스
+// 챌린지 관련 데이터 관리 모델
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
+import 'package:haenaem/features/challenge/model/user_model.dart';
+import 'package:haenaem/features/challenge/model/image_model.dart';
 
 // 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형
 enum ChallengeStatus {
@@ -10,54 +12,85 @@ enum ChallengeStatus {
   normal, // 회색 카드
 }
 
-// 1. 개별 챌린지 데이터만 관리하는 클래스
-class ChallengeModel {
-  final int challengeId; // 챌린지 id
-  final String title; // 챌린지 제목
-  final String content; // 챌린지 소개
-  final int maxParticipantNumber; // 최대 인원수
-  final int participantNumber; // 참여 인원수
-  final int duringDate; // 시작 경과일
-  final bool isDoneToday; // API의 'doIt' 매핑
-  final bool isUrgent; // API의 'warning' 매핑
+// 메인화면에서 관리하는 챌린지 모델
+class ChallengeMainModel {
+  final int notificationNumber;
+  final List<Map<String, dynamic>> myChallenges;
 
-  ChallengeModel({
-    required this.challengeId,
-    required this.title,
-    required this.content,
-    required this.maxParticipantNumber,
-    required this.participantNumber,
-    required this.duringDate,
-    required this.isDoneToday,
-    required this.isUrgent,
+  ChallengeMainModel({
+    required this.notificationNumber,
+    required this.myChallenges,
   });
 
-  // API(Map) 데이터를 모델 객체로 변환하는 생성자
-  factory ChallengeModel.fromJson(Map<String, dynamic> json) {
-    return ChallengeModel(
-      challengeId: json['challengeId'] ?? 0,
-      title: json['title'] ?? '',
-      content: json['content'] ?? '',
-      maxParticipantNumber: json['maxParticipantNumber'] ?? 0,
-      participantNumber: json['participantNumber'] ?? 0,
-      duringDate: json['duringDate'] ?? 0,
-      isDoneToday: json['doIt'] ?? false,
-      isUrgent: json['warning'] ?? false,
+  factory ChallengeMainModel.fromJson(Map<String, dynamic> json) {
+    return ChallengeMainModel(
+      notificationNumber: json['notificationNumber'] ?? 0,
+      myChallenges: List<Map<String, dynamic>>.from(json['myChallenges'] ?? []),
     );
   }
 
-  // 함수의 용도: 모델의 데이터를 기반으로 UI에 표시할 상태값을 계산함
-  ChallengeStatus getStatus() {
-    if (isDoneToday) {
-      return ChallengeStatus.completed; // 완료 상태 (초록색)
-    } else if (isUrgent) {
-      return ChallengeStatus.urgent; // 긴급 상태 (빨간색)
-    }
-    return ChallengeStatus.normal; // 일반 상태 (회색)
+  /// 특정 인덱스의 챌린지 상태를 가져오는 함수
+  ChallengeStatus getStatus(int index) {
+    final challenge = myChallenges[index];
+    if (challenge['doIt'] == true) return ChallengeStatus.completed;
+    if (challenge['warning'] == true) return ChallengeStatus.urgent;
+    return ChallengeStatus.normal;
+  }
+
+  /// 특정 인덱스의 참여 인원 정보를 반환하는 함수
+  String getParticipantInfo(int index) {
+    final challenge = myChallenges[index];
+    return "${challenge['todaySuccessCount']}/${challenge['participantNumber']}명";
   }
 }
 
-// 챌린지 상세정보 모델
+// class ChallengeModel {
+//   final int challengeId; // 챌린지 id
+//   final String title; // 챌린지 제목
+//   final String content; // 챌린지 소개
+//   final int maxParticipantNumber; // 최대 인원수
+//   final int participantNumber; // 참여 인원수
+//   final int duringDate; // 시작 경과일
+//   final bool isDoneToday; // API의 'doIt' 매핑
+//   final bool isUrgent; // API의 'warning' 매핑
+
+//   ChallengeModel({
+//     required this.challengeId,
+//     required this.title,
+//     required this.content,
+//     required this.maxParticipantNumber,
+//     required this.participantNumber,
+//     required this.duringDate,
+//     required this.isDoneToday,
+//     required this.isUrgent,
+//   });
+
+//   // API(Map) 데이터를 모델 객체로 변환하는 생성자
+//   factory ChallengeModel.fromJson(Map<String, dynamic> json) {
+//     return ChallengeModel(
+//       challengeId: json['challengeId'] ?? 0,
+//       title: json['title'] ?? '',
+//       content: json['content'] ?? '',
+//       maxParticipantNumber: json['maxParticipantNumber'] ?? 0,
+//       participantNumber: json['participantNumber'] ?? 0,
+//       duringDate: json['duringDate'] ?? 0,
+//       isDoneToday: json['doIt'] ?? false,
+//       isUrgent: json['warning'] ?? false,
+//     );
+//   }
+
+//   // 함수의 용도: 모델의 데이터를 기반으로 UI에 표시할 상태값을 계산함
+//   ChallengeStatus getStatus() {
+//     if (isDoneToday) {
+//       return ChallengeStatus.completed; // 완료 상태 (초록색)
+//     } else if (isUrgent) {
+//       return ChallengeStatus.urgent; // 긴급 상태 (빨간색)
+//     }
+//     return ChallengeStatus.normal; // 일반 상태 (회색)
+//   }
+// }
+
+// 챌린지 상세정보에서 사용하는 챌린지 모델
 class ChallengeDetailModel {
   final String title;
   final String startDate;
@@ -99,78 +132,6 @@ class ChallengeDetailModel {
               ?.map((e) => ParticipantModel.fromJson(e))
               .toList() ??
           [],
-    );
-  }
-}
-
-class HostModel {
-  final String name;
-  final String profileImageUrl;
-
-  HostModel({required this.name, required this.profileImageUrl});
-
-  factory HostModel.fromJson(Map<String, dynamic> json) {
-    return HostModel(
-      name: json['name'] ?? '익명',
-      profileImageUrl: json['profileImageUrl'] ?? '',
-    );
-  }
-}
-
-class ParticipantModel {
-  final String name;
-  final String profileImageUrl;
-
-  ParticipantModel({required this.name, required this.profileImageUrl});
-
-  factory ParticipantModel.fromJson(Map<String, dynamic> json) {
-    return ParticipantModel(
-      name: json['name'] ?? '',
-      profileImageUrl: json['profileImageUrl'] ?? '',
-    );
-  }
-}
-
-// 2. 알림 데이터를 포함한 전체 데이터 관리 클래스 -> 메인(홈)화면에서 사용
-class ChallengeMainModel {
-  final List<ChallengeModel> myChallenges;
-  final int notificationNumber;
-
-  ChallengeMainModel({
-    required this.myChallenges,
-    required this.notificationNumber,
-  });
-
-  factory ChallengeMainModel.fromJson(Map<String, dynamic> json) {
-    return ChallengeMainModel(
-      myChallenges: (json['myChallenges'] as List)
-          .map((item) => ChallengeModel.fromJson(item))
-          .toList(),
-      notificationNumber: json['notificationNumber'] ?? 0,
-    );
-  }
-}
-
-// 친구 정보
-class FriendModel {
-  final int id;
-  final String email;
-  final String nickname;
-  final String? profileImageUrl;
-
-  FriendModel({
-    required this.id,
-    required this.email,
-    required this.nickname,
-    this.profileImageUrl,
-  });
-
-  factory FriendModel.fromJson(Map<String, dynamic> json) {
-    return FriendModel(
-      id: json['id'] ?? 0,
-      email: json['email'] ?? '',
-      nickname: json['nickname'] ?? '',
-      profileImageUrl: json['profileImageUrl'],
     );
   }
 }
@@ -266,6 +227,7 @@ class ChallengeComment {
   final String? userPicture;
   final String contents;
   final DateTime createdAt;
+  final DateTime? updatedAt;
   final bool mine;
 
   ChallengeComment({
@@ -274,6 +236,7 @@ class ChallengeComment {
     this.userPicture,
     required this.contents,
     required this.createdAt,
+    required this.updatedAt,
     required this.mine,
   });
 
@@ -284,22 +247,31 @@ class ChallengeComment {
       userPicture: json['userPicture'],
       contents: json['contents'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : null,
       mine: json['mine'] ?? false,
     );
   }
-}
 
-// 이미지 객체를 관리할 클래스
-class PostImage {
-  final int imageId;
-  final String imageUrl;
-
-  PostImage({required this.imageId, required this.imageUrl});
-
-  factory PostImage.fromJson(Map<String, dynamic> json) {
-    return PostImage(
-      imageId: json['imageId'] ?? 0,
-      imageUrl: json['imageUrl'] ?? '',
+  // 업데이트 시 상태 유지를 위한 copyWith
+  ChallengeComment copyWith({
+    int? commentId,
+    String? userNickname,
+    String? userPicture,
+    String? contents,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? mine,
+  }) {
+    return ChallengeComment(
+      commentId: commentId ?? this.commentId,
+      userNickname: userNickname ?? this.userNickname,
+      userPicture: userPicture ?? this.userPicture,
+      contents: contents ?? this.contents,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      mine: mine ?? this.mine,
     );
   }
 }
@@ -314,6 +286,7 @@ class CertificationPostModel {
   final String? userImageUrl;
   final List<PostImage> images;
   final DateTime? createdAt;
+  final DateTime? updatedAt;
   final int likeNumber;
   final int commentNumber;
   final bool liked;
@@ -322,6 +295,9 @@ class CertificationPostModel {
   // 기존 UI 코드 호환성을 위한 Getter
   String get postDate =>
       createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt!) : "";
+  // 수정 여부를 확인하는 Getter (필요 시 활용)
+  // bool get isEdited => updatedAt != null && updatedAt != createdAt;
+
   String? get imageUrl => images.isNotEmpty ? images.first.imageUrl : null;
   String? get userName => userNickname;
   int get likeCount => likeNumber;
@@ -336,6 +312,7 @@ class CertificationPostModel {
     this.userNickname,
     this.userImageUrl,
     this.createdAt,
+    this.updatedAt,
     this.likeNumber = 0,
     this.commentNumber = 0,
     this.liked = false,
@@ -352,6 +329,7 @@ class CertificationPostModel {
     String? userImageUrl,
     List<PostImage>? images,
     DateTime? createdAt,
+    DateTime? updatedAt,
     int? likeNumber,
     int? commentNumber,
     bool? liked,
@@ -366,6 +344,7 @@ class CertificationPostModel {
       userImageUrl: userImageUrl ?? this.userImageUrl,
       images: images ?? this.images,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       likeNumber: likeNumber ?? this.likeNumber,
       commentNumber: commentNumber ?? this.commentNumber,
       liked: liked ?? this.liked,
@@ -406,6 +385,9 @@ class CertificationPostModel {
       createdAt: json['postDate'] != null
           ? DateTime.tryParse(json['postDate'])
           : DateTime.tryParse(json['createdAt'] ?? ''),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : null,
       likeNumber: json['likeNumber'] ?? 0,
       commentNumber: json['commentNumber'] ?? 0,
       liked: json['liked'] ?? false,
@@ -421,11 +403,13 @@ class UserProfileModel {
   final String nickname;
   final String introduction;
   final String profileImageUrl;
+  final List<String> tags;
 
   UserProfileModel({
     required this.nickname,
     required this.introduction,
     required this.profileImageUrl,
+    required this.tags,
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
@@ -433,6 +417,7 @@ class UserProfileModel {
       nickname: json['nickname'] ?? '',
       introduction: json['introduction'] ?? '',
       profileImageUrl: json['profileImageUrl'] ?? '',
+      tags: List<String>.from(json['tags'] ?? []),
     );
   }
 }

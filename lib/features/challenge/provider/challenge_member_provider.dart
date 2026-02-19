@@ -3,7 +3,7 @@ library;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/challenge_repository.dart';
-import '../model/challenge_member.dart';
+import '../model/user_model.dart';
 
 part 'challenge_member_provider.g.dart';
 

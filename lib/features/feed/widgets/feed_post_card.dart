@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:haenaem/features/challenge/feed/post_detail_screen.dart'; // 인증글 상세 불러오기
+import 'package:haenaem/features/feed/screens/post_detail_screen.dart'; // 인증글 상세 불러오기
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
@@ -24,19 +24,24 @@ class FeedPostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    String formattedDate = post.createdAt != null
-        ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(post.createdAt!)
+    final displayDate = post.updatedAt ?? post.createdAt;
+
+    String formattedDate = displayDate != null
+        ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(displayDate)
         : "";
 
     return InkWell(
       onTap:
           onTap ??
-          () {
-            Navigator.push(
+          () async {
+            // 상세 페이지로 이동하고, 상세 페이지가 pop(닫힘) 될 때까지 기다립니다.
+            await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    PostDetailScreen(post: post, feedProvider: provider),
+                builder: (context) => PostDetailScreen(
+                  post: post,
+                  feedProvider: provider, // 기존에 넘겨주던 프로바이더
+                ),
               ),
             );
           },
