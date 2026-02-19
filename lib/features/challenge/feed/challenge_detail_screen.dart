@@ -7,6 +7,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/detail/widgets/challenge_detail_content.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
+import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 
 class ChallengeDetailScreen extends ConsumerStatefulWidget {
   final int challengeId;
@@ -93,36 +94,16 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
         ],
       ),
       // 하단 고정 - 참여하기 버튼
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: AppColors.gray4, width: 0.5)),
-          ),
-          child: ElevatedButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return EnterConfirmDialog(challengeId: widget.challengeId);
-                },
-              );
+      bottomNavigationBar: BottomActionButton(
+        text: '챌린지 참여하기',
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return EnterConfirmDialog(challengeId: widget.challengeId);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryAble,
-              minimumSize: const Size(double.infinity, 60),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 0, // 깔끔한 디자인을 위해 0으로 조정 가능
-            ),
-            child: Text(
-              '챌린지 참여하기',
-              style: AppTypography.h3.copyWith(color: Colors.white),
-            ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

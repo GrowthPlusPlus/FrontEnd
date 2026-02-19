@@ -294,7 +294,7 @@ class ChallengeCard extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => const ChallengeDetailScreen(
                         // ChallengeSearchModel을 쓸 수가 없어서 일단 하드 코딩
-                        challengeId: 56,
+                        challengeId: 42,
                       ),
                     ),
                   );
