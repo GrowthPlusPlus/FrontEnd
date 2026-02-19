@@ -48,25 +48,9 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
   // 다음 버튼 클릭 시 프로바이더에 데이터 저장 후 이동
   Future<void> _handleNext() async {
     final bio = _bioController.text;
-
-    // 1. 먼저 프로바이더 상태 업데이트
+    // 💡 서버 전송(updateIntroduction) 없이 로컬 저장만!
     ref.read(signupProvider.notifier).updateBio(bio);
-
-    // 2. 서버에 한 줄 소개 전송
-    // (빈 문자열이어도 명세상 전송 가능하므로 그대로 보냅니다.)
-    final success = await ref
-        .read(signupProvider.notifier)
-        .updateIntroduction(bio);
-
-    if (!mounted) return;
-
-    if (success) {
-      widget.onNext(); // 성공 시 다음 단계(태그 선택)로 이동
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('한 줄 소개 등록에 실패했습니다. 다시 시도해주세요.')),
-      );
-    }
+    widget.onNext();
   }
 
   @override

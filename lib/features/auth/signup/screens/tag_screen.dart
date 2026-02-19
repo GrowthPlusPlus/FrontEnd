@@ -7,6 +7,7 @@ import '../providers/signup_provider.dart';
 import '../models/signup_state.dart';
 import 'package:haenaem/features/auth/signup/widgets/signup_page_layout.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
+import 'package:haenaem/shared/models/tag_data.dart';
 
 // 태그 설정 화면
 class TagScreen extends ConsumerStatefulWidget {
@@ -26,37 +27,33 @@ class _TagScreenState extends ConsumerState<TagScreen> {
   }
 
   Future<void> _handleNext() async {
-    // 서버에 태그 ID 리스트 전송
-    final success = await ref.read(signupProvider.notifier).submitTags();
+    // 💡 개별 submitTags() 호출을 지우고, 전체 가입 로직을 호출합니다.
+    final success = await ref.read(signupProvider.notifier).submitSignup();
 
     if (!mounted) return;
 
     if (success) {
-      widget.onNext(); // 성공 시 '성공 화면'으로!
+      widget.onNext(); // 성공 시 폭죽 화면으로!
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('태그 저장에 실패했습니다.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('회원가입 처리 중 오류가 발생했습니다. (닉네임 중복 등)')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 리버팟에서 서버로부터 분류된 태그 데이터를 감시
     final signupState = ref.watch(signupProvider);
     final categorizedTags = signupState.categorizedTags;
-    final selectedTags = ref.watch(signupProvider).tags;
+    final selectedTags = signupState.tags;
 
     return SignupPageLayout(
       title: '태그를 통해\n관심 분야를 알려주세요',
       subTitle: '관심 태그를 2~6개 골라주세요',
-      isButtonEnabled:
-          selectedTags.length >= 2 &&
-          selectedTags.length <= 6 &&
-          !signupState.isLoading,
+      isButtonEnabled: signupState.isTagsValid && !signupState.isLoading,
       onNext: _handleNext,
       child: categorizedTags.isEmpty
-          ? const Center(child: CircularProgressIndicator()) // 데이터 로딩 중 표시
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: categorizedTags.entries.map((entry) {
@@ -66,7 +63,7 @@ class _TagScreenState extends ConsumerState<TagScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        entry.key,
+                        TagMapper.getKoreanCategory(entry.key),
                         style: AppTypography.b2.copyWith(
                           color: AppColors.black,
                         ),
@@ -79,10 +76,15 @@ class _TagScreenState extends ConsumerState<TagScreen> {
                           return AppTagChip(
                             label: tagName,
                             isSelected: selectedTags.contains(tagName),
-                            // 클릭 시 프로바이더의 토글 함수 호출
-                            onTap: () => ref
-                                .read(signupProvider.notifier)
-                                .toggleTag(tagName),
+                            onTap: () {
+                              Future.microtask(() {
+                                if (mounted) {
+                                  ref
+                                      .read(signupProvider.notifier)
+                                      .toggleTag(tagName);
+                                }
+                              });
+                            },
                           );
                         }).toList(),
                       ),
