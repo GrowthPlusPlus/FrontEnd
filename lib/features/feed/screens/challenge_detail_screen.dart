@@ -96,13 +96,44 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
       // 하단 고정 - 참여하기 버튼
       bottomNavigationBar: BottomActionButton(
         text: '챌린지 참여하기',
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return EnterConfirmDialog(challengeId: widget.challengeId);
-            },
-          );
+        onPressed: () async {
+          final challenge = challengeAsync.value;
+
+          // 데이터가 없는 상태에서 클릭 방지
+          if (challenge == null) return;
+
+          // 참여 API 호출
+          final success = await ref
+              .read(challengeParticipateNotifierProvider.notifier)
+              .participate(widget.challengeId);
+
+          // 성공 시 다이얼로그 노출 (챌린지 제목 전달)
+          if (success && context.mounted) {
+            showDialog(
+              context: context,
+              builder: (context) => EnterConfirmDialog(
+                challengeId: widget.challengeId,
+                challengeTitle: challenge.title,
+              ),
+            );
+          } else {
+            // 이미 참여중인 챌린지인 경우 토스트(스낵바) 노출
+            final state = ref.read(challengeParticipateNotifierProvider);
+
+            // Repository에서 throw한 Exception 메시지를 가져옵니다.
+            final errorMessage =
+                state.error?.toString().replaceAll('Exception: ', '') ??
+                '이미 참여 중인 챌린지입니다.';
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(errorMessage),
+                backgroundColor: AppColors.black, // 앱 테마에 맞는 색상 사용
+                behavior: SnackBarBehavior.floating, // 떠 있는 스타일
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
         },
       ),
     );
