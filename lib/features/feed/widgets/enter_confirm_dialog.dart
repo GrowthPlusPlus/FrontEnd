@@ -5,10 +5,17 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
 
 class EnterConfirmDialog extends ConsumerWidget {
   final int challengeId;
-  const EnterConfirmDialog({super.key, required this.challengeId});
+  final String? challengeTitle;
+
+  const EnterConfirmDialog({
+    super.key,
+    required this.challengeId,
+    required this.challengeTitle,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,8 +50,9 @@ class EnterConfirmDialog extends ConsumerWidget {
             const SizedBox(height: 3),
             // 챌린지 명 넣기
             Text(
-              '‘토익 단어 매일 20개 외우기’',
+              '‘$challengeTitle’',
               style: AppTypography.b3.copyWith(color: AppColors.gray1),
+              textAlign: TextAlign.center,
             ),
             Text(
               '지금부터 함께 도전해요!',
@@ -56,7 +64,13 @@ class EnterConfirmDialog extends ConsumerWidget {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ChallengeMainScreen(challengeId: challengeId),
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryAble,
                   foregroundColor: Colors.white,
