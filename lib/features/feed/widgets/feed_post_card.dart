@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:haenaem/features/challenge/feed/post_detail_screen.dart'; // 인증글 상세 불러오기
+import 'package:haenaem/features/feed/screens/post_detail_screen.dart'; // 인증글 상세 불러오기
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';

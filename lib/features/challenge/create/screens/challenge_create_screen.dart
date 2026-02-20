@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/detail/screens/challenge_detail_screen.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'dart:convert';
@@ -21,6 +20,7 @@ import 'package:haenaem/features/challenge/create/widgets/challenge_frequency_bo
 import 'package:haenaem/features/challenge/create/widgets/challenge_tag_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_visibility_selector.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_type_selector.dart';
+import 'package:haenaem/features/feed/screens/challenge_detail_screen.dart';
 
 // -- 챌린지 생성 화면 --
 class ChallengeCreateScreen extends ConsumerStatefulWidget {
@@ -150,12 +150,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ChallengeDetailScreen(
-            challengeId: response.id,
-            challengeTitle: _nameController.text.trim(), // 💡 유저가 입력한 제목 전달!
-            isJustCreated: true,
-            createdData: response,
-          ),
+          builder: (context) => ChallengeDetailScreen(challengeId: response.id),
         ),
       );
     } else if (mounted) {
