@@ -1,10 +1,10 @@
 // 최초 작성자: 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/core/theme/app_colors.dart';
-import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:haenaem/features/feed/provider/feed_provider.dart';
+import 'package:haenaem/features/feed/views/share_feed_view.dart';
 
-class MemberView extends ConsumerWidget {
+class MemberView extends ConsumerStatefulWidget {
   final int challengeId;
   final ScrollController scrollController;
 
@@ -15,27 +15,30 @@ class MemberView extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: 멤버 목록을 가져오는 Provider 구독
+  ConsumerState<MemberView> createState() => _MemberViewState();
+}
+
+class _MemberViewState extends ConsumerState<MemberView> {
+  @override
+  void initState() {
+    super.initState();
+    // 💡 화면이 로드될 때 해당 챌린지의 멤버 피드 데이터를 불러옵니다.
+    Future.microtask(() {
+      ref.read(memberFeedProvider(widget.challengeId).notifier).fetchFeeds();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // challengeId별로 독립적인 상태를 가진 프로바이더를 참조합니다.
+    final provider = memberFeedProvider(widget.challengeId);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ListView.builder(
-        controller: scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        itemCount: 10, // 임시 데이터 개수
-        itemBuilder: (context, index) {
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 8),
-            leading: const CircleAvatar(
-              backgroundColor: AppColors.gray4,
-              child: Icon(Icons.person, color: AppColors.gray3),
-            ),
-            title: Text("참여자 ${index + 1}", style: AppTypography.b1),
-            subtitle: Text("현재 ${index * 10}% 달성 중", style: AppTypography.c1),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.gray4),
-          );
-        },
+      body: ShareFeedView(
+        scrollController: widget.scrollController,
+        provider: provider,
+        emptyMessage: "아직 멤버들의 인증글이 없습니다.\n첫 인증을 남겨보세요!",
       ),
     );
   }
