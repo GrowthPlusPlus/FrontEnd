@@ -47,6 +47,17 @@ class _TagScreenState extends ConsumerState<TagScreen> {
     final categorizedTags = signupState.categorizedTags;
     final selectedTags = signupState.tags;
 
+    // 카테고리 정렬 키 리스트 생성
+    final sortedCategoryKeys = categorizedTags.keys.toList()
+      ..sort((a, b) {
+        final indexA = TagMapper.categoryOrder.indexOf(a);
+        final indexB = TagMapper.categoryOrder.indexOf(b);
+        // 정의되지 않은 카테고리는 맨 뒤로
+        return (indexA == -1 ? 99 : indexA).compareTo(
+          indexB == -1 ? 99 : indexB,
+        );
+      });
+
     return SignupPageLayout(
       title: '태그를 통해\n관심 분야를 알려주세요',
       subTitle: '관심 태그를 2~6개 골라주세요',
@@ -56,14 +67,30 @@ class _TagScreenState extends ConsumerState<TagScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: categorizedTags.entries.map((entry) {
+              children: sortedCategoryKeys.map((categoryKey) {
+                // 해당 카테고리의 태그 리스트 가져오기 및 내부 정렬
+                final tagNames = List<String>.from(
+                  categorizedTags[categoryKey]!,
+                );
+
+                if (TagMapper.tagInternalOrder.containsKey(categoryKey)) {
+                  final orderList = TagMapper.tagInternalOrder[categoryKey]!;
+                  tagNames.sort((a, b) {
+                    final indexA = orderList.indexOf(a);
+                    final indexB = orderList.indexOf(b);
+                    return (indexA == -1 ? 99 : indexA).compareTo(
+                      indexB == -1 ? 99 : indexB,
+                    );
+                  });
+                }
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        TagMapper.getKoreanCategory(entry.key),
+                        TagMapper.getKoreanCategory(categoryKey),
                         style: AppTypography.b2.copyWith(
                           color: AppColors.black,
                         ),
@@ -72,7 +99,7 @@ class _TagScreenState extends ConsumerState<TagScreen> {
                       Wrap(
                         spacing: 12,
                         runSpacing: 8,
-                        children: entry.value.map((tagName) {
+                        children: tagNames.map((tagName) {
                           return AppTagChip(
                             label: tagName,
                             isSelected: selectedTags.contains(tagName),

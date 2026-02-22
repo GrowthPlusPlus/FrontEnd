@@ -12,6 +12,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/challenge/model/user_model.dart';
+import 'package:haenaem/core/network/dio_provider.dart';
 part 'challenge_repository.g.dart';
 
 // 서버로부터 사용자의 챌린지 데이터를 가져오는 클래스
@@ -114,6 +115,25 @@ class ChallengeRepository {
     } on DioException catch (e) {
       debugPrint('❌ 태그 업데이트 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '태그 저장 중 오류 발생');
+    }
+  }
+
+  // 유저 태그 추가
+  Future<void> addUserTags(List<int> tagIds) async {
+    try {
+      await _dio.post('/api/users/me/tags', data: {'tagIds': tagIds});
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? '태그 추가 실패');
+    }
+  }
+
+  // 유저 태그 삭제
+  Future<void> deleteUserTags(List<int> tagIds) async {
+    try {
+      // 💡 DELETE 요청은 data 옵션을 사용해서 body를 전달해야 합니다.
+      await _dio.delete('/api/users/me/tags', data: {'tagIds': tagIds});
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? '태그 삭제 실패');
     }
   }
 
@@ -804,54 +824,9 @@ class ChallengeRepository {
 // Riverpod Provider 설정
 @riverpod
 ChallengeRepository challengeRepository(ChallengeRepositoryRef ref) {
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: 'https://hanaem.onrender.com/',
-      //baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
-      connectTimeout: const Duration(seconds: 45),
-      receiveTimeout: const Duration(seconds: 45),
-      // ngrok 경고창을 무시하는 헤더 추가
-      //headers: {'ngrok-skip-browser-warning': 'true'},
-    ),
-  );
+  // 1. 공통 dioProvider를 감시(watch)하여 인스턴스를 가져옵니다.
+  final dio = ref.watch(dioProvider);
 
-  // 🛡️ 모든 요청에 토큰을 자동으로 붙여주는 인터셉터
-  dio.interceptors.add(
-    InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // 보안 저장소에서 현재 저장된 액세스 토큰을 읽어옵니다.
-        const storage = FlutterSecureStorage();
-        final String? token = await storage.read(key: 'accessToken');
-
-        if (token != null) {
-          // 헤더에 Authorization: Bearer <token> 추가
-          options.headers['Authorization'] = 'Bearer $token';
-          debugPrint('🔑 토큰 주입 완료: ${token.substring(0, 10)}...');
-        } else {
-          debugPrint('⚠️ 토큰이 없습니다. 로그인이 필요할 수 있습니다.');
-        }
-
-        return handler.next(options);
-      },
-      onError: (DioException e, handler) async {
-        // 만약 토큰이 만료되어 401 에러가 났다면?
-        if (e.response?.statusCode == 401) {
-          debugPrint('🔄 토큰 만료 감지! 재발급을 시도합니다...');
-
-          // AuthService에 만들어두신 refreshTokens()를 활용해봅니다.
-          final newToken = await AuthService.refreshTokens();
-
-          if (newToken != null) {
-            // 새 토큰으로 기존 요청 재시도
-            e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-            final response = await dio.fetch(e.requestOptions);
-            return handler.resolve(response);
-          }
-        }
-        return handler.next(e);
-      },
-    ),
-  );
-
+  // 2. 이미 모든 설정(BaseURL, 토큰 주입 등)이 끝난 dio를 넘겨줍니다.
   return ChallengeRepository(dio);
 }

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:haenaem/features/social/social_screen.dart';
-import 'package:haenaem/features/user/my_page_screen.dart';
+import 'package:haenaem/features/user/screens/my_page_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_theme.dart';
@@ -11,14 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
-import 'package:haenaem/features/challenge/create/screens/challenge_create_screen.dart';
-import 'package:haenaem/features/auth/login/login_screen.dart';
-import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
-import 'features/challenge/create/widgets/challenge_create_success_dialog.dart';
-import 'features/main/screens/main_screen.dart';
-import 'features/challenge/verification/screens/challenge_verification_screen.dart';
-import 'package:haenaem/features/feed/screens/feed_screen.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   // 플러터 엔진 초기화 확인
@@ -42,6 +36,12 @@ void main() async {
 
   // 한국어 날짜 데이터 로드
   await initializeDateFormatting('ko_KR', null);
+
+  // 플러터 엔진과 바인딩 확인 (비동기 작업 전 필수)
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 파이어베이스 초기화
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const ProviderScope(child: MyApp()));
 }

@@ -3,9 +3,9 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
-import '../auth/services/auth_service.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 
 /// 클래스의 용도: 회원 탈퇴 안내 및 동의 확인, 탈퇴 처리를 수행하는 화면
