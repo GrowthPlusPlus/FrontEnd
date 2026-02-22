@@ -8,6 +8,7 @@ import 'package:haenaem/features/challenge/create/screens/challenge_create_scree
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
+import 'package:haenaem/features/notification/screens/notificaion_main_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -46,7 +47,10 @@ class HomeScreen extends ConsumerWidget {
                         Text(getFormattedDate(), style: AppTypography.h2),
                         const Spacer(),
                         // 알림 배지 (data.notificationNumber 사용)
-                        _buildNotificationIcon(data.notificationNumber),
+                        _buildNotificationIcon(
+                          context,
+                          data.notificationNumber,
+                        ),
                         IconButton(
                           icon: SvgPicture.asset(
                             'assets/images/icons/dots_vert_icon.svg',
@@ -104,12 +108,19 @@ class HomeScreen extends ConsumerWidget {
   }
 
   // 알림 아이콘 빌더
-  Widget _buildNotificationIcon(int count) {
+  Widget _buildNotificationIcon(BuildContext context, int count) {
     return Stack(
       alignment: Alignment.center,
       children: [
         IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotificationMainScreen(),
+              ),
+            );
+          },
           icon: SvgPicture.asset('assets/images/icons/home_notice_icon.svg'),
         ),
         if (count > 0)
