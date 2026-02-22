@@ -189,3 +189,15 @@ final exploreFeedProvider = StateNotifierProvider<FeedNotifier, FeedState>((
   final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
   return FeedNotifier(apiPath: '/api/feed/public', repository: repository);
 });
+
+final memberFeedProvider =
+    StateNotifierProvider.family<FeedNotifier, FeedState, int>((
+      ref,
+      challengeId,
+    ) {
+      final repository = ref.watch(feedRepositoryProvider);
+      return FeedNotifier(
+        apiPath: '/api/feed/challengeMember/$challengeId',
+        repository: repository,
+      );
+    });

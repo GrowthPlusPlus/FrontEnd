@@ -20,7 +20,7 @@ import 'package:haenaem/features/challenge/create/widgets/challenge_frequency_bo
 import 'package:haenaem/features/challenge/create/widgets/challenge_tag_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_visibility_selector.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_type_selector.dart';
-import 'package:haenaem/features/feed/screens/challenge_detail_screen.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
 
 // -- 챌린지 생성 화면 --
 class ChallengeCreateScreen extends ConsumerStatefulWidget {
@@ -150,7 +150,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ChallengeDetailScreen(challengeId: response.id),
+          builder: (context) => ChallengeMainScreen(challengeId: response.id),
         ),
       );
     } else if (mounted) {

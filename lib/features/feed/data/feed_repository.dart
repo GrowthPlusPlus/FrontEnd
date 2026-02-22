@@ -34,6 +34,11 @@ class FeedRepository {
     }
   }
 
+  Future<Map<String, dynamic>> getMemberFeeds(int challengeId, int page) async {
+    final String apiPath = '/api/feed/challengeMember/$challengeId';
+    return await getFeeds(apiPath, page);
+  }
+
   Future<void> toggleLike(int postId, bool isCurrentlyLiked) async {
     try {
       if (isCurrentlyLiked) {
