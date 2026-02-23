@@ -722,6 +722,58 @@ class ChallengeRepository {
     }
   }
 
+  /*
+  // 챌린지 초대 탭 정보 조회 (링크 + 친구목록 + 초대여부)
+  // GET /api/challenges/{challengeId}/invite
+  Future<ChallengeInviteResponse> getChallengeInviteInfo(
+    int challengeId,
+  ) async {
+    try {
+      final response = await _dio.get('/api/challenges/$challengeId/invite');
+
+      if (response.statusCode == 200) {
+        return ChallengeInviteResponse.fromJson(response.data);
+      } else {
+        throw Exception('초대 정보 조회 실패');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+  */
+  // 디버깅 모드
+  Future<ChallengeInviteResponse> getChallengeInviteInfo(
+    int challengeId,
+  ) async {
+    try {
+      debugPrint('🚀 [API 요청 시작] /api/challenges/$challengeId/invite');
+
+      final response = await _dio.get('/api/challenges/$challengeId/invite');
+
+      debugPrint('📥 [API 응답 코드] ${response.statusCode}');
+      debugPrint('📦 [API 응답 데이터 원본] ${response.data}'); // ★ 여기가 핵심!
+
+      if (response.statusCode == 200) {
+        try {
+          final result = ChallengeInviteResponse.fromJson(response.data);
+          debugPrint(
+            '✅ [파싱 성공] 친구 수: ${result.friends.length}명 / 링크: ${result.challengeLink}',
+          );
+          return result;
+        } catch (e) {
+          debugPrint('⚠️ [파싱 에러] 모델 변환 실패: $e');
+          debugPrint('🔍 [파싱 실패 데이터] ${response.data}');
+          rethrow;
+        }
+      } else {
+        throw Exception('초대 정보 조회 실패 (Status: ${response.statusCode})');
+      }
+    } catch (e) {
+      debugPrint('❌ [API 에러 발생] $e');
+      rethrow;
+    }
+  }
+
   // 챌린지 멤버 조회 API
   // page: 필수 (0부터 시작)
   // nickname: 선택 (검색어)
@@ -830,3 +882,13 @@ ChallengeRepository challengeRepository(ChallengeRepositoryRef ref) {
   // 2. 이미 모든 설정(BaseURL, 토큰 주입 등)이 끝난 dio를 넘겨줍니다.
   return ChallengeRepository(dio);
 }
+
+// 챌린지 초대 정보 Provider
+// ChallengeInviteContent에서 ref.watch(challengeInviteInfoProvider(challengeId))로 사용
+// .autoDispose 추가
+// TODO: autoDispose 제거 고려
+final challengeInviteInfoProvider = FutureProvider.autoDispose
+    .family<ChallengeInviteResponse, int>((ref, challengeId) async {
+      final repo = ref.watch(challengeRepositoryProvider);
+      return await repo.getChallengeInviteInfo(challengeId);
+    });
