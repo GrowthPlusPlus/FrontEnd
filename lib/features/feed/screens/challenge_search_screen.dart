@@ -116,8 +116,11 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
                               vertical: 8,
                             ),
                             itemCount: list.length,
-                            itemBuilder: (context, index) =>
-                                ChallengeCard(challenge: list[index]),
+                            itemBuilder: (context, index) {
+                              final SearchChallengeModel challengeItem =
+                                  list[index];
+                              return ChallengeCard(challenge: challengeItem);
+                            },
                           ),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
@@ -289,12 +292,13 @@ class ChallengeCard extends StatelessWidget {
               alignment: Alignment.center,
               child: IconButton(
                 onPressed: () {
+                  debugPrint("====> 이동하려는 챌린지 ID: ${challenge.challengeId}");
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ChallengeDetailScreen(
-                        // ChallengeSearchModel을 쓸 수가 없어서 일단 하드 코딩
-                        challengeId: 42,
+                      builder: (context) => ChallengeDetailScreen(
+                        challengeId: challenge.challengeId,
                       ),
                     ),
                   );

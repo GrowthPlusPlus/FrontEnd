@@ -222,8 +222,10 @@ class ChallengeCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ChallengeMainScreen(challengeId: challenge['challengeId'] ?? 0),
+            builder: (context) => ChallengeMainScreen(
+              challengeId: challenge['challengeId'] ?? 0,
+              challengeTitle: challenge['title'],
+            ),
           ),
         );
       },
