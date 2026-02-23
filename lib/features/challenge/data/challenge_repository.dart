@@ -75,14 +75,16 @@ class ChallengeRepository {
     );
   }
 
-  // 챌린지 상세정보 조회
+  // 챌린지 상세정보 조회 수정
   Future<ChallengeDetailModel> getChallengeDetail(int challengeId) async {
     try {
       final response = await _dio.get('api/challenge/$challengeId');
-      // API 응답(response.data)을 새로운 상세 모델로 변환
+      print("서버 응답 데이터: ${response.data}"); // 데이터 확인 완료!
+
+      // 상세 API는 content 없이 바로 객체가 오므로 response.data를 그대로 사용합니다.
       return ChallengeDetailModel.fromJson(response.data);
     } catch (e) {
-      // 에러 핸들링 로직 추가 가능
+      print("상세 조회 에러: $e");
       rethrow;
     }
   }
@@ -296,16 +298,18 @@ class ChallengeRepository {
       );
 
       // 이미지 파일 추가
-      for (var file in imageFiles) {
-        formData.files.add(
-          MapEntry(
-            'image',
-            await MultipartFile.fromFile(
-              file.path,
-              contentType: MediaType('image', 'jpeg'),
+      if (imageFiles.isNotEmpty) {
+        for (var file in imageFiles) {
+          formData.files.add(
+            MapEntry(
+              'image', // API 명세상의 키값과 일치 확인
+              await MultipartFile.fromFile(
+                file.path,
+                contentType: MediaType('image', 'jpeg'),
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
 
       debugPrint('🚀 [API Request] /api/articles (Multipart 전송 시작)');

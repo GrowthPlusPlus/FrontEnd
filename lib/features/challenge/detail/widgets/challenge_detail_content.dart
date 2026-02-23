@@ -4,6 +4,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart'; // 상세 모델 임포트
+import 'package:haenaem/shared/widgets/app_tag_chip.dart';
+import 'package:haenaem/shared/models/tag_data.dart';
 
 class ChallengeDetailContent extends StatelessWidget {
   final ChallengeDetailModel challenge;
@@ -19,6 +21,11 @@ class ChallengeDetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("DEBUG: 태그 리스트 길이 -> ${challenge.tags.length}");
+    if (challenge.tags.isNotEmpty) {
+      print("DEBUG: 첫 번째 태그 내용 -> ${challenge.tags.first.tag}");
+    }
+
     // 1. 날짜 데이터 가공
     String formattedStart = challenge.startDate.isNotEmpty
         ? DateFormat(
@@ -48,6 +55,18 @@ class ChallengeDetailContent extends StatelessWidget {
       }
     }
 
+    // TagMapper 기준 정렬 로직
+    final List<ChallengeTagModel> sortedTags = List.from(challenge.tags);
+    final priorityList = TagMapper.tagInternalOrder.values
+        .expand((e) => e)
+        .toList();
+
+    sortedTags.sort((a, b) {
+      final indexA = priorityList.indexOf(a.tag);
+      final indexB = priorityList.indexOf(b.tag);
+      return (indexA == -1 ? 99 : indexA).compareTo(indexB == -1 ? 99 : indexB);
+    });
+
     return SingleChildScrollView(
       controller: scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -66,6 +85,10 @@ class ChallengeDetailContent extends StatelessWidget {
           _buildInfoSection('챌린지 시작일', formattedStart),
           _buildInfoSection('챌린지 마감일', '$formattedEnd $dDayString'),
           _buildInfoSection('인증 빈도', '매일'),
+          _buildInfoSection(
+            '인증 방식',
+            challenge.photoRequired ? '사진 첨부 필수' : '사진 첨부 선택',
+          ),
 
           // 태그 섹션
           Text(
@@ -74,16 +97,20 @@ class ChallengeDetailContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // Row(
-          //   children: challenge.tags.isEmpty
-          //       ? [const Text("-", style: TextStyle(color: AppColors.gray2))]
-          //       : challenge.tags.map((tagObj) {
-          //           return Padding(
-          //             padding: const EdgeInsets.only(right: 8),
-          //             child: _buildTag(tagObj.tag),
-          //           );
-          //         }).toList(),
-          // ),
+          // 가로 스크롤 대신 Wrap을 사용하여 정돈된 느낌을 줍니다.
+          challenge.tags.isEmpty
+              ? Text(
+                  "-",
+                  style: AppTypography.b1.copyWith(color: AppColors.gray3),
+                )
+              : Wrap(
+                  spacing: 8,
+                  runSpacing: 10,
+                  children: sortedTags.map((tagObj) {
+                    // 💡 공통 위젯 사용: 상세 페이지이므로 시각적 강조를 위해 isSelected를 true로 줍니다.
+                    return AppTagChip(label: tagObj.tag, isSelected: true);
+                  }).toList(),
+                ),
           const _CustomDivider(),
 
           // 챌린지 설명
@@ -178,23 +205,6 @@ class ChallengeDetailContent extends StatelessWidget {
             style: AppTypography.b1.copyWith(color: AppColors.black),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTag(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Text(
-        text,
-        style: AppTypography.b2.copyWith(
-          color: AppColors.primaryAble,
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }

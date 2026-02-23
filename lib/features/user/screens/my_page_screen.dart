@@ -23,6 +23,7 @@ import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/my_page_menu_item.dart';
 import '../widgets/challenge_section.dart';
+import '../widgets/logout_dialog.dart';
 
 class MyPageScreen extends ConsumerStatefulWidget {
   const MyPageScreen({super.key});
@@ -134,7 +135,16 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           },
         ),
         const SizedBox(height: 10),
-        MyPageMenuItem(title: '로그아웃', onTap: () => _showLogoutDialog(context)),
+        MyPageMenuItem(
+          title: '로그아웃',
+          onTap: () {
+            // 분리된 LogoutDialog 호출
+            showDialog(
+              context: context,
+              builder: (context) => const LogoutDialog(),
+            );
+          },
+        ),
         const SizedBox(height: 10),
         MyPageMenuItem(
           title: '회원 탈퇴',
@@ -145,36 +155,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           },
         ),
       ],
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('로그아웃'),
-        content: const Text('로그아웃 하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () async {
-              // ref를 사용하여 서비스 인스턴스를 가져옵니다.
-              await ref.read(fcmServiceProvider).deleteFcmToken();
-              await AuthService.logout();
-              if (context.mounted)
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AuthGate()),
-                  (route) => false,
-                );
-            },
-            child: const Text('확인'),
-          ),
-        ],
-      ),
     );
   }
 }
