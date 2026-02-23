@@ -7,6 +7,7 @@ import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'signup_main_screen.dart';
 import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/notification/services/fcm_service.dart';
 
 // 앱을 껐다 켰을 때 저장된 토큰을 확인
 // 바로 홈으로 보낼지 로그인으로 보낼지 결정 (자동 로그인)
@@ -42,6 +43,12 @@ class AuthGate extends ConsumerWidget {
                 debugPrint("⚠️ 가입 미완료 유저 감지: 회원가입 화면으로 이동");
                 return const SignupMainScreen(); // 닉네임 설정부터 다시!
               }
+
+              // 가입 완료가 확인되어 메인으로 가기 전, FCM 토큰을 업데이트
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(fcmServiceProvider).updateFcmToken();
+                ref.read(fcmServiceProvider).setTokenRefreshListener();
+              });
 
               return const MainScreen(); // 모든 정보가 있을 때만 홈으로!
             },

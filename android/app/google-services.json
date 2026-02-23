@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "877783119277",
+    "project_id": "haenaem-65e32",
+    "storage_bucket": "haenaem-65e32.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877783119277:android:f23af125ab0eb12cc09d24",
+        "android_client_info": {
+          "package_name": "com.example.haenaem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUQ7l0BxIGoyNHcmb79ybSHCaXiq2vv8g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
