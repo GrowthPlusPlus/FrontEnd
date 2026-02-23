@@ -560,9 +560,7 @@ class ChallengeInviteResponse {
       // 초대 링크 매핑
       challengeLink: json['inviteLink'] ?? '',
 
-      // ★ 서버가 보내주는 키 이름 그대로 'reponseList' (오타 포함) 사용
-      // TODO: 백엔드에 'responseList'로 수정 요청 필요
-      friends: ((json['reponseList'] ?? []) as List)
+      friends: ((json['responseList'] ?? []) as List)
           .map((e) => ChallengeInviteFriend.fromJson(e))
           .toList(),
     );
