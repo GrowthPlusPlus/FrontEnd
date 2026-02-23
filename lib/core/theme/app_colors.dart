@@ -17,10 +17,10 @@ class AppColors {
   static const Color disable = Color(0xffd9e0d7);
 
   // Mainlist
-  static const Color success = Color(0xffbbf4bd);
+  static Color success = const Color(0xffbbf4bd).withValues(alpha: 0.5);
   static Color warning = const Color(0xffffd6c8).withValues(alpha: 0.5);
 
   static const Color fire = Color(0xFFFB7039);
-  static const Color notification = Color(0xffec221f);
+  static const Color notification = Color(0xffD11E1B);
   static const Color blue = Color(0xff4589FF);
 }
