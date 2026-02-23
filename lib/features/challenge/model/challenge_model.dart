@@ -97,7 +97,7 @@ class ChallengeDetailModel {
   final String endDate;
   final int requiredWeeklyCount;
   final bool photoRequired;
-  final List<String> tags;
+  final List<ChallengeTagModel> tags;
   final String description;
   final HostModel host;
   final int participantCount;
@@ -123,7 +123,9 @@ class ChallengeDetailModel {
       endDate: json['endDate'] ?? '',
       requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
       photoRequired: json['photoRequired'] ?? false,
-      tags: List<String>.from(json['tags'] ?? []),
+      tags: (json['tags'] as List? ?? [])
+          .map((t) => ChallengeTagModel.fromJson(t))
+          .toList(),
       description: json['description'] ?? '',
       host: HostModel.fromJson(json['host'] ?? {}),
       participantCount: json['participantCount'] ?? 0,
@@ -505,7 +507,7 @@ class SearchChallengeModel {
 
   factory SearchChallengeModel.fromJson(Map<String, dynamic> json) {
     return SearchChallengeModel(
-      challengeId: json['challengeId'] ?? json['id'] ?? 0,
+      challengeId: json['id'] ?? 0,
       title: json['title'] ?? '',
       participantNumber: json['participantNumber'] ?? 0,
       requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
