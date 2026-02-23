@@ -39,19 +39,9 @@ class InformationView extends ConsumerWidget {
         data: (challenge) => ChallengeDetailContent(
           challenge: challenge,
           scrollController: scrollController,
+          showTitle: false,
         ),
       ),
-    );
-  }
-}
-
-class _CustomDivider extends StatelessWidget {
-  const _CustomDivider();
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 20),
-      child: Divider(height: 1, thickness: 1, color: AppColors.gray4),
     );
   }
 }
