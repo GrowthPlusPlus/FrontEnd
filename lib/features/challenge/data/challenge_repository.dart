@@ -296,16 +296,18 @@ class ChallengeRepository {
       );
 
       // 이미지 파일 추가
-      for (var file in imageFiles) {
-        formData.files.add(
-          MapEntry(
-            'image',
-            await MultipartFile.fromFile(
-              file.path,
-              contentType: MediaType('image', 'jpeg'),
+      if (imageFiles.isNotEmpty) {
+        for (var file in imageFiles) {
+          formData.files.add(
+            MapEntry(
+              'image', // API 명세상의 키값과 일치 확인
+              await MultipartFile.fromFile(
+                file.path,
+                contentType: MediaType('image', 'jpeg'),
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
 
       debugPrint('🚀 [API Request] /api/articles (Multipart 전송 시작)');

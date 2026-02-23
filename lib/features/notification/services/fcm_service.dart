@@ -14,20 +14,6 @@ class FcmService {
   Future<void> requestNotificationPermission() async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    // FCM 권한 요청 코드
-    Future<void> setupInteractedMessage() async {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-      // 권한 요청 팝업 띄우기
-      NotificationSettings settings = await messaging.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-
-      debugPrint('User granted permission: ${settings.authorizationStatus}');
-    }
-
     // and 알림 권한 요청
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
@@ -88,6 +74,62 @@ class FcmService {
     } catch (e) {
       debugPrint("🚨 [FCM] 전체 알림 설정 변경 실패: $e");
       return false;
+    }
+  }
+
+  // <---------백엔드와 통신하자 ♥️ ---------
+  // 💡 핵심: 메시지 수신 시 로그를 찍어주는 리스너
+  void listenMessages() {
+    // 1. 포그라운드(앱이 켜져 있을 때) 수신
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint("🔔 [FCM] 포그라운드 메시지 수신!");
+      _printMessage(message);
+    });
+
+    // 2. 알림을 클릭해서 앱이 열렸을 때 (백그라운드 상태였을 때)
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      debugPrint("🖱️ [FCM] 사용자가 알림을 클릭함!");
+      _printMessage(message);
+    });
+  }
+
+  // 로그를 예쁘게 출력해주는 보조 메서드
+  void _printMessage(RemoteMessage message) {
+    debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    if (message.notification != null) {
+      debugPrint("📝 [Notification] 제목: ${message.notification?.title}");
+      debugPrint("📝 [Notification] 내용: ${message.notification?.body}");
+    } else {
+      debugPrint("📝 [Notification] 데이터 없음 (시스템 상단바에 안 뜨는 이유)");
+    }
+
+    debugPrint("📊 [Data Payload] 데이터: ${message.data}");
+    debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  }
+  // --------- 백엔드와 통신하자 ♥️ ------->
+
+  // 통합 초기화 메서드 (AuthGate에서 호출용)
+  Future<void> initialize() async {
+    // 1. 권한 요청 (iOS/Android 공통)
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      debugPrint('✅ [FCM] 알림 권한 허용됨');
+
+      // 권한이 허용된 경우에만 토큰 업데이트 및 리스너 등록
+      await updateFcmToken();
+      setTokenRefreshListener();
+
+      listenMessages(); // ✨ 리스너를 여기서 실행합니다!
+      debugPrint("🎧 [FCM] 메시지 리스너 가동 중...");
+    } else {
+      debugPrint('❌ [FCM] 알림 권한 거절됨');
     }
   }
 
