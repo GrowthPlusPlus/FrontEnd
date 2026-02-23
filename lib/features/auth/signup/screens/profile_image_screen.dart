@@ -7,10 +7,10 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/signup_provider.dart';
-import '../models/signup_state.dart';
 import '../widgets/signup_page_layout.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/shared/widgets/image_source_sheet.dart';
+import 'profile_image_edit_screen.dart';
 
 // 프로필 이미지 설정 화면
 class ProfileImageScreen extends ConsumerStatefulWidget {
@@ -38,10 +38,26 @@ class _ProfileImageScreenState extends ConsumerState<ProfileImageScreen> {
 
   // 갤러리에서 이미지를 가져오는 비동기 함수
   Future<void> _getImage(ImageSource source) async {
-    final XFile? image = await _picker.pickImage(source: source);
-    if (image != null) {
-      ref.read(signupProvider.notifier).updateImage(File(image.path));
-      if (mounted) Navigator.pop(context);
+    // 이미지 선택
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+
+    if (pickedFile != null && mounted) {
+      // 선택 완료 시 이미지 소스 선택 시트 먼저 닫기
+      Navigator.pop(context);
+
+      // 우리가 만든 편집 화면으로 이동
+      final File? editedFile = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ProfileImageEditScreen(imageFile: File(pickedFile.path)),
+        ),
+      );
+
+      // 편집이 완료되어 돌아온 경우에만 상태 업데이트
+      if (editedFile != null) {
+        ref.read(signupProvider.notifier).updateImage(editedFile);
+      }
     }
   }
 

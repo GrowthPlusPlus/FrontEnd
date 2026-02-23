@@ -85,6 +85,16 @@ class _ChallengeTagBottomSheetState
           for (var tag in allTags) {
             categorized.putIfAbsent(tag.tagCategory, () => []).add(tag);
           }
+          // 카테고리 정렬
+          final sortedCategoryKeys = categorized.keys.toList()
+            ..sort((a, b) {
+              final indexA = TagMapper.categoryOrder.indexOf(a);
+              final indexB = TagMapper.categoryOrder.indexOf(b);
+              // 혹시 정의되지 않은 카테고리가 오면 뒤로 보냄
+              return (indexA == -1 ? 99 : indexA).compareTo(
+                indexB == -1 ? 99 : indexB,
+              );
+            });
 
           bool isButtonEnabled =
               _tempSelectedModels.isNotEmpty && _tempSelectedModels.length <= 2;
@@ -148,14 +158,29 @@ class _ChallengeTagBottomSheetState
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: categorized.entries.map((entry) {
+                    children: sortedCategoryKeys.map((categoryKey) {
+                      final tags = categorized[categoryKey]!;
+
+                      // 카테고리 내부의 개별 태그 정렬
+                      if (TagMapper.tagInternalOrder.containsKey(categoryKey)) {
+                        final orderList =
+                            TagMapper.tagInternalOrder[categoryKey]!;
+                        tags.sort((a, b) {
+                          final indexA = orderList.indexOf(a.tag);
+                          final indexB = orderList.indexOf(b.tag);
+                          return (indexA == -1 ? 99 : indexA).compareTo(
+                            indexB == -1 ? 99 : indexB,
+                          );
+                        });
+                      }
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 24.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              TagMapper.getKoreanCategory(entry.key),
+                              TagMapper.getKoreanCategory(categoryKey),
                               style: AppTypography.b2.copyWith(
                                 color: AppColors.black,
                               ),
@@ -164,7 +189,7 @@ class _ChallengeTagBottomSheetState
                             Wrap(
                               spacing: 12,
                               runSpacing: 8,
-                              children: entry.value.map((tagModel) {
+                              children: tags.map((tagModel) {
                                 final isSelected = _tempSelectedModels.any(
                                   (t) => t.tagId == tagModel.tagId,
                                 );

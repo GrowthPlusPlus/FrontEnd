@@ -29,7 +29,7 @@ class BottomActionButton extends StatelessWidget {
     final Color effectiveTextColor = textColor ?? Colors.white;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 30),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -42,23 +42,30 @@ class BottomActionButton extends StatelessWidget {
           stops: const [0.0, 0.3, 1.0],
         ),
       ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: effectiveBgColor,
-          minimumSize: const Size(double.infinity, 60),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            // 테두리 조건부 렌더링
-            side: borderColor != null
-                ? BorderSide(color: borderColor!, width: 2)
-                : BorderSide.none,
+      child: SafeArea(
+        top: false, // 상단 여백은 필요 없으므로 하단만 보호
+        child: Padding(
+          // 💡 하단 여백 30을 유지하되 시스템 바가 있는 경우 자동으로 합산됨
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+          child: ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: effectiveBgColor,
+              minimumSize: const Size(double.infinity, 60),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                // 테두리 조건부 렌더링
+                side: borderColor != null
+                    ? BorderSide(color: borderColor!, width: 2)
+                    : BorderSide.none,
+              ),
+            ),
+            child: Text(
+              text,
+              style: AppTypography.h3.copyWith(color: effectiveTextColor),
+            ),
           ),
-        ),
-        child: Text(
-          text,
-          style: AppTypography.h3.copyWith(color: effectiveTextColor),
         ),
       ),
     );
