@@ -96,18 +96,21 @@ class FeedPostCard extends ConsumerWidget {
                   '${post.challengeTitle} ${post.totalSuccessDays}일차',
                   style: AppTypography.b3.copyWith(color: AppColors.black),
                 ),
+                const SizedBox(height: 4), // 간격 추가
                 Text(
                   post.content,
                   style: AppTypography.b1.copyWith(color: AppColors.gray1),
-                  maxLines: 3,
+                  // 사진이 없을 때는 본문을 더 길게 보여줘도 좋습니다.
+                  maxLines: post.hasImage ? 3 : 10,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 15),
+                // 사진이 없을 때는 하단 아이콘과의 간격을 확보합니다.
+                if (!post.hasImage) const SizedBox(height: 15),
               ],
             ),
           ),
           // 3. 이미지
-          if (post.hasImage && post.imageUrl != null)
+          if (post.hasImage && post.imageUrl != null) ...[
             Image.network(
               post.imageUrl!,
               width: double.infinity,
@@ -119,6 +122,7 @@ class FeedPostCard extends ConsumerWidget {
                 child: const Icon(Icons.error),
               ),
             ),
+          ],
           // 4. 하단 아이콘 정보
           Padding(
             padding: const EdgeInsets.fromLTRB(15, 12, 15, 16),

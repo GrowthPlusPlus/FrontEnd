@@ -168,10 +168,14 @@ class ChallengeListScreen extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          item.title,
-                          style: AppTypography.b3.copyWith(
-                            color: AppColors.black,
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: AppTypography.b3.copyWith(
+                              color: AppColors.black,
+                            ),
+                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            maxLines: 1,
                           ),
                         ),
                         const SizedBox(width: 7),

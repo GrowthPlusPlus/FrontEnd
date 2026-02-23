@@ -365,31 +365,24 @@ class CertificationPostModel {
           .toList();
     }
     // 2. 구 규격 대응 (문자열 리스트 혹은 단일 URL일 경우 ID 0으로 생성)
-    else if (extractedImages.isEmpty) {
-      if (json['imageUrl'] != null) {
-        extractedImages.add(PostImage(imageId: 0, imageUrl: json['imageUrl']));
-      } else if (json['articleImageUrl'] != null) {
-        final List<dynamic> list = json['articleImageUrl'];
-        extractedImages = list
-            .map((url) => PostImage(imageId: 0, imageUrl: url.toString()))
-            .toList();
-      }
+    else if (json['imageUrl'] != null) {
+      extractedImages.add(PostImage(imageId: 0, imageUrl: json['imageUrl']));
+    } else if (json['articleImageUrl'] != null &&
+        json['articleImageUrl'] is List) {
+      extractedImages = (json['articleImageUrl'] as List)
+          .map((url) => PostImage(imageId: 0, imageUrl: url.toString()))
+          .toList();
     }
 
     return CertificationPostModel(
       postId: json['postId'] ?? 0,
-      challengeTitle: json['challengeTitle'] ?? '',
+      challengeTitle: json['challengeTitle'] ?? '제목 없음',
       totalSuccessDays: json['totalSuccessDays'] ?? 0,
       content: json['content'] ?? '',
-      images: extractedImages,
-      userNickname: json['userNickname'],
+      images: extractedImages, // 💡 사진이 없으면 빈 리스트 [] 가 됩니다.
+      userNickname: json['userNickname'] ?? '익명',
       userImageUrl: json['userImageUrl'],
-      createdAt: json['postDate'] != null
-          ? DateTime.tryParse(json['postDate'])
-          : DateTime.tryParse(json['createdAt'] ?? ''),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.tryParse(json['updatedAt'])
-          : null,
+      createdAt: DateTime.tryParse(json['postDate'] ?? json['createdAt'] ?? ''),
       likeNumber: json['likeNumber'] ?? 0,
       commentNumber: json['commentNumber'] ?? 0,
       liked: json['liked'] ?? false,
@@ -431,12 +424,12 @@ enum MyPageTab { inProgress, success, fail }
 class ChallengeInProgressModel {
   final int challengeId;
   final String title;
-  final int requiredWeeklyCount;
+  final int requiredWeeklyCount; // 필수는 유지하되
   final int todaySuccessCount;
   final int participantNumber;
   final int duringDate;
   final String endDate;
-  final double achievementRate; // 0.0 ~ 1.0 사이의 값
+  final double achievementRate;
   final String status;
 
   ChallengeInProgressModel({
@@ -452,27 +445,24 @@ class ChallengeInProgressModel {
   });
 
   factory ChallengeInProgressModel.fromJson(Map<String, dynamic> json) {
-    debugPrint('📥 RAW JSON: $json');
-
     double rate = (json['achievementRate'] ?? 0).toDouble();
 
-    // [0% 해결] 만약 서버에서 0을 줬는데 오늘 성공 횟수가 있다면 직접 계산
-    if (rate == 0 &&
-        json['todaySuccessCount'] != null &&
-        json['requiredWeeklyCount'] != null) {
-      int today = json['todaySuccessCount'];
-      int weekly = json['requiredWeeklyCount'];
-      if (weekly > 0) rate = today / weekly; // 예: 1/7 = 0.14...
+    // 💡 방어 로직: 0%일 때 직접 계산하는 로직에서도 null 체크 강화
+    final int today = json['todaySuccessCount'] ?? 0;
+    final int weekly = json['requiredWeeklyCount'] ?? 0;
+
+    if (rate == 0 && weekly > 0) {
+      rate = today / weekly;
     } else if (rate > 1.0) {
-      rate = rate / 100.0; // 85 -> 0.85 변환
+      rate = rate / 100.0;
     }
 
     return ChallengeInProgressModel(
       challengeId: json['challengeId'] ?? 0,
       title: json['title'] ?? '',
-      requiredWeeklyCount: json['requiredWeeklyCount'],
-      todaySuccessCount: json['todaySuccessCount'],
-      participantNumber: json['participantNumber'],
+      requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
+      todaySuccessCount: json['todaySuccessCount'] ?? 0,
+      participantNumber: json['participantNumber'] ?? 0,
       duringDate: json['duringDate'] ?? 0,
       endDate: json['endDate'] ?? '',
       achievementRate: rate,

@@ -207,7 +207,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  ChallengeVerificationPage(challengeId: widget.challengeId),
+                  ChallengeVerificationScreen(challengeId: widget.challengeId),
             ),
           );
         }

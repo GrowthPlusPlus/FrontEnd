@@ -46,8 +46,7 @@ class AuthGate extends ConsumerWidget {
 
               // 가입 완료가 확인되어 메인으로 가기 전, FCM 토큰을 업데이트
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                ref.read(fcmServiceProvider).updateFcmToken();
-                ref.read(fcmServiceProvider).setTokenRefreshListener();
+                ref.read(fcmServiceProvider).initialize();
               });
 
               return const MainScreen(); // 모든 정보가 있을 때만 홈으로!
