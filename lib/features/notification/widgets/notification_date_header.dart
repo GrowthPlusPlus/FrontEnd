@@ -1,3 +1,4 @@
+// 최초 작성자: 정승빈
 // '오늘', '어제', '1월 2일' 등을 표시하는 헤더
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';

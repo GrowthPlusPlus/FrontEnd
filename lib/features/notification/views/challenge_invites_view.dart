@@ -1,3 +1,4 @@
+// 최초 작성자: 정승빈
 // '챌린지 초대' 탭 화면
 import 'package:flutter/material.dart';
 import '../widgets/challenge_invite_card.dart';

@@ -1,3 +1,4 @@
+// 최초 작성자: 정승빈
 // '챌린지 초대' 탭의 수락/거절 버튼이 있는 카드
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
