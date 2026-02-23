@@ -19,6 +19,11 @@ class ChallengeDetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("DEBUG: 태그 리스트 길이 -> ${challenge.tags.length}");
+    if (challenge.tags.isNotEmpty) {
+      print("DEBUG: 첫 번째 태그 내용 -> ${challenge.tags.first.tag}");
+    }
+
     // 1. 날짜 데이터 가공
     String formattedStart = challenge.startDate.isNotEmpty
         ? DateFormat(
@@ -66,6 +71,10 @@ class ChallengeDetailContent extends StatelessWidget {
           _buildInfoSection('챌린지 시작일', formattedStart),
           _buildInfoSection('챌린지 마감일', '$formattedEnd $dDayString'),
           _buildInfoSection('인증 빈도', '매일'),
+          _buildInfoSection(
+            '인증 방식',
+            challenge.photoRequired ? '사진 첨부 필수' : '사진 첨부 선택',
+          ),
 
           // 태그 섹션
           Text(
@@ -74,16 +83,20 @@ class ChallengeDetailContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // Row(
-          //   children: challenge.tags.isEmpty
-          //       ? [const Text("-", style: TextStyle(color: AppColors.gray2))]
-          //       : challenge.tags.map((tagObj) {
-          //           return Padding(
-          //             padding: const EdgeInsets.only(right: 8),
-          //             child: _buildTag(tagObj.tag),
-          //           );
-          //         }).toList(),
-          // ),
+          SingleChildScrollView(
+            // 태그가 많을 경우를 대비해 가로 스크롤 추가
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: challenge.tags.isEmpty
+                  ? [const Text("-", style: TextStyle(color: AppColors.gray2))]
+                  : challenge.tags.map<Widget>((tagObj) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildTag(tagObj.tag),
+                      );
+                    }).toList(),
+            ),
+          ),
           const _CustomDivider(),
 
           // 챌린지 설명

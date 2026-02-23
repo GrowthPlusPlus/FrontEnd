@@ -97,7 +97,7 @@ class ChallengeDetailModel {
   final String endDate;
   final int requiredWeeklyCount;
   final bool photoRequired;
-  final List<String> tags;
+  final List<ChallengeTagModel> tags;
   final String description;
   final HostModel host;
   final int participantCount;
@@ -123,7 +123,9 @@ class ChallengeDetailModel {
       endDate: json['endDate'] ?? '',
       requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
       photoRequired: json['photoRequired'] ?? false,
-      tags: List<String>.from(json['tags'] ?? []),
+      tags: (json['tags'] as List? ?? [])
+          .map((t) => ChallengeTagModel.fromJson(t))
+          .toList(),
       description: json['description'] ?? '',
       host: HostModel.fromJson(json['host'] ?? {}),
       participantCount: json['participantCount'] ?? 0,
