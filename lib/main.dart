@@ -9,6 +9,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:haenaem/features/main/screens/main_screen.dart';
 
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -65,9 +66,9 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [Locale('ko', 'KR')],
       locale: const Locale('ko', 'KR'), // 앱 기본 언어를 한국어로 설정
       //home: const ChallengeCreatePage(),
-      // home: const AuthGate(),
+      home: const AuthGate(),
       //home: const ChallengeCreateSuccessDialog(),
-      home: const MainScreen(),
+      // home: const MainScreen(),
       //home: const ChallengeCalendarScreen(),
       //home: const ChallengeVerificationPage(),
       //home: const FeedScreen(),

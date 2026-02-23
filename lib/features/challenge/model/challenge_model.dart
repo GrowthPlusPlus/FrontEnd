@@ -515,7 +515,7 @@ class SearchChallengeModel {
 
   factory SearchChallengeModel.fromJson(Map<String, dynamic> json) {
     return SearchChallengeModel(
-      challengeId: json['challengeId'] ?? json['id'] ?? 0,
+      challengeId: json['id'] ?? 0,
       title: json['title'] ?? '',
       participantNumber: json['participantNumber'] ?? 0,
       requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
