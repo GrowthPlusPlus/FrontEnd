@@ -22,6 +22,10 @@ class ExitConfirmDialog extends ConsumerWidget {
           await ref
               .read(challengeRepositoryProvider)
               .leaveChallenge(challengeId);
+
+          // 홈 화면 데이터 Provider를 무효화하여 새로고침 유도
+          ref.invalidate(challengeHomeNotifierProvider);
+
           if (context.mounted) {
             Navigator.of(context).popUntil((route) => route.isFirst); // 홈으로 이동
           }

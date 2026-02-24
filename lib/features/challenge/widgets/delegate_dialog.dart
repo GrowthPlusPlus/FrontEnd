@@ -5,6 +5,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/model/user_model.dart';
+import '../provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/provider/challenge_member_provider.dart';
 import 'package:haenaem/shared/widgets/challenge_exit_base_dialog.dart';
 import 'package:haenaem/features/challenge/data/challenge_repository.dart';
@@ -35,6 +36,10 @@ class _DelegateDialogState extends ConsumerState<DelegateDialog> {
                 widget.challengeId,
                 selectedMember!.memberId,
               );
+
+          // 홈 화면 데이터 새로고침
+          ref.invalidate(challengeHomeNotifierProvider);
+
           if (context.mounted) {
             Navigator.of(context).popUntil((route) => route.isFirst); // 홈으로 이동
           }

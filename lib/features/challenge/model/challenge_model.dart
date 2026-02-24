@@ -123,9 +123,15 @@ class ChallengeDetailModel {
       endDate: json['endDate'] ?? '',
       requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
       photoRequired: json['photoRequired'] ?? false,
-      tags: (json['tags'] as List? ?? [])
-          .map((t) => ChallengeTagModel.fromJson(t))
-          .toList(),
+      tags: (json['tags'] as List? ?? []).map((t) {
+        if (t is String) {
+          return ChallengeTagModel(id: 0, tag: t, tagCategory: 'ETC');
+        } else if (t is Map<String, dynamic>) {
+          return ChallengeTagModel.fromJson(t);
+        } else {
+          return ChallengeTagModel(id: 0, tag: '', tagCategory: 'ETC');
+        }
+      }).toList(),
       description: json['description'] ?? '',
       host: HostModel.fromJson(json['host'] ?? {}),
       participantCount: json['participantCount'] ?? 0,
@@ -521,19 +527,21 @@ class SearchChallengeModel {
 
 // 태그 모델
 class ChallengeTagModel {
-  final int tagId;
+  final int id;
   final String tag;
   final String tagCategory;
 
+  int get tagId => id;
+
   ChallengeTagModel({
-    required this.tagId,
+    required this.id,
     required this.tag,
     required this.tagCategory,
   });
 
   factory ChallengeTagModel.fromJson(Map<String, dynamic> json) {
     return ChallengeTagModel(
-      tagId: json['tagId'] ?? 0,
+      id: json['tagId'] ?? 0,
       tag: json['tag'] ?? '',
       tagCategory: json['tagCategory'] ?? 'AGE',
     );
