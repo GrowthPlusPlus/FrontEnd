@@ -17,10 +17,16 @@ class FeedRepository {
       print("응답 데이터: ${response.data}"); // 💡 데이터가 오는지 확인
 
       if (response.statusCode == 200) {
-        final List<dynamic> content = response.data['content'];
-        final List<CertificationPostModel> posts = content
-            .map((json) => CertificationPostModel.fromJson(json))
-            .toList();
+        final List<dynamic> content = response.data['content'] ?? [];
+        final List<CertificationPostModel> posts = [];
+        for (var item in content) {
+          try {
+            posts.add(CertificationPostModel.fromJson(item));
+          } catch (e) {
+            print("⚠️ 특정 포스트 파싱 실패 (ID: ${item['postId']}): $e");
+            // 에러가 난 포스트는 건너뜁니다.
+          }
+        }
 
         return {
           'posts': posts,

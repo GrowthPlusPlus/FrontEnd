@@ -120,7 +120,19 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
             width: 24,
           ),
         ),
-        title: Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
+        title: summaryAsync.when(
+          // 1. 데이터가 로드되었을 때 (이미 widget에 있는 타이틀 사용)
+          data: (data) =>
+              Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
+
+          // 2. 로딩 중일 때
+          loading: () =>
+              Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
+
+          // 3. 에러가 발생했을 때
+          error: (_, __) =>
+              Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
+        ),
         centerTitle: true,
         actions: [
           summaryAsync.when(
@@ -202,7 +214,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  ChallengeVerificationPage(challengeId: widget.challengeId),
+                  ChallengeVerificationScreen(challengeId: widget.challengeId),
             ),
           );
         }

@@ -133,7 +133,7 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChallengeVerificationPage(
+            builder: (context) => ChallengeVerificationScreen(
               challengeId: 0, // 챌린지 ID가 필요하다면 post 모델에 추가하거나 context에서 가져와야 함
               existingPost: post, // 💡 현재 게시글 데이터를 전달하여 '수정 모드'로 진입
             ),
