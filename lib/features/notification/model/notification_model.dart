@@ -41,3 +41,36 @@ class NotificationModel {
     );
   }
 }
+
+// 챌린지 초대 목록 아이템 모델
+class ChallengeInviteModel {
+  final int challengeId;
+  final String inviterNickname;
+  final String? inviterProfileImageUrl;
+  final String challengeTitle;
+  final int participantCount;
+  final int remainingDays;
+  final List<String> tags;
+
+  ChallengeInviteModel({
+    required this.challengeId,
+    required this.inviterNickname,
+    this.inviterProfileImageUrl,
+    required this.challengeTitle,
+    required this.participantCount,
+    required this.remainingDays,
+    required this.tags,
+  });
+
+  factory ChallengeInviteModel.fromJson(Map<String, dynamic> json) {
+    return ChallengeInviteModel(
+      challengeId: json['challengeId'] ?? 0,
+      inviterNickname: json['inviterNickname'] ?? '알 수 없음',
+      inviterProfileImageUrl: json['profileUrl'],
+      challengeTitle: json['challengeTitle'] ?? '',
+      participantCount: json['participantCount'] ?? 0,
+      remainingDays: json['remainingDays'] ?? 0,
+      tags: List<String>.from(json['tags'] ?? []),
+    );
+  }
+}

@@ -3,21 +3,28 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ChallengeInviteCard extends StatelessWidget {
   final String inviterName;
+  final String? inviterProfileImageUrl;
   final String challengeName;
   final int participantCount;
   final String dDay;
   final List<String> labels;
+  final VoidCallback onAccept; // 수락 함수
+  final VoidCallback onReject; // 거절 함수
 
   const ChallengeInviteCard({
     super.key,
     required this.inviterName,
+    this.inviterProfileImageUrl,
     required this.challengeName,
     required this.participantCount,
     required this.dDay,
     required this.labels,
+    required this.onAccept,
+    required this.onReject,
   });
 
   @override
@@ -42,19 +49,7 @@ class ChallengeInviteCard extends StatelessWidget {
           // 1. 초대자 정보 헤더
           Row(
             children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                  color: AppColors.gray4, // 임시 아이콘 배경색
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.eco,
-                  size: 14,
-                  color: Colors.white,
-                ), // 임시 아이콘
-              ),
+              _buildIconBox(),
               const SizedBox(width: 8),
               Text(
                 '$inviterName님의 초대',
@@ -131,17 +126,13 @@ class ChallengeInviteCard extends StatelessWidget {
               // 거절 버튼 (왼쪽)
               Expanded(
                 child: InkWell(
-                  onTap: () {
-                    // TODO: 거절 동작 구현
-                  },
+                  onTap: onReject,
                   borderRadius: BorderRadius.circular(10),
                   child: Container(
                     height: 48,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: const Color(
-                        0xFFF5F5F5,
-                      ), // 디자인과 유사한 연한 회색 (gray5를 사용할 수도 있음)
+                      color: AppColors.gray5,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -155,9 +146,7 @@ class ChallengeInviteCard extends StatelessWidget {
               // 수락 버튼 (오른쪽)
               Expanded(
                 child: InkWell(
-                  onTap: () {
-                    // TODO: 수락 동작 구현
-                  },
+                  onTap: onAccept,
                   borderRadius: BorderRadius.circular(10),
                   child: Container(
                     height: 48,
@@ -177,6 +166,39 @@ class ChallengeInviteCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // 아이콘 또는 프로필 이미지 렌더링 영역
+  Widget _buildIconBox() {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: AppColors.gray5,
+        shape: BoxShape.circle,
+        image:
+            inviterProfileImageUrl != null &&
+                inviterProfileImageUrl!.startsWith('http')
+            ? DecorationImage(
+                image: NetworkImage(inviterProfileImageUrl!),
+                fit: BoxFit.cover,
+              )
+            : (inviterProfileImageUrl != null
+                  ? DecorationImage(
+                      image: AssetImage(inviterProfileImageUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null),
+      ),
+      child: inviterProfileImageUrl == null
+          ? Center(
+              child: SvgPicture.asset(
+                'assets/images/icons/default_profile_icon.svg',
+                width: 24,
+              ),
+            )
+          : null,
     );
   }
 }

@@ -84,4 +84,39 @@ class NotificationRepository {
       throw Exception('알 수 없는 오류 발생: $e');
     }
   }
+
+  // 챌린지 초대 목록 조회
+  Future<List<ChallengeInviteModel>> getChallengeInvites() async {
+    try {
+      final response = await dio.get('/api/challenges/invites');
+      // 응답이 배열(List) 형태
+      final List<dynamic> data = response.data;
+      return data.map((e) => ChallengeInviteModel.fromJson(e)).toList();
+    } on DioException catch (e) {
+      print('❌ [초대 조회 에러]: ${e.response?.data}');
+      throw Exception('초대 목록을 불러오는데 실패했습니다.');
+    } catch (e) {
+      throw Exception('초대 조회 중 알 수 없는 오류 발생: $e');
+    }
+  }
+
+  // 챌린지 초대 수락
+  Future<void> acceptChallengeInvite(int challengeId) async {
+    try {
+      await dio.post('/api/challenges/$challengeId/invites/accept');
+    } on DioException catch (e) {
+      print('❌ [수락 에러]: ${e.response?.data}');
+      throw Exception('초대 수락 실패');
+    }
+  }
+
+  // 챌린지 초대 거절
+  Future<void> rejectChallengeInvite(int challengeId) async {
+    try {
+      await dio.post('/api/challenges/$challengeId/invites/reject');
+    } on DioException catch (e) {
+      print('❌ [거절 에러]: ${e.response?.data}');
+      throw Exception('초대 거절 실패');
+    }
+  }
 }

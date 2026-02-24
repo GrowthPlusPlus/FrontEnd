@@ -2,45 +2,52 @@
 // '챌린지 초대' 탭 화면
 import 'package:flutter/material.dart';
 import '../widgets/challenge_invite_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_colors.dart';
+import '../provider/notification_provider.dart';
 
-class ChallengeInvitesView extends StatelessWidget {
+class ChallengeInvitesView extends ConsumerWidget {
   const ChallengeInvitesView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.only(top: 10, bottom: 40),
-      children: const [
-        // 디자인처럼 임시 데이터로 카드를 4개 정도 배치합니다.
-        ChallengeInviteCard(
-          inviterName: '홍길동',
-          challengeName: '챌린지 이름',
-          participantCount: 0,
-          dDay: 'D-000',
-          labels: ['label', 'label'],
-        ),
-        ChallengeInviteCard(
-          inviterName: '홍길동',
-          challengeName: '아침 기상 챌린지',
-          participantCount: 12,
-          dDay: 'D-005',
-          labels: ['기상', '습관'],
-        ),
-        ChallengeInviteCard(
-          inviterName: '홍길동',
-          challengeName: '매일 달리기 3km',
-          participantCount: 5,
-          dDay: 'D-012',
-          labels: ['운동', '건강'],
-        ),
-        ChallengeInviteCard(
-          inviterName: '홍길동',
-          challengeName: '책 읽기 프로젝트',
-          participantCount: 8,
-          dDay: 'D-030',
-          labels: ['독서', '자기계발'],
-        ),
-      ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 데이터 감지
+    final state = ref.watch(challengeInviteProvider);
+    final notifier = ref.read(challengeInviteProvider.notifier);
+
+    if (state.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primaryAble),
+      );
+    }
+
+    if (state.invites.isEmpty) {
+      return const Center(child: Text('받은 챌린지 초대가 없습니다.'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => notifier.fetchInvites(),
+      color: AppColors.primaryAble,
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 10, bottom: 40),
+        itemCount: state.invites.length,
+        itemBuilder: (context, index) {
+          final invite = state.invites[index];
+
+          return ChallengeInviteCard(
+            inviterName: invite.inviterNickname,
+            inviterProfileImageUrl: invite.inviterProfileImageUrl,
+            challengeName: invite.challengeTitle,
+            participantCount: invite.participantCount,
+            // 디자인과 동일하게 "D-000" 형태로 맞추기 위한 포맷팅
+            dDay: 'D-${invite.remainingDays.toString().padLeft(3, '0')}',
+            labels: invite.tags,
+            // 수락/거절 콜백 연결
+            onAccept: () => notifier.acceptInvite(invite.challengeId),
+            onReject: () => notifier.rejectInvite(invite.challengeId),
+          );
+        },
+      ),
     );
   }
 }

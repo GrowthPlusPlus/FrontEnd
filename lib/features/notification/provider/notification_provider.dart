@@ -136,3 +136,77 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
     // TODO: 전체 읽음 처리 API 호출
   }
 }
+
+class ChallengeInviteState {
+  final List<ChallengeInviteModel> invites;
+  final bool isLoading;
+
+  ChallengeInviteState({required this.invites, this.isLoading = false});
+
+  ChallengeInviteState copyWith({
+    List<ChallengeInviteModel>? invites,
+    bool? isLoading,
+  }) {
+    return ChallengeInviteState(
+      invites: invites ?? this.invites,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+final challengeInviteProvider =
+    StateNotifierProvider<ChallengeInviteNotifier, ChallengeInviteState>((ref) {
+      final repository = ref.watch(notificationRepositoryProvider);
+      return ChallengeInviteNotifier(repository: repository);
+    });
+
+class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
+  final NotificationRepository repository;
+
+  ChallengeInviteNotifier({required this.repository})
+    : super(ChallengeInviteState(invites: [])) {
+    fetchInvites();
+  }
+
+  Future<void> fetchInvites() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final invites = await repository.getChallengeInvites();
+      state = state.copyWith(invites: invites, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      print(e);
+    }
+  }
+
+  // 수락 처리
+  Future<void> acceptInvite(int challengeId) async {
+    try {
+      await repository.acceptChallengeInvite(challengeId);
+      // 성공하면 UI 목록에서 해당 카드 즉시 제거
+      state = state.copyWith(
+        invites: state.invites
+            .where((i) => i.challengeId != challengeId)
+            .toList(),
+      );
+    } catch (e) {
+      print('수락 에러: $e');
+      // 필요 시 스낵바 에러 메시지 띄우기
+    }
+  }
+
+  // 거절 처리
+  Future<void> rejectInvite(int challengeId) async {
+    try {
+      await repository.rejectChallengeInvite(challengeId);
+      // 성공하면 UI 목록에서 해당 카드 즉시 제거
+      state = state.copyWith(
+        invites: state.invites
+            .where((i) => i.challengeId != challengeId)
+            .toList(),
+      );
+    } catch (e) {
+      print('거절 에러: $e');
+    }
+  }
+}
