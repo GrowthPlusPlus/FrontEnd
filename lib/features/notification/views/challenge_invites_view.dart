@@ -35,6 +35,7 @@ class ChallengeInvitesView extends ConsumerWidget {
           final invite = state.invites[index];
 
           return ChallengeInviteCard(
+            challengeId: invite.challengeId,
             inviterName: invite.inviterNickname,
             inviterProfileImageUrl: invite.inviterProfileImageUrl,
             challengeName: invite.challengeTitle,
