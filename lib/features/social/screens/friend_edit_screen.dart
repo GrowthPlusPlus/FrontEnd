@@ -4,12 +4,12 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
-import 'social_model.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../model/social_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'social_repository.dart';
-import '../../core/utils/korean_string_utils.dart';
+import '../data/social_repository.dart';
+import '../../../core/utils/korean_string_utils.dart';
 
 /// 클래스의 용도: 기존 친구 목록을 검색하고 삭제할 수 있는 편집 화면
 class FriendEditScreen extends ConsumerStatefulWidget {
@@ -228,7 +228,7 @@ class FriendEditScreenState extends ConsumerState<FriendEditScreen> {
               shape: BoxShape.circle,
               image: friend.profileImageUrl != null
                   ? DecorationImage(
-                      image: AssetImage(friend.profileImageUrl!),
+                      image: NetworkImage(friend.profileImageUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
