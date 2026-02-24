@@ -382,6 +382,36 @@ class ArticleLikeNotifier extends _$ArticleLikeNotifier {
   }
 }
 
+// 챌린지장 위임 로직
+@riverpod
+class ChallengeDelegateNotifier extends _$ChallengeDelegateNotifier {
+  @override
+  AsyncValue<void> build() => const AsyncValue.data(null);
+
+  Future<bool> delegateAndLeave({
+    required int challengeId,
+    required int delegateMemberId,
+  }) async {
+    state = const AsyncValue.loading();
+
+    final result = await AsyncValue.guard(
+      () => ref
+          .read(challengeRepositoryProvider)
+          .delegateChallengeOwner(challengeId, delegateMemberId),
+    );
+
+    state = result;
+
+    if (!result.hasError) {
+      // 위임 성공 시 홈 데이터 등을 갱신
+      ref.invalidate(challengeHomeNotifierProvider);
+      ref.invalidate(challengeCalendarDataProvider(challengeId));
+      return true;
+    }
+    return false;
+  }
+}
+
 // 챌린지 삭제 로직
 @riverpod
 class ChallengeDeleteNotifier extends _$ChallengeDeleteNotifier {
