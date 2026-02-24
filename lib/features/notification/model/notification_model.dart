@@ -21,7 +21,7 @@ class NotificationModel {
       type: json['type'] ?? 'UNKNOWN',
       created: json['created'] ?? '',
       read: json['read'] ?? false,
-      profileImageUrl: json['profileImageUrl'], // 백엔드에서 이 필드를 제공한다고 가정
+      profileImageUrl: json['imageUrl'], // 백엔드에서 이 필드를 제공한다고 가정
     );
   }
 

@@ -100,7 +100,8 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
         } else if (noti.type == 'FRIEND_REQUEST' ||
             noti.type == 'COMMENT' ||
             noti.type == 'LIKE' ||
-            noti.type == 'CHALLENGE') {
+            noti.type == 'CHALLENGE' ||
+            noti.type == 'FRIEND_ACCEPT') {
           iconType = NotiIconType.profile;
         }
 
