@@ -1,4 +1,5 @@
 // 최초 작성자: 정승빈
+// 챌린지 초대 알림 카드를 눌렀을 때 보여지는 상세 화면
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -68,7 +69,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Text(
                     '$inviterName님의 초대',
-                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    style: AppTypography.b1.copyWith(color: AppColors.gray2),
                   ),
                 ],
               ),
@@ -111,8 +112,8 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
   // 상단 프로필 이미지 렌더링 함수
   Widget _buildProfileIcon(String? imageUrl) {
     return Container(
-      width: 24,
-      height: 24,
+      width: 40,
+      height: 40,
       decoration: BoxDecoration(
         color: AppColors.gray5,
         shape: BoxShape.circle,
@@ -129,7 +130,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
           ? Center(
               child: SvgPicture.asset(
                 'assets/images/icons/default_profile_icon.svg',
-                width: 24,
+                width: 40,
               ),
             )
           : null,
