@@ -34,13 +34,14 @@ class ChallengeInviteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      // 디자인 가이드에 맞춘 패딩 적용
+      padding: const EdgeInsets.only(top: 10, left: 16, right: 4, bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05), // 너무 진하지 않은 부드러운 그림자
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -48,148 +49,172 @@ class ChallengeInviteCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          InkWell(
-            onTap: () {
-              // '알림 전용 상세 페이지'로 이동
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChallengeInviteDetailScreen(
-                    challengeId: challengeId,
-                    inviterName: inviterName,
-                    inviterProfileImageUrl: inviterProfileImageUrl,
-                  ),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. 초대자 정보 헤더
-                Row(
+          // 상단 내용 및 우측 꺾쇠 레이아웃
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildIconBox(),
-                    const SizedBox(width: 8),
-                    Text(
-                      '$inviterName님의 초대',
-                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // 2. 챌린지 이름 및 우측 꺾쇠
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        challengeName,
-                        style: AppTypography.h3.copyWith(
-                          color: AppColors.black,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    // --- 1. 헤더 및 챌린지 이름 그룹 ---
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          _buildIconBox(),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$inviterName님의 초대',
+                            style: AppTypography.b2.copyWith(
+                              color: AppColors.gray1, // 디자인 코드 참조
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right, color: AppColors.gray2),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // 3. 참여 인원 및 D-Day 정보
-                Row(
-                  children: [
-                    const Icon(Icons.person, size: 16, color: AppColors.gray2),
-                    const SizedBox(width: 4),
                     Text(
-                      '${participantCount.toString().padLeft(2, '0')}명', // '00명' 포맷 유지
-                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                      challengeName,
+                      style: AppTypography.b3.copyWith(color: AppColors.black),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '완료까지 $dDay',
-                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
 
-                // 4. 라벨(태그) 영역
-                Row(
-                  children: labels
-                      .map(
-                        (label) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Container(
-                            height: 28,
-                            padding: const EdgeInsets.symmetric(horizontal: 11),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.selected,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Text(
-                              label,
-                              style: AppTypography.b2.copyWith(
-                                color: AppColors.primaryAble,
+                    const SizedBox(height: 10), // 그룹 간 간격
+                    // --- 2. 참여 인원/D-Day 및 라벨 그룹 ---
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/icons/person_icon.svg',
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.gray2,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        Text(
+                          '${participantCount.toString()}명',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.gray2,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          '완료까지 $dDay',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.gray2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4), // 정보와 라벨 사이 간격
+                    Wrap(
+                      spacing: 5, // 라벨 간 가로 간격
+                      runSpacing: 4, // 줄바꿈 시 세로 간격
+                      children: labels
+                          .map(
+                            (label) => Container(
+                              height: 28,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 11,
+                              ),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.selected,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Text(
+                                label,
+                                style: AppTypography.b2.copyWith(
+                                  color: AppColors.primaryAble,
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-                const SizedBox(height: 16),
-
-                // 5. 버튼 영역 (거절 / 수락)
-                Row(
-                  children: [
-                    // 거절 버튼 (왼쪽)
-                    Expanded(
-                      child: InkWell(
-                        onTap: onReject,
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          height: 48,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppColors.gray5,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '거절',
-                            style: AppTypography.b1.copyWith(
-                              color: AppColors.gray2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10), // 버튼 사이 간격
-                    // 수락 버튼 (오른쪽)
-                    Expanded(
-                      child: InkWell(
-                        onTap: onAccept,
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          height: 48,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryAble,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '수락',
-                            style: AppTypography.b1.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
+                          )
+                          .toList(),
                     ),
                   ],
+                ),
+              ),
+
+              // 오른쪽 화살표 아이콘
+              Align(
+                alignment: Alignment.center,
+                child: IconButton(
+                  onPressed: () {
+                    print("====> 이동하려는 챌린지 ID: $challengeId");
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChallengeInviteDetailScreen(
+                          challengeId: challengeId,
+                          inviterName: inviterName,
+                          inviterProfileImageUrl: inviterProfileImageUrl,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: SvgPicture.asset(
+                    'assets/images/icons/thick_right_arrow_icon.svg',
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.gray2,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10), // 상단 콘텐츠와 하단 버튼 영역 간격
+          // 5. 버튼 영역 (거절 / 수락)
+          Padding(
+            padding: const EdgeInsets.only(right: 12), // 우측 꺾쇠 공간만큼 패딩 보정
+            child: Row(
+              children: [
+                // 거절 버튼 (왼쪽)
+                Expanded(
+                  child: InkWell(
+                    onTap: onReject,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 48,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.gray5,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '거절',
+                        style: AppTypography.b1.copyWith(
+                          color: AppColors.gray2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10), // 버튼 사이 간격
+                // 수락 버튼 (오른쪽)
+                Expanded(
+                  child: InkWell(
+                    onTap: onAccept,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 48,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryAble,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '수락',
+                        style: AppTypography.b1.copyWith(color: Colors.white),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

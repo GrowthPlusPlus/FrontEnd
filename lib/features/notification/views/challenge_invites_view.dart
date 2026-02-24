@@ -40,8 +40,7 @@ class ChallengeInvitesView extends ConsumerWidget {
             inviterProfileImageUrl: invite.inviterProfileImageUrl,
             challengeName: invite.challengeTitle,
             participantCount: invite.participantCount,
-            // 디자인과 동일하게 "D-000" 형태로 맞추기 위한 포맷팅
-            dDay: 'D-${invite.remainingDays.toString().padLeft(3, '0')}',
+            dDay: 'D-${invite.remainingDays}',
             labels: invite.tags,
             // 수락/거절 콜백 연결
             onAccept: () => notifier.acceptInvite(invite.challengeId),
