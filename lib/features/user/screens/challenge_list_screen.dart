@@ -170,16 +170,16 @@ class ChallengeListScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          // 💡 제목 오버플로우 방지
+                        Flexible(
                           child: Text(
                             item.title,
                             style: AppTypography.b3.copyWith(
                               color: AppColors.black,
-                              fontWeight: FontWeight.w600,
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            overflow: TextOverflow.ellipsis, // 길면 생략
                             maxLines: 1,
                           ),
                         ),
@@ -242,15 +242,16 @@ class ChallengeListScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
+                        Flexible(
                           child: Text(
                             item.title,
                             style: AppTypography.b3.copyWith(
                               color: AppColors.black,
-                              fontWeight: FontWeight.w600,
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            overflow: TextOverflow.ellipsis, // 길면 생략
                             maxLines: 1,
                           ),
                         ),
@@ -311,19 +312,20 @@ class ChallengeListScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
+                        Flexible(
                           child: Text(
                             item.title,
                             style: AppTypography.b3.copyWith(
                               color: AppColors.black,
-                              fontWeight: FontWeight.w600,
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            overflow: TextOverflow.ellipsis, // 길면 생략
                             maxLines: 1,
                           ),
                         ),
-                        const SizedBox(width: 7),
+                        const SizedBox(width: 7.35),
                         _buildStatusBadge('진행중', inProgressColor),
                       ],
                     ),
