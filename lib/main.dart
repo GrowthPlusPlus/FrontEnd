@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:haenaem/features/social/social_screen.dart';
+import 'package:haenaem/features/social/screens/social_screen.dart';
 import 'package:haenaem/features/user/screens/my_page_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -68,11 +68,7 @@ class MyApp extends StatelessWidget {
       //home: const ChallengeCreatePage(),
       home: const AuthGate(),
       //home: const ChallengeCreateSuccessDialog(),
-<<<<<<< HEAD
-      // home: const MainScreen(),
-=======
       //home: const MainScreen(),
->>>>>>> develop
       //home: const ChallengeCalendarScreen(),
       //home: const ChallengeVerificationPage(),
       //home: const FeedScreen(),
