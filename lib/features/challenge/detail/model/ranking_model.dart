@@ -18,14 +18,16 @@ class RankingUser {
   final int userId;
   final String nickname;
   final String? profileImageUrl;
-  final double rankingScore;
+  final int totalCount; // 총 인증 횟수
+  final int streakCount; // 연속 인증 횟수
   final int rank;
 
   RankingUser({
     required this.userId,
     required this.nickname,
     required this.profileImageUrl,
-    required this.rankingScore,
+    required this.totalCount,
+    required this.streakCount,
     required this.rank,
   });
 
@@ -34,7 +36,8 @@ class RankingUser {
       userId: json['userId'] ?? 0,
       nickname: json['nickname'] ?? '이름 없음',
       profileImageUrl: json['profileImageUrl'],
-      rankingScore: json['rankingScore'] ?? 0,
+      totalCount: json['totalSuccessDays'] ?? 0,
+      streakCount: json['currentStreakDate'] ?? 0,
       rank: json['rank'] ?? 0,
     );
   }

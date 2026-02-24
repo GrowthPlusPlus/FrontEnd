@@ -90,8 +90,8 @@ class MemberRankingScreen extends ConsumerWidget {
                         rank: user.rank,
                         userName: user.nickname,
                         profileImageUrl: user.profileImageUrl,
-                        rankingScore: user.rankingScore,
-                        streakCount: 0,
+                        totalCount: user.totalCount,
+                        streakCount: user.streakCount,
                         isMe: user.userId == rankingData.myRanking.userId,
                       );
                     }, childCount: rankingData.topRankings.length),
@@ -111,7 +111,7 @@ class MemberRankingScreen extends ConsumerWidget {
     required int rank,
     required String userName,
     required String? profileImageUrl,
-    required double rankingScore,
+    required int totalCount,
     required int streakCount,
     required bool isMe,
   }) {
@@ -157,16 +157,16 @@ class MemberRankingScreen extends ConsumerWidget {
             children: [
               _buildStatInfo(
                 svgAsset: 'assets/images/icons/mini_success_icon.svg',
-                value: 1,
+                value: totalCount,
                 color: AppColors.primaryAble,
-                isActive: true,
+                isActive: totalCount > 0,
               ),
               const SizedBox(height: 6),
               _buildStatInfo(
                 svgAsset: 'assets/images/icons/small_fire_icon.svg',
-                value: 0,
+                value: streakCount,
                 color: AppColors.fire,
-                isActive: false,
+                isActive: streakCount > 0,
               ),
             ],
           ),
