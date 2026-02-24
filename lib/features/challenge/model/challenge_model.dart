@@ -539,3 +539,50 @@ class ChallengeTagModel {
     );
   }
 }
+
+// 챌린지 초대 탭 응답 모델 (GET /api/challenges/{challengeId}/invite)
+class ChallengeInviteResponse {
+  final String challengeLink; // 초대 링크
+  final List<ChallengeInviteFriend> friends; // 친구 목록 (초대 상태 포함)
+
+  ChallengeInviteResponse({required this.challengeLink, required this.friends});
+
+  factory ChallengeInviteResponse.fromJson(Map<String, dynamic> json) {
+    return ChallengeInviteResponse(
+      // 초대 링크 매핑
+      challengeLink: json['inviteLink'] ?? '',
+
+      friends: ((json['responseList'] ?? []) as List)
+          .map((e) => ChallengeInviteFriend.fromJson(e))
+          .toList(),
+    );
+  }
+}
+
+class ChallengeInviteFriend {
+  final int userId;
+  final String nickname;
+  final String? profileImageUrl;
+  final bool isInvited; // 이미 초대되었는지 여부
+
+  ChallengeInviteFriend({
+    required this.userId,
+    required this.nickname,
+    this.profileImageUrl,
+    required this.isInvited,
+  });
+
+  factory ChallengeInviteFriend.fromJson(Map<String, dynamic> json) {
+    return ChallengeInviteFriend(
+      // API 명세: a. 유저id
+      userId: json['userId'] ?? 0,
+      // API 명세: b. 유저 닉네임
+      nickname: json['nickname'] ?? '',
+      // API 명세: b. 유저 프로필 이미지 url
+      profileImageUrl: json['profileImageUrl'],
+      // API 명세: c. 이미 해당 챌린지에 초대되었는지에 대한 여부
+      // 초대 상태 체크 ('INVITED' 문자열이거나 true일 경우)
+      isInvited: json['inviteStatus'] == 'INVITED',
+    );
+  }
+}
