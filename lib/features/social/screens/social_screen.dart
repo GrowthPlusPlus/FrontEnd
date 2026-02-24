@@ -40,7 +40,7 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text('소셜', style: AppTypography.h3),
+        title: const Text('친구', style: AppTypography.h3),
         actions: [
           IconButton(
             icon: SvgPicture.asset('assets/images/icons/friend_add_icon.svg'),
