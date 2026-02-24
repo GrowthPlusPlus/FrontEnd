@@ -114,7 +114,6 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
               message: noti.message,
               isRead: noti.read,
               iconType: iconType,
-              // TODO: 추후 백엔드 모델에 profileImageUrl이 추가되면 아래 주석을 해제하세요!
               profileImageUrl: noti.profileImageUrl,
             ),
           ),
