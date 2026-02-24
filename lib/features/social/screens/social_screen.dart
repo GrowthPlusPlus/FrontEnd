@@ -4,13 +4,13 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:haenaem/features/social/friend_edit_screen.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
+import 'package:haenaem/features/social/screens/friend_edit_screen.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import 'friend_add_screen.dart';
-import 'social_repository.dart';
-import 'social_model.dart';
-import '../../core/utils/korean_string_utils.dart';
+import '../data/social_repository.dart';
+import '../model/social_model.dart';
+import '../../../core/utils/korean_string_utils.dart';
 
 class SocialScreen extends ConsumerStatefulWidget {
   const SocialScreen({super.key});
