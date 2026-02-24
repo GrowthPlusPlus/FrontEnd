@@ -83,11 +83,15 @@ class TagNotifier extends Notifier<SignupState> {
 
       // (3) 이름을 ID로 변환
       final List<int> addedIds = addedTagNames
-          .map((name) => _allServerTags.firstWhere((t) => t.tag == name).tagId)
+          .map<int>(
+            (name) => _allServerTags.firstWhere((t) => t.tag == name).tagId,
+          )
           .toList();
 
       final List<int> deletedIds = deletedTagNames
-          .map((name) => _allServerTags.firstWhere((t) => t.tag == name).tagId)
+          .map<int>(
+            (name) => _allServerTags.firstWhere((t) => t.tag == name).tagId,
+          )
           .toList();
 
       // (4) API 호출

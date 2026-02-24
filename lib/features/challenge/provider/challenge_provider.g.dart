@@ -1661,6 +1661,26 @@ final articleLikeNotifierProvider =
     );
 
 typedef _$ArticleLikeNotifier = AutoDisposeNotifier<AsyncValue<void>>;
+String _$challengeDelegateNotifierHash() =>
+    r'9ca847752fbd5dbe57f004bd395d80b69215d5eb';
+
+/// See also [ChallengeDelegateNotifier].
+@ProviderFor(ChallengeDelegateNotifier)
+final challengeDelegateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      ChallengeDelegateNotifier,
+      AsyncValue<void>
+    >.internal(
+      ChallengeDelegateNotifier.new,
+      name: r'challengeDelegateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$challengeDelegateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ChallengeDelegateNotifier = AutoDisposeNotifier<AsyncValue<void>>;
 String _$challengeDeleteNotifierHash() =>
     r'fae50ca4d3884c1de44ceafd6bc2e89c775b2c54';
 

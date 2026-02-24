@@ -133,26 +133,30 @@ class ChallengeListScreen extends ConsumerWidget {
 
   // 마이페이지와 디자인을 통일한 챌린지 카드
   Widget _buildFullChallengeCard(ChallengeInProgressModel item) {
-    Color themeColor;
-    String statusText;
     final serverStatus = item.status.toUpperCase();
 
-    if (serverStatus == "SUCCESS") {
-      themeColor = AppColors.primaryAble;
-      statusText = '완료';
-    } else if (serverStatus == "FAIL" || serverStatus == "FAILED") {
-      themeColor = AppColors.notification;
-      statusText = '실패';
-    } else {
-      themeColor = AppColors.blue;
-      statusText = '진행중';
+    // 1. 실패 상태일 때 (빨간 테마 + 실패일 + 최대 일수 + 불 아이콘)
+    if (serverStatus == "FAIL" || serverStatus == "FAILED") {
+      return _buildSyncFailedCard(item);
     }
 
+    // 2. 완료 상태일 때 (초록 테마 + 완료일 + 총 진행일 + 불 아이콘)
+    if (serverStatus == "SUCCESS") {
+      return _buildSyncSuccessCard(item);
+    }
+
+    // 3. 진행 중일 때 (기본 디자인)
+    return _buildSyncInProgressCard(item);
+  }
+
+  Widget _buildSyncFailedCard(ChallengeInProgressModel item) {
+    const Color failColor = AppColors.notification;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.gray5, width: 0.69),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,7 +165,78 @@ class ChallengeListScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 왼쪽 영역
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          // 💡 제목 오버플로우 방지
+                          child: Text(
+                            item.title,
+                            style: AppTypography.b3.copyWith(
+                              color: AppColors.black,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 7.35),
+                        _buildStatusBadge('실패', failColor),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '실패일 ${item.endDate.replaceAll('-', '/')}',
+                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/icons/small_fire_icon.svg',
+                          width: 16,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '최대 ${item.duringDate}일',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              _buildProgressText(item.progress, failColor),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildGaugeBar(item.progress, failColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSyncSuccessCard(ChallengeInProgressModel item) {
+    const Color successColor = AppColors.primaryAble;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.gray5, width: 0.69),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,28 +248,83 @@ class ChallengeListScreen extends ConsumerWidget {
                             item.title,
                             style: AppTypography.b3.copyWith(
                               color: AppColors.black,
+                              fontWeight: FontWeight.w600,
                             ),
-                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 7.35),
+                        _buildStatusBadge('완료', successColor),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '완료일 ${item.endDate.replaceAll('-', '/')}',
+                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/icons/small_fire_icon.svg',
+                          width: 16,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '총 ${item.duringDate}일',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              _buildProgressText(item.progress, successColor),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildGaugeBar(item.progress, successColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSyncInProgressCard(ChallengeInProgressModel item) {
+    const Color inProgressColor = AppColors.blue;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: AppTypography.b3.copyWith(
+                              color: AppColors.black,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                         ),
                         const SizedBox(width: 7),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: ShapeDecoration(
-                            color: themeColor.withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: Text(
-                            statusText,
-                            style: AppTypography.c1.copyWith(color: themeColor),
-                          ),
-                        ),
+                        _buildStatusBadge('진행중', inProgressColor),
                       ],
                     ),
                     const SizedBox(height: 3),
@@ -205,59 +335,74 @@ class ChallengeListScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              // 오른쪽 영역 : 몇퍼 + 달성률 텍스트
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${(item.progress * 100).toInt()}%',
-                    style: AppTypography.h2.copyWith(color: themeColor),
-                  ),
-                  Text(
-                    '달성률',
-                    style: AppTypography.c1.copyWith(color: AppColors.gray2),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          // 하단 정보
-          Row(
-            children: [
-              SvgPicture.asset(
-                'assets/images/icons/small_fire_icon.svg',
-                width: 16,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${item.duringDate}일째',
-                style: AppTypography.b2.copyWith(color: AppColors.black),
-              ),
-              const SizedBox(width: 12),
-              if (serverStatus == "IN_PROGRESS") ...[
-                SvgPicture.asset(
-                  'assets/images/icons/mini_success_icon.svg',
-                  width: 16,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  item.countInfo,
-                  style: AppTypography.b2.copyWith(color: AppColors.black),
-                ),
-              ],
+              _buildProgressText(item.progress, inProgressColor),
             ],
           ),
           const SizedBox(height: 8),
-          // 진행률 바
-          LinearProgressIndicator(
-            value: item.progress,
-            backgroundColor: AppColors.gray5,
-            color: themeColor,
-            minHeight: 4,
-            borderRadius: BorderRadius.circular(2),
-          ),
+          _buildInProgressInfoRow(item),
+          const SizedBox(height: 8),
+          _buildGaugeBar(item.progress, inProgressColor),
         ],
+      ),
+    );
+  }
+  // --- 헬퍼 위젯들 ---
+
+  Widget _buildStatusBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: ShapeDecoration(
+        color: color.withOpacity(0.1),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: Text(text, style: AppTypography.c1.copyWith(color: color)),
+    );
+  }
+
+  Widget _buildProgressText(double progress, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '${(progress * 100).toInt()}%',
+          style: AppTypography.h2.copyWith(color: color),
+        ),
+        Text('달성률', style: AppTypography.c1.copyWith(color: AppColors.gray2)),
+      ],
+    );
+  }
+
+  Widget _buildInProgressInfoRow(ChallengeInProgressModel item) {
+    return Row(
+      children: [
+        SvgPicture.asset('assets/images/icons/small_fire_icon.svg', width: 16),
+        const SizedBox(width: 4),
+        Text(
+          '${item.duringDate}일째',
+          style: AppTypography.b2.copyWith(color: AppColors.black),
+        ),
+        const SizedBox(width: 12),
+        SvgPicture.asset(
+          'assets/images/icons/mini_success_icon.svg',
+          width: 16,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          item.countInfo,
+          style: AppTypography.b2.copyWith(color: AppColors.black),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGaugeBar(double progress, Color color) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(23),
+      child: LinearProgressIndicator(
+        value: progress,
+        minHeight: 4,
+        backgroundColor: AppColors.gray5,
+        valueColor: AlwaysStoppedAnimation<Color>(color),
       ),
     );
   }

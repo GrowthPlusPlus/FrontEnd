@@ -157,7 +157,7 @@ class ChallengePopupMenu extends ConsumerWidget {
         final bool? confirmed = await showDialog<bool>(
           // await로 변경
           context: context,
-          builder: (context) => const ExitConfirmDialog(),
+          builder: (context) => ExitConfirmDialog(challengeId: challengeId),
         );
 
         if (confirmed == true) {
