@@ -37,7 +37,7 @@ class NotificationListTile extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: AppTypography.b2.copyWith(color: AppColors.black),
+              style: AppTypography.b1.copyWith(color: AppColors.black),
             ),
           ),
         ],

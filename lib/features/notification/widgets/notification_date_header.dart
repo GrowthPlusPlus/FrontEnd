@@ -15,7 +15,7 @@ class NotificationDateHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16, left: 20, right: 20, bottom: 4),
       child: Text(
         dateText,
-        style: AppTypography.b3.copyWith(color: AppColors.gray1),
+        style: AppTypography.h3.copyWith(color: AppColors.gray1),
       ),
     );
   }
