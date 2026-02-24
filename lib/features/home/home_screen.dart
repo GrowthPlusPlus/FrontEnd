@@ -51,12 +51,6 @@ class HomeScreen extends ConsumerWidget {
                           context,
                           data.notificationNumber,
                         ),
-                        IconButton(
-                          icon: SvgPicture.asset(
-                            'assets/images/icons/dots_vert_icon.svg',
-                          ),
-                          onPressed: () {},
-                        ),
                       ],
                     ),
                   ),
