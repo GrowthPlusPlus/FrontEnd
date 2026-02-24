@@ -848,6 +848,31 @@ class ChallengeRepository {
     }
   }
 
+  // 챌린지장 위임 api
+  Future<void> delegateChallengeOwner(
+    int challengeId,
+    int delegateMemberId,
+  ) async {
+    try {
+      debugPrint(
+        '🚀 [POST Request] /api/challenges/$challengeId/owner/delegate',
+      );
+
+      final response = await _dio.post(
+        '/api/challenges/$challengeId/owner/delegate',
+        data: {'delegateMemberId': delegateMemberId},
+      );
+
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('방장 위임 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 방장 위임 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 방장 위임 API 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '위임 처리 중 오류가 발생했습니다.');
+    }
+  }
+
   // 챌린지 멤버 추방 API
   Future<void> kickMember(int challengeId, int targetUserId) async {
     print('🔥 [API Request] 멤버 추방 요청: 챌린지 $challengeId, 타겟 $targetUserId');

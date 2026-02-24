@@ -3,187 +3,175 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/challenge/model/user_model.dart';
+import '../provider/challenge_provider.dart';
+import 'package:haenaem/features/challenge/provider/challenge_member_provider.dart';
+import 'package:haenaem/shared/widgets/challenge_exit_base_dialog.dart';
+import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 
-class DelegateDialog extends StatefulWidget {
-  const DelegateDialog({super.key});
+// 챌린지장 위임 다이얼로그
+class DelegateDialog extends ConsumerStatefulWidget {
+  final int challengeId;
+  const DelegateDialog({super.key, required this.challengeId});
 
   @override
-  State<DelegateDialog> createState() => _DelegateDialogState();
+  ConsumerState<DelegateDialog> createState() => _DelegateDialogState();
 }
 
-class _DelegateDialogState extends State<DelegateDialog> {
-  // 선택된 멤버를 저장 (null이면 미선택 상태)
-  String? selectedMember;
+class _DelegateDialogState extends ConsumerState<DelegateDialog> {
+  ChallengeMember? selectedMember;
 
   @override
   Widget build(BuildContext context) {
-    // 멤버 선택 여부에 따른 활성화 상태 체크
-    bool isActivated = selectedMember != null;
+    return ChallengeExitBaseDialog(
+      confirmButtonText: '위임 후 나가기',
+      isConfirmEnabled: selectedMember != null,
+      onConfirm: () async {
+        if (selectedMember == null) return;
+        try {
+          await ref
+              .read(challengeRepositoryProvider)
+              .delegateChallengeOwner(
+                widget.challengeId,
+                selectedMember!.memberId,
+              );
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+          // 홈 화면 데이터 새로고침
+          ref.invalidate(challengeHomeNotifierProvider);
+
+          if (context.mounted) {
+            Navigator.of(context).popUntil((route) => route.isFirst); // 홈으로 이동
+          }
+        } catch (e) {
+          // 에러 처리
+        }
+      },
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 챌린지장 위임 타이틀 섹션
+          Column(
+            children: [
+              Text(
+                '챌린지장 위임',
+                style: AppTypography.b3.copyWith(color: AppColors.black),
+              ),
+              Text(
+                '챌린지장 권한을 넘길 멤버를 선택해주세요',
+                textAlign: TextAlign.center,
+                style: AppTypography.b1.copyWith(color: AppColors.gray2),
+              ),
+            ],
           ),
+          const SizedBox(height: 14),
+
+          // 위임할 멤버 선택 섹션
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '위임할 멤버',
+                style: AppTypography.b1.copyWith(color: AppColors.black),
+              ),
+              const SizedBox(height: 8),
+              _buildMemberSelector(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMemberSelector() {
+    return GestureDetector(
+      onTap: () => _showMemberSelectionSheet(context),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: ShapeDecoration(
+          color: AppColors.gray5,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // --- 헤더 섹션 ---
-            _buildHeader(),
-            const SizedBox(height: 20),
-
-            // --- 멤버 선택 섹션 ---
-            _buildMemberSelector(),
-            const SizedBox(height: 20),
-
-            // --- 하단 버튼 섹션 ---
-            _buildActionButtons(context, isActivated),
+            Text(
+              selectedMember?.nickname ?? '멤버를 선택하세요',
+              style: AppTypography.b2.copyWith(
+                color: selectedMember == null
+                    ? AppColors.gray2
+                    : AppColors.black,
+              ),
+            ),
+            SvgPicture.asset(
+              'assets/images/icons/big_down_arrow.svg',
+              width: 16,
+              height: 16,
+            ),
           ],
         ),
       ),
     );
   }
 
-  // 다이얼로그 제목 및 설명
-  Widget _buildHeader() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 4),
-        Text(
-          '챌린지장 위임',
-          textAlign: TextAlign.center,
-          style: AppTypography.h3.copyWith(
-            color: AppColors.black,
-          ), // 20pt, SemiBold
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '챌린지장 권한을 넘길 멤버를 선택해주세요',
-          textAlign: TextAlign.center,
-          style: AppTypography.b1.copyWith(color: AppColors.gray2),
-        ),
-      ],
-    );
-  }
+  // 멤버 목록 바텀 시트 (로직 유지)
+  void _showMemberSelectionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final filter = MemberFilter(challengeId: widget.challengeId);
+            final membersAsync = ref.watch(challengeMembersProvider(filter));
 
-  // 멤버 선택 박스
-  Widget _buildMemberSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '위임할 멤버',
-          style: AppTypography.b1.copyWith(color: AppColors.black),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {
-            // TODO: 멤버 리스트 시트나 팝업 호출 로직
-            // 여기서는 테스트를 위해 클릭 시 임의의 멤버가 선택되도록 함
-            setState(() {
-              selectedMember = "성장하는 개발자";
-            });
+            return Container(
+              padding: const EdgeInsets.all(20),
+              height: 400,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('멤버 선택', style: AppTypography.h3),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: membersAsync.when(
+                      data: (members) => ListView.builder(
+                        itemCount: members.length,
+                        itemBuilder: (context, index) {
+                          final member = members[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.gray5,
+                              backgroundImage: member.profileImageUrl != null
+                                  ? NetworkImage(member.profileImageUrl!)
+                                  : null,
+                            ),
+                            title: Text(
+                              member.nickname,
+                              style: AppTypography.b2,
+                            ),
+                            onTap: () {
+                              setState(() => selectedMember = member);
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, s) =>
+                          const Center(child: Text('목록을 불러오지 못했습니다.')),
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: ShapeDecoration(
-              color: AppColors.gray5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  selectedMember ?? '멤버를 선택하세요',
-                  style: AppTypography.b2.copyWith(
-                    color: selectedMember == null
-                        ? AppColors.gray2
-                        : AppColors.black,
-                  ),
-                ),
-                SvgPicture.asset(
-                  'assets/images/icons/big_down_arrow.svg',
-                  width: 16,
-                  height: 16,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.gray2,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // 취소 및 위임 버튼
-  Widget _buildActionButtons(BuildContext context, bool isActivated) {
-    return Row(
-      children: [
-        // 취소 버튼
-        Expanded(
-          child: InkWell(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: ShapeDecoration(
-                color: AppColors.gray5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  '취소',
-                  style: AppTypography.b1.copyWith(color: AppColors.gray2),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        // 위임 후 나가기 버튼
-        Expanded(
-          child: InkWell(
-            onTap: isActivated
-                ? () {
-                    // TODO: 위임 API 호출 및 나가기 로직
-                    Navigator.pop(context, true);
-                  }
-                : null,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: ShapeDecoration(
-                // 활성화 여부에 따라 색상 변경
-                color: isActivated
-                    ? AppColors.notification
-                    : const Color(0xFFDBAEAD),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  '위임 후 나가기',
-                  style: AppTypography.b1.copyWith(color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

@@ -4,8 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../provider/challenge_provider.dart';
-
 import '../widgets/delegate_dialog.dart';
 import '../widgets/delete_challenge_dialog.dart';
 import 'challenge_members_screen.dart';
@@ -162,10 +160,10 @@ class ChallengeSettingsScreen extends ConsumerWidget {
             description: '다른 멤버에게 챌린지장을 위임한 후, 챌린지를 나갑니다.',
             buttonText: '챌린지장 위임하고 나가기',
             onTap: () {
+              // 1. 다이얼로그 호출 (결과값은 int? 타입)
               showDialog(
                 context: context,
-                barrierDismissible: true, // 바깥 영역 터치 시 닫기 가능
-                builder: (context) => const DelegateDialog(),
+                builder: (context) => DelegateDialog(challengeId: challengeId),
               );
             },
           ),
@@ -184,28 +182,12 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                 '챌린지 방을 완전히 삭제합니다. 모든 데이터와 성취 그래프가 사라지며, 이 작업은 되돌릴 수 없습니다.',
             buttonText: '챌린지 삭제하기',
             isDelete: true,
-            onTap: () async {
-              // 삭제 확인 다이얼로그 띄우기
-              final bool? isConfirmed = await showDialog<bool>(
+            onTap: () {
+              showDialog(
                 context: context,
-                builder: (context) => const DeleteChallengeDialog(),
+                builder: (context) =>
+                    const DeleteChallengeDialog(), // 삭제 다이얼로그도 내부에서 API 호출하게 수정 가능
               );
-
-              // 사용자가 '영구 삭제'를 눌렀을 경우 로직 실행
-              if (isConfirmed == true) {
-                final success = await ref
-                    .read(challengeDeleteNotifierProvider.notifier)
-                    .removeChallenge(challengeId);
-
-                if (success && context.mounted) {
-                  // 삭제 성공 시 홈 화면으로 이동하거나 설정 화면 닫기
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('챌린지가 삭제되었습니다.')),
-                  );
-                  // 홈으로 가거나 스택 초기화
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                }
-              }
             },
           ),
         ],
