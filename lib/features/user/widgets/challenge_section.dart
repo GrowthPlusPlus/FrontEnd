@@ -213,6 +213,17 @@ class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
   // --- 개별 챌린지 카드 UI ---
   Widget _buildChallengeCard(ChallengeInProgressModel item) {
     final serverStatus = item.status.toUpperCase();
+
+    // 실패한 챌린지일 경우 전용 UI를 반환
+    if (serverStatus == "FAIL" || serverStatus == "FAILED") {
+      return _buildFailedChallengeCard(item);
+    }
+
+    // 완료 상태일 때
+    if (serverStatus == "SUCCESS") {
+      return _buildSuccessChallengeCard(item);
+    }
+
     final Color themeColor = _getTabColor(selectedTab);
 
     String statusText = '진행중';
@@ -237,13 +248,17 @@ class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          item.title,
-                          style: AppTypography.b3.copyWith(
-                            color: AppColors.black,
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: AppTypography.b3.copyWith(
+                              color: AppColors.black,
+                            ),
+                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            maxLines: 1,
                           ),
                         ),
-                        const SizedBox(width: 7),
+                        const SizedBox(width: 7.35),
                         _buildStatusBadge(statusText, themeColor),
                       ],
                     ),
@@ -267,6 +282,222 @@ class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
             color: themeColor,
             minHeight: 4,
             borderRadius: BorderRadius.circular(2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 완료 전용 카드 UI
+  Widget _buildSuccessChallengeCard(ChallengeInProgressModel item) {
+    const Color successColor = AppColors.primaryAble;
+    Color gray5 = AppColors.gray5;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 0.69, color: gray5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 왼쪽 정보 영역
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: AppTypography.b3.copyWith(
+                              color: AppColors.black,
+                            ),
+                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 7.35),
+                        _buildStatusBadge('완료', successColor),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    // 완료일 데이터 바인딩
+                    Text(
+                      '완료일 ${item.endDate.replaceAll('-', '/')}',
+                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    ),
+                    const SizedBox(height: 2),
+                    // 총 진행 일수 + 불 아이콘
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/icons/small_fire_icon.svg',
+                          width: 16,
+                          height: 16,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '총 ${item.duringDate}일',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${(item.progress * 100).toInt()}%',
+                    textAlign: TextAlign.right,
+                    style: AppTypography.h2.copyWith(color: successColor),
+                  ),
+                  Text(
+                    '달성률',
+                    textAlign: TextAlign.right,
+                    style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // 하단 게이지 바
+          ClipRRect(
+            borderRadius: BorderRadius.circular(23),
+            child: LinearProgressIndicator(
+              value: item.progress,
+              minHeight: 4,
+              backgroundColor: gray5,
+              valueColor: const AlwaysStoppedAnimation<Color>(successColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 실패 전용 카드 UI
+  Widget _buildFailedChallengeCard(ChallengeInProgressModel item) {
+    const Color failColor = AppColors.notification;
+    Color gray5 = AppColors.gray5;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 0.69, color: gray5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. 왼쪽 정보 영역
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: AppTypography.b3.copyWith(
+                              color: AppColors.black,
+                            ),
+                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 7.35),
+                        // '실패' 배지
+                        _buildStatusBadge('실패', failColor),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    // 실패일 데이터 바인딩
+                    Text(
+                      '실패일 ${item.endDate.replaceAll('-', '/')}',
+                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    ),
+                    const SizedBox(height: 2),
+                    // 누적 진행일 데이터 바인딩
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/icons/small_fire_icon.svg', // 불 아이콘 경로 확인 필요
+                          width: 16,
+                          height: 16,
+                        ),
+                        const SizedBox(width: 2), // 아이콘과 텍스트 사이 간격 2
+                        Text(
+                          '최대 ${item.duringDate}일',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // 2. 오른쪽 달성률 영역
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${(item.progress * 100).toInt()}%',
+                    textAlign: TextAlign.right,
+                    style: AppTypography.h2.copyWith(
+                      color: AppColors.notification,
+                    ),
+                  ),
+                  Text(
+                    '달성률',
+                    textAlign: TextAlign.right,
+                    style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // 3. 하단 게이지 바 (Gauge)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(23),
+            child: LinearProgressIndicator(
+              value: item.progress,
+              minHeight: 4,
+              backgroundColor: gray5,
+              valueColor: const AlwaysStoppedAnimation<Color>(failColor),
+            ),
           ),
         ],
       ),

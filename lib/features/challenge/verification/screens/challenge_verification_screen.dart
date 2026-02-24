@@ -1,19 +1,16 @@
 // 최초 작성자 : 김채영
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:crop_your_image/crop_your_image.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/model/image_model.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
@@ -31,26 +28,26 @@ import 'package:haenaem/features/challenge/widgets/verification_cancel_dialog.da
 import 'package:haenaem/features/feed/model/feed_model.dart';
 
 // 챌린지 인증하기 화면
-class ChallengeVerificationPage extends ConsumerStatefulWidget {
+class ChallengeVerificationScreen extends ConsumerStatefulWidget {
   final int challengeId;
   final CertificationPostModel? existingPost; // 데이터가 있으면 수정 모드
 
-  const ChallengeVerificationPage({
+  const ChallengeVerificationScreen({
     super.key,
     required this.challengeId,
     this.existingPost,
   });
 
   @override
-  ConsumerState<ChallengeVerificationPage> createState() =>
-      _ChallengeVerificationPageState();
+  ConsumerState<ChallengeVerificationScreen> createState() =>
+      _ChallengeVerificationScreenState();
 }
 
 // 상태 관리를 위한 Enum
 enum ImageVerificationStatus { idle, loading, success, fail }
 
-class _ChallengeVerificationPageState
-    extends ConsumerState<ChallengeVerificationPage> {
+class _ChallengeVerificationScreenState
+    extends ConsumerState<ChallengeVerificationScreen> {
   late TextEditingController _contentController;
   final List<File> _cameraImages = []; // 카메라 전용 바구니
   final List<File> _galleryImages = []; // 갤러리 전용 바구니
@@ -66,23 +63,33 @@ class _ChallengeVerificationPageState
 
   bool get isEditMode => widget.existingPost != null;
   List<File> get _newImages => [..._cameraImages, ..._galleryImages];
-
-  // 전체 이미지 리스트
   List<File> get _allImages => [..._cameraImages, ..._galleryImages];
 
   // 버튼 활성화 조건
   // 생성: 사진 1장 이상 + 텍스트 필수
   // 수정: (기존사진 - 삭제예정 + 새사진)이 1장 이상 + 텍스트 필수
   bool get _isFormValid {
-    // 1. 현재 살아남은 기존 사진 개수 계산
+    // 1. 챌린지 상세 정보를 구독 (Named Parameter 사용)
+    final challengeDetail = ref.watch(
+      challengeDetailProvider(challengeId: widget.challengeId),
+    );
+
+    // 2. 사진 필수 여부 파악 (데이터 로딩 전에는 기본값 true로 설정하여 방어)
+    final bool isPhotoRequired = challengeDetail.value?.photoRequired ?? true;
+
+    // 3. 사진 및 텍스트 상태 계산
     final int existingCount = widget.existingPost?.images.length ?? 0;
     final int activeExistingCount = existingCount - _imageIdsToDelete.length;
-
-    // 2. 총 사진 개수 (기존 남은 사진 + 새로 추가할 사진)
     final int totalPhotos = activeExistingCount + _newImages.length;
+    final bool isContentNotEmpty = _contentController.text.trim().isNotEmpty;
 
-    // 사진 1장 이상 AND 내용 필수
-    return totalPhotos > 0 && _contentController.text.trim().isNotEmpty;
+    if (isPhotoRequired) {
+      // 📸 사진 필수: 사진 1장 이상 AND 텍스트 필수
+      return totalPhotos > 0 && isContentNotEmpty;
+    } else {
+      // ✍️ 사진 자유: 사진 0장이어도 텍스트만 있으면 활성화
+      return isContentNotEmpty;
+    }
   }
 
   @override
@@ -323,11 +330,19 @@ class _ChallengeVerificationPageState
   }
 
   // 이미지 검증 로직 함수
+  // TODO: 백엔드 api 수정 중이라서 임시 성공 처리
   Future<void> _runImageVerification(File file) async {
     setState(() => _verifyStatus = ImageVerificationStatus.loading);
 
-    final repository = ref.read(challengeRepositoryProvider);
-    final isSuccess = await repository.verifyImage(file);
+    // 실제 리포지토리 호출 주석 처리
+    // final repository = ref.read(challengeRepositoryProvider);
+    // final isSuccess = await repository.verifyImage(file);
+
+    // ⏳ AI가 열심히 사진을 분석하는 척 2초간 대기합니다.
+    await Future.delayed(const Duration(seconds: 2));
+
+    // 💡 무조건 성공으로 설정
+    const isSuccess = true;
 
     if (mounted) {
       setState(() {
@@ -359,28 +374,36 @@ class _ChallengeVerificationPageState
   }
 
   Widget _buildStatusBox() {
+    // 사진이 한 장도 없는 경우 -> 검증 UI를 아예 보여주지 않고 가이드만 노출
+    if (_allImages.isEmpty) {
+      return const Column(
+        children: [
+          VerificationInfoBox(),
+          SizedBox(height: 8),
+          VerificationTipBox(),
+        ],
+      );
+    }
+
     Widget mainBox; // 상단 박스
     Widget subBox; // 하단 박스
 
-    // 1. 사진 넣기 전 (Idle)
-    if (_allImages.isEmpty && _verifyStatus == ImageVerificationStatus.idle) {
-      mainBox = const VerificationInfoBox();
-      subBox = const VerificationTipBox();
-    }
-    // 2. 사진 막 넣었을 때 (Loading)
-    else if (_verifyStatus == ImageVerificationStatus.loading) {
-      mainBox = const AiVerificationBox();
-      subBox = const VerificationTipBox();
-    }
-    // 3. 검증 성공 시 (Success)
-    else if (_verifyStatus == ImageVerificationStatus.success) {
-      mainBox = const AiSuccessBox();
-      subBox = const VerificationTipBox();
-    }
-    // 4. 검증 실패 시 (Fail)
-    else {
-      mainBox = const AiFailBox();
-      subBox = const ReverificationGuideBox(); // 실패 시 전용 가이드
+    switch (_verifyStatus) {
+      case ImageVerificationStatus.loading:
+        mainBox = const AiVerificationBox();
+        subBox = const VerificationTipBox();
+        break;
+      case ImageVerificationStatus.success:
+        mainBox = const AiSuccessBox();
+        subBox = const VerificationTipBox();
+        break;
+      case ImageVerificationStatus.fail:
+        mainBox = const AiFailBox();
+        subBox = const ReverificationGuideBox();
+        break;
+      default:
+        mainBox = const VerificationInfoBox();
+        subBox = const VerificationTipBox();
     }
 
     return Column(
@@ -560,34 +583,39 @@ class _ChallengeVerificationPageState
   }
 
   Future<void> _onSave() async {
-    final content = _contentController.text.trim();
+    final now = DateTime.now();
     bool success = false;
-    final now = DateTime.now(); // 현재 날짜 정보 가져오기
+    final content = _contentController.text.trim();
 
-    if (isEditMode) {
-      success = await ref
-          .read(articleUpdateNotifierProvider.notifier)
-          .editArticle(
-            postId: widget.existingPost!.postId,
-            content: content,
-            deleteImageIds: _imageIdsToDelete,
-            newImages: _newImages,
-          );
-    } else {
-      success = await ref
-          .read(articleCreateNotifierProvider.notifier)
-          .submitArticle(
-            challengeId: widget.challengeId,
-            content: content,
-            imageFiles: _newImages,
-          );
+    try {
+      if (isEditMode) {
+        success = await ref
+            .read(articleUpdateNotifierProvider.notifier)
+            .editArticle(
+              postId: widget.existingPost!.postId,
+              content: content,
+              deleteImageIds: _imageIdsToDelete,
+              newImages: _newImages,
+            );
+      } else {
+        success = await ref
+            .read(articleCreateNotifierProvider.notifier)
+            .submitArticle(
+              challengeId: widget.challengeId,
+              content: content,
+              imageFiles: _newImages,
+            );
+      }
+    } catch (e) {
+      debugPrint('❌ 인증 저장 중 오류 발생: $e');
+      success = false;
     }
 
     if (success && mounted) {
-      // 챌린지 상단 요약 정보 (완료 일수, 연속 일수) 갱신
+      // 💡 [에러 해결] 이 프로바이더만 이름 없이 숫자만 넣습니다 (Positional)
       ref.invalidate(challengeCalendarDataProvider(widget.challengeId));
 
-      // 달력 그리드 사진 데이터 갱신
+      // 💡 아래 프로바이더들은 정의된 대로 이름을 명시합니다 (Named)
       ref.invalidate(
         challengeCalendarPhotosProvider(
           challengeId: widget.challengeId,
@@ -595,8 +623,6 @@ class _ChallengeVerificationPageState
           month: now.month,
         ),
       );
-
-      // 하단 인증글 리스트 갱신
       ref.invalidate(
         challengePostsProvider(
           challengeId: widget.challengeId,
@@ -605,14 +631,17 @@ class _ChallengeVerificationPageState
         ),
       );
 
-      // 홈 화면의 챌린지 리스트 상태 (불 아이콘 등) 갱신
       ref.invalidate(challengeHomeNotifierProvider);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isEditMode ? '수정이 완료되었습니다!' : '인증이 완료되었습니다!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
 
-      Navigator.pop(context); // 탭으로 돌아가면 위에서 invalidate한 덕분에 최신 데이터가 보임.
+      Navigator.pop(context);
+    } else if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('인증에 실패했습니다. 다시 시도해주세요.')));
     }
   }
 }

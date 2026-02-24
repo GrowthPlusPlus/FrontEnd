@@ -6,10 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/social/social_model.dart';
-import 'package:haenaem/features/social/social_repository.dart';
 import 'package:haenaem/core/utils/korean_string_utils.dart';
 import 'package:haenaem/features/challenge/data/challenge_repository.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
 // import 'package:share_plus/share_plus.dart';
 
 // [공통 위젯] 챌린지 초대 본문 (링크 공유 + 친구 검색 + 리스트)
@@ -20,7 +19,7 @@ class ChallengeInviteContent extends ConsumerStatefulWidget {
   const ChallengeInviteContent({
     super.key,
     required this.challengeId,
-    this.challengeUrl = "https://challenge.app/room/abc123", // 기본값
+    this.challengeUrl = "https://challenge.app/room/loading...", // 기본값
   });
 
   @override
@@ -30,7 +29,9 @@ class ChallengeInviteContent extends ConsumerStatefulWidget {
 
 class _ChallengeInviteContentState
     extends ConsumerState<ChallengeInviteContent> {
-  final Set<int> _invitedFriends = {};
+  // 이 화면에서 "새로" 초대한 친구들의 ID를 저장 (낙관적 UI 업데이트용)
+  final Set<int> _newlyInvitedFriends = {};
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -52,7 +53,7 @@ class _ChallengeInviteContentState
     });
   }
 
-  // 초대 버튼 누를 경우 뜨는 토스트 메시지
+  // 커스텀 오버레이 토스트
   void _showToast(BuildContext context, String message) {
     // 토스트 위젯 생성
     OverlayEntry overlayEntry = OverlayEntry(
@@ -92,91 +93,107 @@ class _ChallengeInviteContentState
     });
   }
 
-  // 클립보드 복사
-  void _copyToClipboard() {
-    Clipboard.setData(ClipboardData(text: widget.challengeUrl)).then((_) {
+  // 클립보드 복사 (API에서 받은 최신 링크 사용)
+  void _copyToClipboard(String currentLink) {
+    Clipboard.setData(ClipboardData(text: currentLink)).then((_) {
       if (!mounted) return;
-      // 스낵바 대신 토스트 사용
       _showToast(context, '링크가 복사되었습니다.');
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // API로부터 친구 목록 상태 구독
-    final friendListAsync = ref.watch(friendListProvider);
+    // 챌린지 전용 초대 정보 Provider 사용
+    final inviteInfoAsync = ref.watch(
+      challengeInviteInfoProvider(widget.challengeId),
+    );
 
-    return Column(
-      children: [
-        // 1. 링크 공유 섹션
-        _buildLinkShareBox(),
-        const SizedBox(height: 10),
+    // [디버깅 로그] 현재 상태 찍어보기
+    debugPrint('🎨 [UI 상태] $inviteInfoAsync');
 
-        // 2. 검색창
-        _buildSearchBar(),
-        const SizedBox(height: 10),
+    return inviteInfoAsync.when(
+      data: (info) {
+        debugPrint('📋 [UI 데이터 수신] 전체 친구: ${info.friends.length}명');
 
-        // 3. 친구 리스트 (API 데이터 연동)
-        Expanded(
-          child: friendListAsync.when(
-            data: (friends) {
-              // 검색 필터링
-              final filteredFriends = friends.where((friend) {
-                final name = friend.nickname;
-                final query = _searchQuery;
-                return name.toLowerCase().contains(query) ||
-                    KoreanStringUtils.getChoseongString(name).contains(query);
-              }).toList();
+        return Column(
+          children: [
+            // 1. 링크 공유 섹션 (API에서 받아온 링크 사용)
+            _buildLinkShareBox(info.challengeLink),
+            const SizedBox(height: 10),
 
-              // 정렬
-              filteredFriends.sort(
-                (a, b) => KoreanStringUtils.compareKoreanFirst(
-                  a.nickname,
-                  b.nickname,
-                ),
-              );
+            // 2. 검색창
+            _buildSearchBar(),
+            const SizedBox(height: 10),
 
-              if (filteredFriends.isEmpty) {
-                return Container(
-                  padding: const EdgeInsets.only(top: 50),
-                  child: Text(
-                    friends.isEmpty ? '친구가 없습니다.' : '검색 결과가 없습니다.',
-                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
-                  ),
-                );
-              }
-
-              return ListView.builder(
-                shrinkWrap: true, // 필요 시 추가
-                // 검색창도 같이 스크롤 되어 올라감
-                // physics: const NeverScrollableScrollPhysics(), // 필요 시 추가
-                itemCount: filteredFriends.length,
-                itemBuilder: (context, index) {
-                  return _buildFriendInviteItem(filteredFriends[index]);
-                },
-              );
-            },
-            loading: () => const Padding(
-              padding: EdgeInsets.only(top: 50),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-            error: (err, stack) => Padding(
-              padding: const EdgeInsets.only(top: 50),
-              child: Center(
-                child: Text(
-                  '친구 목록을 불러오지 못했습니다.',
-                  style: AppTypography.b2.copyWith(color: AppColors.gray2),
-                ),
-              ),
-            ),
+            // 3. 친구 리스트 (API 데이터 + 검색 필터링)
+            Expanded(child: _buildFriendList(info.friends)),
+          ],
+        );
+      },
+      // 로딩 중일 때도 기본 UI 틀은 보여줌 (링크는 생성자 값 사용)
+      loading: () {
+        debugPrint('⏳ [UI 로딩 중...]');
+        return Column(
+          children: [
+            _buildLinkShareBox(widget.challengeUrl),
+            const SizedBox(height: 10),
+            _buildSearchBar(),
+            const SizedBox(height: 50),
+            const CircularProgressIndicator(),
+          ],
+        );
+      },
+      error: (err, stack) {
+        debugPrint('💥 [UI 에러] $err');
+        return Center(
+          child: Text(
+            '정보를 불러오지 못했습니다.',
+            style: AppTypography.b2.copyWith(color: AppColors.gray2),
           ),
+        );
+      },
+    );
+  }
+
+  // 친구 리스트 빌더 메서드 분리
+  Widget _buildFriendList(List<ChallengeInviteFriend> friends) {
+    debugPrint('🔍 [검색어] "$_searchQuery"');
+    // 검색 필터링
+    final filteredFriends = friends.where((friend) {
+      final name = friend.nickname;
+      final query = _searchQuery;
+      return name.toLowerCase().contains(query) ||
+          KoreanStringUtils.getChoseongString(name).contains(query);
+    }).toList();
+
+    debugPrint('✨ [필터링 결과] ${filteredFriends.length}명 표시됨');
+
+    // 정렬 (가나다순)
+    filteredFriends.sort(
+      (a, b) => KoreanStringUtils.compareKoreanFirst(a.nickname, b.nickname),
+    );
+
+    if (filteredFriends.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.only(top: 50),
+        child: Text(
+          friends.isEmpty ? '초대할 수 있는 친구가 없습니다.' : '검색 결과가 없습니다.',
+          style: AppTypography.b2.copyWith(color: AppColors.gray2),
         ),
-      ],
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: filteredFriends.length,
+      itemBuilder: (context, index) {
+        return _buildFriendInviteItem(filteredFriends[index]);
+      },
     );
   }
 
   // 링크 공유 박스 UI
-  Widget _buildLinkShareBox() {
+  Widget _buildLinkShareBox(String link) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -205,7 +222,7 @@ class _ChallengeInviteContentState
               ),
             ),
             child: Text(
-              widget.challengeUrl,
+              link,
               style: AppTypography.c1.copyWith(color: const Color(0xFF3E7E60)),
               overflow: TextOverflow.ellipsis,
             ),
@@ -221,7 +238,7 @@ class _ChallengeInviteContentState
                     label: '복사',
                     color: AppColors.gray5,
                     iconPath: 'assets/images/icons/link_copy.svg',
-                    onTap: _copyToClipboard,
+                    onTap: () => _copyToClipboard(link),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -313,8 +330,11 @@ class _ChallengeInviteContentState
   }
 
   // 친구 리스트 아이템 + 실제 API 로직
-  Widget _buildFriendInviteItem(Friend friend) {
-    bool isInvited = _invitedFriends.contains(friend.id);
+  Widget _buildFriendInviteItem(ChallengeInviteFriend friend) {
+    // 1. 서버에서 온 상태(friend.isInvited)이거나
+    // 2. 방금 내가 버튼 눌러서 초대한 상태(_newlyInvitedFriends 포함)인지 확인
+    bool isInvited =
+        friend.isInvited || _newlyInvitedFriends.contains(friend.userId);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -365,7 +385,9 @@ class _ChallengeInviteContentState
                             .inviteFriend(widget.challengeId, friend.nickname);
 
                         if (!mounted) return;
-                        setState(() => _invitedFriends.add(friend.id));
+
+                        // 성공 시 '새로 초대된 목록'에 추가하여 버튼 비활성화 (낙관적 업데이트)
+                        setState(() => _newlyInvitedFriends.add(friend.userId));
 
                         // 커스텀 Toast 사용
                         _showToast(

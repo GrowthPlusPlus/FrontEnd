@@ -202,7 +202,7 @@ class ChallengeListView extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         decoration: BoxDecoration(
-          color: AppColors.disable,
+          color: AppColors.gray5,
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Text(
@@ -233,8 +233,10 @@ class ChallengeCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ChallengeMainScreen(challengeId: challenge['challengeId'] ?? 0),
+            builder: (context) => ChallengeMainScreen(
+              challengeId: challenge['challengeId'] ?? 0,
+              challengeTitle: challenge['title'],
+            ),
           ),
         );
       },
@@ -393,37 +395,46 @@ class _DayChip extends StatelessWidget {
     String label = weekdayLabels[date.weekday % 7];
     String day = date.day.toString();
 
+    // 테두리 결정 로직: 오늘(isSelected)이면서 실패 위기(urgent)가 아닐 때만 테두리 생성
+    final bool showBorder = isSelected && status != ChallengeStatus.urgent;
+
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: AppTypography.b1.copyWith(
-              fontFamily: 'Pretendard',
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: black,
-            ),
-          ),
+          Text(label, style: AppTypography.b1.copyWith(color: AppColors.black)),
           const SizedBox(height: 8),
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              // 요구사항에 따른 배경색 동적 변경
+            // 💡 제공된 코드의 패딩 반영
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+            decoration: ShapeDecoration(
+              // 💡 배경색: 오늘이 아니면 연회색, 오늘이면 상태에 따른 색상
               color: getBackgroundColor(),
-              borderRadius: BorderRadius.circular(5),
+              shape: RoundedRectangleBorder(
+                // 💡 오늘 날짜일 때만 테두리(Outside) 적용
+                side: showBorder
+                    ? const BorderSide(
+                        width: 1,
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                        color: gray2,
+                      )
+                    : BorderSide.none,
+                borderRadius: BorderRadius.circular(5),
+              ),
             ),
             alignment: Alignment.center,
             child: Text(
               day,
               style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                fontSize: 14,
                 color: isSelected && status != ChallengeStatus.normal
                     ? Colors.white
                     : gray2,
+                fontSize: 14,
+                fontFamily: 'Pretendard',
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                height: 1.50,
               ),
             ),
           ),
@@ -433,16 +444,17 @@ class _DayChip extends StatelessWidget {
   }
 
   Color getBackgroundColor() {
-    if (!isSelected) return const Color(0xFFE0E2DC).withOpacity(0.5);
+    if (!isSelected) return AppColors.gray5;
 
+    // 💡 오늘일 경우: 상태에 따른 강조색
     switch (status) {
       case ChallengeStatus.urgent:
-        return AppColors.notification; // 오늘 챌린지 중 Urgent가 하나라도 있음
+        return AppColors.notification; // 실패 위기 (빨강)
       case ChallengeStatus.completed:
-        return AppColors.primaryAble; // 오늘 모든 챌린지 완료
+        return AppColors.primaryAble; // 완료 (초록)
       case ChallengeStatus.normal:
       default:
-        return AppColors.gray4; // 진행 중인 챌린지 있음
+        return AppColors.gray5; // 미완료 상태인 오늘 (회색)
     }
   }
 }
