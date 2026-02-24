@@ -10,6 +10,7 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
+import 'package:haenaem/features/challenge/detail/screens/member_ranking_screen.dart';
 
 // 분리된 뷰 파일들 (아래 2번 단계에서 생성/수정할 파일들)
 import 'package:haenaem/features/challenge/detail/views/calendar_view.dart';
@@ -199,8 +200,14 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
 
       onPressed: () {
         if (isMemberTab) {
-          // 멤버 순위 페이지 이동 로직
-          _scrollToMyRank();
+          // 랭킹 페이지 이동 로직
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  MemberRankingScreen(challengeId: widget.challengeId),
+            ),
+          );
         } else {
           // 인증 페이지 이동 로직
           Navigator.push(

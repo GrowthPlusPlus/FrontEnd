@@ -68,7 +68,11 @@ class MyApp extends StatelessWidget {
       //home: const ChallengeCreatePage(),
       home: const AuthGate(),
       //home: const ChallengeCreateSuccessDialog(),
+<<<<<<< HEAD
+      // home: const MainScreen(),
+=======
       //home: const MainScreen(),
+>>>>>>> develop
       //home: const ChallengeCalendarScreen(),
       //home: const ChallengeVerificationPage(),
       //home: const FeedScreen(),
