@@ -68,16 +68,6 @@ class MyApp extends StatelessWidget {
       locale: const Locale('ko', 'KR'), // 앱 기본 언어를 한국어로 설정
       //home: const ChallengeCreatePage(),
       home: const AuthGate(),
-      //home: const ChallengeCreateSuccessDialog(),
-<<<<<<< HEAD
-      //home: const MainScreen(),
-=======
->>>>>>> fix/design-and-errors
-      //home: const ChallengeCalendarScreen(),
-      //home: const ChallengeVerificationPage(),
-      //home: const FeedScreen(),
-      //home: const MyPageScreen(),
-      //home: const SocialScreen(),
     );
   }
 }
