@@ -114,7 +114,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
     }
 
     // 서버 전송용 태그 데이터 가공
-    final tagNames = _selectedTagModels.map((t) => t.tag).toList();
+    final tagIds = _selectedTagModels.map((t) => t.id).toList();
 
     final requestData = {
       "title": _nameController.text.trim(),
@@ -123,7 +123,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
           : "",
       "duration": duration,
       "frequency": frequency,
-      "tags": tagNames,
+      "tags": tagIds,
       "description": _descriptionController.text.trim(),
       "photoRequired": selectedType == 1, // 사진 필수 여부 (bool)
       "challengeVisibility": selectedVisibility == 1

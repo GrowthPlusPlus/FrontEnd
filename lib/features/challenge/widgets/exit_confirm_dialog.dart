@@ -3,113 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:haenaem/shared/widgets/challenge_exit_base_dialog.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../provider/challenge_provider.dart';
+import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 
 // 챌린지 나가기 다이얼로그
-class ExitConfirmDialog extends StatelessWidget {
-  const ExitConfirmDialog({super.key});
+class ExitConfirmDialog extends ConsumerWidget {
+  final int challengeId;
+  const ExitConfirmDialog({super.key, required this.challengeId});
 
   @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 이모지
-            const Text('🥺', style: TextStyle(fontSize: 64)),
-            // 제목
-            Text(
-              '챌린지를 나가시겠어요?',
-              style: AppTypography.h3.copyWith(fontSize: 18),
-            ),
-            const SizedBox(height: 10),
-            // 경고 문구
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: 3.0,
-                  ), // 텍스트 첫 줄 중앙을 위해 미세 조정
-                  child: SvgPicture.asset(
-                    'assets/images/icons/tri_warning_icon.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.notification,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    '지금까지의 진행 상황이 모두 사라지며,\n복구할 수 없습니다.',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.b1.copyWith(
-                      color: AppColors.notification,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            // 버튼 영역
-            Row(
-              children: [
-                // 나가기 버튼
-                Expanded(
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.notification,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        '나가기',
-                        style: AppTypography.b1.copyWith(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // 취소 버튼
-                Expanded(
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gray5,
-                        foregroundColor: AppColors.gray2,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        '취소',
-                        style: AppTypography.b1.copyWith(
-                          color: AppColors.gray2,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ChallengeExitBaseDialog(
+      confirmButtonText: '나가기',
+      onConfirm: () async {
+        try {
+          await ref
+              .read(challengeRepositoryProvider)
+              .leaveChallenge(challengeId);
+
+          // 홈 화면 데이터 Provider를 무효화하여 새로고침 유도
+          ref.invalidate(challengeHomeNotifierProvider);
+
+          if (context.mounted) {
+            Navigator.of(context).popUntil((route) => route.isFirst); // 홈으로 이동
+          }
+        } catch (e) {
+          // 에러 처리 로직 (필요 시 추가)
+        }
+      },
     );
   }
 }

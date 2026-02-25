@@ -3,8 +3,8 @@ library;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'social_model.dart';
-import '../auth/services/auth_service.dart';
+import '../model/social_model.dart';
+import '../../auth/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 // Dio Provider with Interceptor for adding Authorization header

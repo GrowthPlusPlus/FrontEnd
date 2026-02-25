@@ -8,7 +8,7 @@ import '../widgets/notification_date_header.dart';
 import '../widgets/notification_list_tile.dart';
 import '../../../core/theme/app_colors.dart';
 
-import 'package:haenaem/features/social/friend_add_screen.dart';
+import 'package:haenaem/features/social/screens/friend_add_screen.dart';
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
 import 'package:haenaem/features/notification/screens/challenge_invite_detail_screen.dart';
 
@@ -112,6 +112,8 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
         listItems.add(
           InkWell(
             onTap: () {
+              // 1. 클릭 시 읽음 처리 (그냥 하얀색으로 바뀜)
+              // TODO API 구현된 게 없으므로 임시 설정
               ref.read(notificationProvider.notifier).markAsRead(noti);
 
               // 2. 알림 타입(type)별 페이지 이동 분기
@@ -120,7 +122,8 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const FriendAddScreen(),
+                    builder: (context) =>
+                        const FriendAddScreen(initialTabIndex: 1),
                   ),
                 );
                 return;
@@ -161,6 +164,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                     );
                     break;
 
+                  // TODO: 챌린지 성공/실패 알림 타입 추가 시 여기에 케이스 추가
                   /*
                   case 'CHALLENGE_SUCCESS':
                   case 'CHALLENGE_FAIL':
