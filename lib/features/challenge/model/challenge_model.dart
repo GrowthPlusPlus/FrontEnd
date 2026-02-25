@@ -358,10 +358,6 @@ class CertificationPostModel {
   }
 
   factory CertificationPostModel.fromJson(Map<String, dynamic> json) {
-    print(
-      "Parsing updatedAt: ${json['updatedAt']} (Type: ${json['updatedAt'].runtimeType})",
-    );
-
     // 1. 상세 조회용 'images' 리스트 처리 (객체 형태)
     List<PostImage> extractedImages = [];
 
