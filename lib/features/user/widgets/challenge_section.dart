@@ -247,14 +247,15 @@ class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start, // 추가
                       children: [
-                        Expanded(
+                        Flexible(
                           child: Text(
                             item.title,
                             style: AppTypography.b3.copyWith(
                               color: AppColors.black,
                             ),
-                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                         ),
@@ -262,6 +263,7 @@ class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
                         _buildStatusBadge(statusText, themeColor),
                       ],
                     ),
+
                     const SizedBox(height: 3),
                     Text(
                       item.dateInfo,
@@ -318,14 +320,15 @@ class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Expanded(
+                        Flexible(
                           child: Text(
                             item.title,
                             style: AppTypography.b3.copyWith(
                               color: AppColors.black,
                             ),
-                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                         ),
@@ -424,19 +427,19 @@ class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Expanded(
+                        Flexible(
                           child: Text(
                             item.title,
                             style: AppTypography.b3.copyWith(
                               color: AppColors.black,
                             ),
-                            overflow: TextOverflow.ellipsis, // 이제 정상 작동합니다.
+                            overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                         ),
                         const SizedBox(width: 7.35),
-                        // '실패' 배지
                         _buildStatusBadge('실패', failColor),
                       ],
                     ),

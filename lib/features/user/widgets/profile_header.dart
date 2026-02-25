@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/models/tag_data.dart';
+import '../../../shared/widgets/tag_badge.dart';
 
 // 이미지, 닉네임, 소개글, 그리고 복잡했던 태그 정렬 로직
 class ProfileHeader extends StatelessWidget {
@@ -90,7 +91,7 @@ class ProfileHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
             children: [
               for (int i = 0; i < rowTags.length; i++) ...[
-                _TagBadge(tag: rowTags[i]),
+                TagBadge(label: rowTags[i]),
                 if (i != rowTags.length - 1)
                   const SizedBox(width: 10), // 태그 사이(가로) 간격 10
               ],
@@ -98,33 +99,6 @@ class ProfileHeader extends StatelessWidget {
           ),
         );
       }).toList(),
-    );
-  }
-}
-
-class _TagBadge extends StatelessWidget {
-  final String tag;
-  const _TagBadge({required this.tag});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 28,
-      padding: const EdgeInsets.symmetric(horizontal: 11),
-      decoration: ShapeDecoration(
-        color: AppColors.selected,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      ),
-      child: Center(
-        widthFactor: 1.0,
-        child: Text(
-          tag,
-          style: AppTypography.b2.copyWith(
-            color: AppColors.primaryAble,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-      ),
     );
   }
 }

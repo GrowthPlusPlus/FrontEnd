@@ -21,6 +21,7 @@ class DelegateDialog extends ConsumerStatefulWidget {
 
 class _DelegateDialogState extends ConsumerState<DelegateDialog> {
   ChallengeMember? selectedMember;
+  bool isExpanded = false; // 위임할 멤버 리스트 확장 여부
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +77,11 @@ class _DelegateDialogState extends ConsumerState<DelegateDialog> {
               ),
               const SizedBox(height: 8),
               _buildMemberSelector(),
+              // 펼쳐지는 위임할 멤버 리스트 (확장 상태일 때만 표시)
+              if (isExpanded) ...[
+                const SizedBox(height: 4),
+                _buildExpandedMemberList(),
+              ],
             ],
           ),
         ],
@@ -83,15 +89,17 @@ class _DelegateDialogState extends ConsumerState<DelegateDialog> {
     );
   }
 
+  // 클릭 가능한 선택 박스
   Widget _buildMemberSelector() {
     return GestureDetector(
-      onTap: () => _showMemberSelectionSheet(context),
+      onTap: () => setState(() => isExpanded = !isExpanded), // 토글 기능
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
-        decoration: ShapeDecoration(
+        decoration: BoxDecoration(
           color: AppColors.gray5,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          borderRadius: BorderRadius.circular(8),
+          border: isExpanded ? Border.all(color: AppColors.gray4) : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -104,10 +112,14 @@ class _DelegateDialogState extends ConsumerState<DelegateDialog> {
                     : AppColors.black,
               ),
             ),
-            SvgPicture.asset(
-              'assets/images/icons/big_down_arrow.svg',
-              width: 16,
-              height: 16,
+            // 확장 상태에 따라 아이콘 회전 효과 (선택사항)
+            Transform.rotate(
+              angle: isExpanded ? 3.14159 : 0, // 180도 회전
+              child: SvgPicture.asset(
+                'assets/images/icons/big_down_arrow.svg',
+                width: 16,
+                height: 16,
+              ),
             ),
           ],
         ),
@@ -115,63 +127,72 @@ class _DelegateDialogState extends ConsumerState<DelegateDialog> {
     );
   }
 
-  // 멤버 목록 바텀 시트 (로직 유지)
-  void _showMemberSelectionSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Consumer(
-          builder: (context, ref, child) {
-            final filter = MemberFilter(challengeId: widget.challengeId);
-            final membersAsync = ref.watch(challengeMembersProvider(filter));
+  // 아래로 펼쳐지는 멤버 리스트 위젯
+  Widget _buildExpandedMemberList() {
+    final filter = MemberFilter(challengeId: widget.challengeId);
+    final membersAsync = ref.watch(challengeMembersProvider(filter));
 
-            return Container(
-              padding: const EdgeInsets.all(20),
-              height: 400,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('멤버 선택', style: AppTypography.h3),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: membersAsync.when(
-                      data: (members) => ListView.builder(
-                        itemCount: members.length,
-                        itemBuilder: (context, index) {
-                          final member = members[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: AppColors.gray5,
-                              backgroundImage: member.profileImageUrl != null
-                                  ? NetworkImage(member.profileImageUrl!)
-                                  : null,
-                            ),
-                            title: Text(
-                              member.nickname,
-                              style: AppTypography.b2,
-                            ),
-                            onTap: () {
-                              setState(() => selectedMember = member);
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                      ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (e, s) =>
-                          const Center(child: Text('목록을 불러오지 못했습니다.')),
-                    ),
-                  ),
-                ],
-              ),
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 100), // 최대 높이 제한
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.gray5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: membersAsync.when(
+        data: (members) {
+          final displayMembers = members;
+
+          if (displayMembers.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Text('위임 가능한 멤버가 없습니다.'),
             );
-          },
-        );
-      },
+          }
+
+          return ListView.separated(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            itemCount: displayMembers.length,
+            separatorBuilder: (context, index) =>
+                const Divider(height: 1, color: Colors.transparent),
+            itemBuilder: (context, index) {
+              final member = displayMembers[index];
+              return ListTile(
+                dense: true,
+                leading: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: AppColors.gray5,
+                  backgroundImage: member.profileImageUrl != null
+                      ? NetworkImage(member.profileImageUrl!)
+                      : null,
+                ),
+                title: Text(member.nickname, style: AppTypography.b2),
+                onTap: () {
+                  setState(() {
+                    selectedMember = member;
+                    isExpanded = false; // 선택 후 닫기
+                  });
+                },
+              );
+            },
+          );
+        },
+        loading: () => const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        error: (e, s) => const Center(child: Text('로드 실패')),
+      ),
     );
   }
 }
