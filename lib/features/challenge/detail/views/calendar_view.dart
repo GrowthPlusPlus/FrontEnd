@@ -281,7 +281,10 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
               ? () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PostDetailScreen(post: fullPost),
+                    builder: (_) => PostDetailScreen(
+                      postId: fullPost.postId,
+                      post: fullPost,
+                    ),
                   ),
                 )
               : null,
@@ -350,7 +353,9 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
+        MaterialPageRoute(
+          builder: (_) => PostDetailScreen(post: post, postId: post.postId),
+        ),
       ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),

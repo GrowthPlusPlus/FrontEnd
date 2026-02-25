@@ -6,6 +6,7 @@ class NotificationModel {
   final String created; // "YYYY-MM-DD" 형태
   final bool read;
   final String? profileImageUrl;
+  final int? targetId; // 목적지 ID
 
   NotificationModel({
     required this.message,
@@ -13,6 +14,7 @@ class NotificationModel {
     required this.created,
     required this.read,
     this.profileImageUrl,
+    this.targetId,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class NotificationModel {
       created: json['created'] ?? '',
       read: json['read'] ?? false,
       profileImageUrl: json['imageUrl'],
+      targetId: json['targetId'],
     );
   }
 
@@ -31,6 +34,7 @@ class NotificationModel {
     String? created,
     bool? read,
     String? profileImageUrl,
+    int? targetId,
   }) {
     return NotificationModel(
       message: message ?? this.message,
@@ -38,6 +42,7 @@ class NotificationModel {
       created: created ?? this.created,
       read: read ?? this.read,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      targetId: targetId ?? this.targetId,
     );
   }
 }
