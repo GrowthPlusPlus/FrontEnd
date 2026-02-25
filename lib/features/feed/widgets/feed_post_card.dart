@@ -9,6 +9,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
 class FeedPostCard extends ConsumerWidget {
   final CertificationPostModel post;
@@ -129,11 +130,21 @@ class FeedPostCard extends ConsumerWidget {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () {
-                    print("좋아요 버튼 클릭됨! ID: ${post.postId}");
+                  onTap: () async {
+                    // [로컬 업데이트] 서버 응답 기다리지 않고 즉시 UI 변경
                     if (provider != null) {
-                      ref.read(provider.notifier).toggleLike(post.postId);
+                      ref
+                          .read(provider.notifier)
+                          .toggleLikeLocally(post.postId);
                     }
+
+                    // [서버 통신] 백그라운드에서 조용히 처리
+                    ref
+                        .read(articleLikeNotifierProvider.notifier)
+                        .toggleLike(
+                          postId: post.postId,
+                          isCurrentlyLiked: post.liked,
+                        );
                   },
                   child: Row(
                     children: [
