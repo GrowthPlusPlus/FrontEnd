@@ -12,9 +12,16 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/comment_popup_menu.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
-  final CertificationPostModel post;
+  final int postId;
+  final CertificationPostModel? post;
   final dynamic feedProvider;
-  const PostDetailScreen({super.key, required this.post, this.feedProvider});
+
+  const PostDetailScreen({
+    super.key,
+    required this.postId,
+    this.post,
+    this.feedProvider,
+  });
 
   @override
   ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -46,11 +53,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // 데이터 구독
-    final detailAsync = ref.watch(
-      articleDetailProvider(postId: widget.post.postId),
-    );
+    final detailAsync = ref.watch(articleDetailProvider(postId: widget.postId));
     final commentsAsync = ref.watch(
-      articleCommentsProvider(postId: widget.post.postId),
+      articleCommentsProvider(postId: widget.postId),
     );
 
     return Scaffold(
@@ -400,10 +405,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     final contents = _commentController.text.trim();
                     final success = await ref
                         .read(articleCommentCreateNotifierProvider.notifier)
-                        .addComment(
-                          postId: widget.post.postId,
-                          contents: contents,
-                        );
+                        .addComment(postId: widget.postId, contents: contents);
 
                     if (success && mounted) {
                       // 피드 화면에서 댓글 수 업데이트를 위해 필요한 코드
@@ -411,7 +413,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         // 목록의 댓글 수를 로컬에서 +1 시켜서 UI를 즉시 갱신
                         ref
                             .read(widget.feedProvider.notifier)
-                            .incrementCommentCountLocally(widget.post.postId);
+                            .incrementCommentCountLocally(widget.postId);
                       }
 
                       // 성공 시 입력창 초기화 및 키보드 내리기
@@ -496,7 +498,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ),
                     ),
                     CommentPopupMenu(
-                      postId: widget.post.postId, // 새로고침을 위해 필요
+                      postId: widget.postId, // 새로고침을 위해 필요
                       comment: comment,
                       // 피드 화면 댓글 수 업데이트를 위해 필요
                       feedProvider: widget.feedProvider,

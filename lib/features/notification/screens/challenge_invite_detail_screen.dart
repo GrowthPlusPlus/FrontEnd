@@ -10,6 +10,7 @@ import '../../challenge/provider/challenge_provider.dart';
 import '../../challenge/detail/widgets/challenge_detail_content.dart';
 import '../../../shared/widgets/bottom_action_button.dart';
 import '../provider/notification_provider.dart';
+import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
 
 class ChallengeInviteDetailScreen extends ConsumerWidget {
   final int challengeId;
@@ -93,16 +94,28 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
         backgroundColor: AppColors.primaryAble,
         textColor: Colors.white,
         onPressed: () async {
-          // 💡 알림 프로바이더의 '수락' 함수 호출
+          // 💡 1. 다이얼로그에 넘겨줄 챌린지 제목을 가져옵니다.
+          final challenge = ref
+              .read(challengeDetailProvider(challengeId: challengeId))
+              .value;
+
+          // 💡 2. 알림 프로바이더의 '수락' 함수 호출
           await ref
               .read(challengeInviteProvider.notifier)
               .acceptInvite(challengeId);
 
           if (context.mounted) {
-            Navigator.pop(context); // 이전 화면(알림 목록)으로 돌아가기
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('초대를 수락했습니다!')));
+            // 💡 3. 상세 화면을 먼저 닫습니다 (다이얼로그 뒤에 남지 않도록)
+            Navigator.pop(context);
+
+            // 💡 4. 참여 완료 다이얼로그 띄우기!
+            showDialog(
+              context: context,
+              builder: (context) => EnterConfirmDialog(
+                challengeId: challengeId,
+                challengeTitle: challenge?.title ?? '챌린지', // 제목 전달
+              ),
+            );
           }
         },
       ),

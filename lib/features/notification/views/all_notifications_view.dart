@@ -8,6 +8,10 @@ import '../widgets/notification_date_header.dart';
 import '../widgets/notification_list_tile.dart';
 import '../../../core/theme/app_colors.dart';
 
+import 'package:haenaem/features/social/screens/friend_add_screen.dart';
+import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
+import 'package:haenaem/features/notification/screens/challenge_invite_detail_screen.dart';
+
 class AllNotificationsView extends ConsumerStatefulWidget {
   const AllNotificationsView({super.key});
 
@@ -108,7 +112,73 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
         listItems.add(
           InkWell(
             onTap: () {
+              // 1. 클릭 시 읽음 처리 (그냥 하얀색으로 바뀜)
+              // TODO API 구현된 게 없으므로 임시 설정
               ref.read(notificationProvider.notifier).markAsRead(noti);
+
+              // 2. 알림 타입(type)별 페이지 이동 분기
+              if (noti.type == 'FRIEND_REQUEST') {
+                // 친구 요청 알림 -> 소셜(친구추가) 페이지로 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const FriendAddScreen(initialTabIndex: 1),
+                  ),
+                );
+                return;
+              }
+
+              // targetId가 있는 경우 (댓글, 좋아요, 챌린지 관련)
+              if (noti.targetId != null) {
+                switch (noti.type) {
+                  case 'LIKE':
+                  case 'COMMENT':
+                    // 피드 인증글로 이동 (postId 전달)
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PostDetailScreen(postId: noti.targetId!),
+                      ),
+                    );
+                    break;
+
+                  case 'CHALLENGE':
+                    // 챌린지 초대 알림 -> 알림 전용 챌린지 상세(수락/거절) 페이지로 이동
+                    // message("눅님이 친구 초대...")에서 "눅"이라는 이름만 파싱해서 전달
+                    String inviterName = '친구';
+                    if (noti.message.contains('님이')) {
+                      inviterName = noti.message.split('님이').first.trim();
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChallengeInviteDetailScreen(
+                          challengeId: noti.targetId!,
+                          inviterName: inviterName,
+                          inviterProfileImageUrl: noti.profileImageUrl,
+                        ),
+                      ),
+                    );
+                    break;
+
+                  // TODO: 챌린지 성공/실패 알림 타입 추가 시 여기에 케이스 추가
+                  /*
+                  case 'CHALLENGE_SUCCESS':
+                  case 'CHALLENGE_FAIL':
+                    // 챌린지 성공/실패 -> 기존 챌린지 메인 탭(소개/현황/멤버)으로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChallengeMainScreen(challengeId: noti.targetId!),
+                      ),
+                    );
+                    break;
+                    */
+                }
+              }
             },
             child: NotificationListTile(
               message: noti.message,
