@@ -2,10 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'package:haenaem/features/social/screens/social_screen.dart';
 import 'package:haenaem/features/user/screens/my_page_screen.dart';
+
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -67,13 +68,6 @@ class MyApp extends StatelessWidget {
       locale: const Locale('ko', 'KR'), // 앱 기본 언어를 한국어로 설정
       //home: const ChallengeCreatePage(),
       home: const AuthGate(),
-      //home: const ChallengeCreateSuccessDialog(),
-      //home: const MainScreen(),
-      //home: const ChallengeCalendarScreen(),
-      //home: const ChallengeVerificationPage(),
-      //home: const FeedScreen(),
-      //home: const MyPageScreen(),
-      //home: const SocialScreen(),
     );
   }
 }

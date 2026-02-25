@@ -8,7 +8,7 @@ import 'package:haenaem/features/challenge/create/screens/challenge_create_scree
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
-import 'package:haenaem/features/notification/screens/notificaion_main_screen.dart';
+import 'package:haenaem/features/notification/screens/notification_main_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -389,8 +389,8 @@ class _DayChip extends StatelessWidget {
     String label = weekdayLabels[date.weekday % 7];
     String day = date.day.toString();
 
-    // 테두리 결정 로직: 오늘(isSelected)이면서 실패 위기(urgent)가 아닐 때만 테두리 생성
-    final bool showBorder = isSelected && status != ChallengeStatus.urgent;
+    // 테두리 결정 로직
+    final bool showBorder = isSelected && status == ChallengeStatus.normal;
 
     return Expanded(
       child: Column(
@@ -401,10 +401,8 @@ class _DayChip extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            // 💡 제공된 코드의 패딩 반영
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
             decoration: ShapeDecoration(
-              // 💡 배경색: 오늘이 아니면 연회색, 오늘이면 상태에 따른 색상
               color: getBackgroundColor(),
               shape: RoundedRectangleBorder(
                 // 💡 오늘 날짜일 때만 테두리(Outside) 적용

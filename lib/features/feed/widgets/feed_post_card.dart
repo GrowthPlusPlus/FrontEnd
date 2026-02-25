@@ -45,6 +45,7 @@ class FeedPostCard extends ConsumerWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => PostDetailScreen(
+                  postId: post.postId,
                   post: post,
                   feedProvider: provider, // 기존에 넘겨주던 프로바이더
                 ),

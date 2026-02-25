@@ -16,7 +16,12 @@ import '../../../core/utils/korean_string_utils.dart';
 
 /// 클래스의 용도: 친구 검색, 받은 요청, 보낸 요청을 관리하는 친구 추가 메인 화면
 class FriendAddScreen extends ConsumerStatefulWidget {
-  const FriendAddScreen({super.key});
+  final int initialTabIndex;
+
+  const FriendAddScreen({
+    super.key,
+    this.initialTabIndex = 0, // 기본값은 0 (친구 신청 탭)
+  });
 
   @override
   ConsumerState<FriendAddScreen> createState() => FriendAddScreenState();
@@ -40,7 +45,12 @@ class FriendAddScreenState extends ConsumerState<FriendAddScreen>
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 3, vsync: this);
+    // 탭 컨트롤러를 만들 때 initialIndex를 외부에서 받은 값으로 설정
+    tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     // 화면 진입 시 받은 요청과 보낸 요청 목록을 먼저 불러옵니다.
     _fetchInitialData();
   }

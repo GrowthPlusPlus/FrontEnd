@@ -6,6 +6,7 @@ class NotificationModel {
   final String created; // "YYYY-MM-DD" 형태
   final bool read;
   final String? profileImageUrl;
+  final int? targetId; // 목적지 ID
 
   NotificationModel({
     required this.message,
@@ -13,15 +14,23 @@ class NotificationModel {
     required this.created,
     required this.read,
     this.profileImageUrl,
+    this.targetId,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    // 백엔드에서 빈 문자열("")이 오면 null로 변환하는 안전 장치
+    String? rawImageUrl = json['imageUrl'];
+    if (rawImageUrl != null && rawImageUrl.trim().isEmpty) {
+      rawImageUrl = null;
+    }
+
     return NotificationModel(
       message: json['message'] ?? '',
       type: json['type'] ?? 'UNKNOWN',
       created: json['created'] ?? '',
       read: json['read'] ?? false,
-      profileImageUrl: json['imageUrl'],
+      profileImageUrl: rawImageUrl, // 빈 문자열이면 null로 처리
+      targetId: json['targetId'],
     );
   }
 
@@ -31,6 +40,7 @@ class NotificationModel {
     String? created,
     bool? read,
     String? profileImageUrl,
+    int? targetId,
   }) {
     return NotificationModel(
       message: message ?? this.message,
@@ -38,6 +48,7 @@ class NotificationModel {
       created: created ?? this.created,
       read: read ?? this.read,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      targetId: targetId ?? this.targetId,
     );
   }
 }
@@ -63,10 +74,15 @@ class ChallengeInviteModel {
   });
 
   factory ChallengeInviteModel.fromJson(Map<String, dynamic> json) {
+    String? rawProfileUrl = json['profileUrl'];
+    if (rawProfileUrl != null && rawProfileUrl.trim().isEmpty) {
+      rawProfileUrl = null;
+    }
+
     return ChallengeInviteModel(
       challengeId: json['challengeId'] ?? 0,
       inviterNickname: json['inviterNickname'] ?? '알 수 없음',
-      inviterProfileImageUrl: json['profileUrl'],
+      inviterProfileImageUrl: rawProfileUrl, // 빈 문자열이면 null로 처리
       challengeTitle: json['challengeTitle'] ?? '',
       participantCount: json['participantCount'] ?? 0,
       remainingDays: json['remainingDays'] ?? 0,

@@ -151,7 +151,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           textColor: AppColors.notification,
           showArrow: true,
           onTap: () {
-            /* 탈퇴 페이지 이동 */
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const WithdrawalScreen()),
+            );
           },
         ),
       ],
