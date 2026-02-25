@@ -110,30 +110,28 @@ class ChallengeInviteCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4), // 정보와 라벨 사이 간격
+                    // 4. 태그
                     Wrap(
-                      spacing: 5, // 라벨 간 가로 간격
-                      runSpacing: 4, // 줄바꿈 시 세로 간격
-                      children: labels
-                          .map(
-                            (label) => Container(
-                              height: 28,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 11,
-                              ),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: AppColors.selected,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Text(
-                                label,
-                                style: AppTypography.b2.copyWith(
-                                  color: AppColors.primaryAble,
-                                ),
-                              ),
+                      spacing: 6, // 태그 사이 간격
+                      // runSpacing: 8, // 줄 바꿈 시 간격 (필요 시 활성화)
+                      children: labels.map((label) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ), // 내부 여백
+                          decoration: BoxDecoration(
+                            color: AppColors.selected,
+                            borderRadius: BorderRadius.circular(16), // 모서리 둥글기
+                          ),
+                          child: Text(
+                            label,
+                            style: AppTypography.b2.copyWith(
+                              color: AppColors.primaryAble,
                             ),
-                          )
-                          .toList(),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
