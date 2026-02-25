@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart'; // 상세 모델 임포트
-import 'package:haenaem/shared/widgets/app_tag_chip.dart';
+import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/shared/models/tag_data.dart';
+import 'package:haenaem/shared/widgets/tag_badge.dart';
 
 class ChallengeDetailContent extends StatelessWidget {
   final ChallengeDetailModel challenge;
@@ -107,8 +107,8 @@ class ChallengeDetailContent extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 10,
                   children: sortedTags.map((tagObj) {
-                    // 💡 공통 위젯 사용: 상세 페이지이므로 시각적 강조를 위해 isSelected를 true로 줍니다.
-                    return AppTagChip(label: tagObj.tag, isSelected: true);
+                    // 💡 AppTagChip 대신 새로 만든 TagBadge를 사용합니다.
+                    return TagBadge(label: tagObj.tag);
                   }).toList(),
                 ),
           const _CustomDivider(),

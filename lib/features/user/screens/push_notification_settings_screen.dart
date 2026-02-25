@@ -7,6 +7,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/custom_switch.dart';
 import '../../notification/provider/push_notification_provider.dart';
 
+// 푸시 알림 설정 화면
 class PushNotificationSettingsScreen extends ConsumerWidget {
   const PushNotificationSettingsScreen({super.key});
 
