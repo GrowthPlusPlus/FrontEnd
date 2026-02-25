@@ -25,6 +25,11 @@ class FeedPostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('--- Post Date Debug ---');
+    debugPrint('Post ID: ${post.postId}');
+    debugPrint('updatedAt: ${post.updatedAt}'); // 이게 null로 나오는지 확인!
+    debugPrint('createdAt: ${post.createdAt}');
+
     final displayDate = post.updatedAt ?? post.createdAt;
 
     String formattedDate = displayDate != null

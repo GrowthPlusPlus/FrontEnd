@@ -208,9 +208,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildCommentItem(ChallengeComment comment) {
-    String commentDate = DateFormat(
-      'yyyy.MM.dd HH:mm',
-    ).format(comment.updatedAt ?? comment.createdAt);
+    final DateTime? displayDate = comment.updatedAt ?? comment.createdAt;
+    String commentDate = "";
+    if (displayDate != null) {
+      commentDate = DateFormat('yyyy.MM.dd HH:mm').format(displayDate);
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
