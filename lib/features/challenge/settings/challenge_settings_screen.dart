@@ -186,7 +186,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
               showDialog(
                 context: context,
                 builder: (context) =>
-                    const DeleteChallengeDialog(), // 삭제 다이얼로그도 내부에서 API 호출하게 수정 가능
+                    DeleteChallengeDialog(challengeId: challengeId),
               );
             },
           ),
