@@ -234,7 +234,7 @@ class ChallengeComment {
   final String userNickname;
   final String? userPicture;
   final String contents;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   final DateTime? updatedAt;
   final bool mine;
 
@@ -254,9 +254,12 @@ class ChallengeComment {
       userNickname: json['userNickname'] ?? '익명',
       userPicture: json['userPicture'],
       contents: json['contents'] ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: json['updatedAt'] != null
-          ? DateTime.tryParse(json['updatedAt'])
+          ? DateTime.parse(json['updatedAt'])
+                .toLocal() // 로컬 시간대 변환 추가
+          : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt']).toLocal()
           : null,
       mine: json['mine'] ?? false,
     );
@@ -388,7 +391,12 @@ class CertificationPostModel {
       images: extractedImages, // 💡 사진이 없으면 빈 리스트 [] 가 됩니다.
       userNickname: json['userNickname'] ?? '익명',
       userImageUrl: json['userImageUrl'],
-      createdAt: DateTime.tryParse(json['postDate'] ?? json['createdAt'] ?? ''),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'].toString()).toLocal()
+          : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'].toString()).toLocal()
+          : null,
       likeNumber: json['likeNumber'] ?? 0,
       commentNumber: json['commentNumber'] ?? 0,
       liked: json['liked'] ?? false,
