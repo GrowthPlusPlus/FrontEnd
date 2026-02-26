@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../provider/challenge_provider.dart';
 
 // 방장용 : 챌린지 삭제 다이얼로그
-class DeleteChallengeDialog extends StatelessWidget {
-  const DeleteChallengeDialog({super.key});
+class DeleteChallengeDialog extends ConsumerWidget {
+  final int challengeId;
+  const DeleteChallengeDialog({super.key, required this.challengeId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20),
@@ -70,9 +73,18 @@ class DeleteChallengeDialog extends StatelessWidget {
                 // 영구 삭제 버튼
                 Expanded(
                   child: InkWell(
-                    onTap: () {
+                    onTap: () async {
                       // 삭제 로직 실행
-                      Navigator.pop(context, true);
+                      final success = await ref
+                          .read(challengeDeleteNotifierProvider.notifier)
+                          .removeChallenge(challengeId);
+
+                      if (success && context.mounted) {
+                        // 성공 시 모든 창을 닫고 홈으로 이동
+                        Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst);
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -95,7 +107,7 @@ class DeleteChallengeDialog extends StatelessWidget {
                 // 취소 버튼
                 Expanded(
                   child: InkWell(
-                    onTap: () => Navigator.pop(context, false),
+                    onTap: () => Navigator.pop(context),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: ShapeDecoration(
