@@ -144,16 +144,33 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
                       ),
                     ),
                     Expanded(
-                      child: filteredFriends.isEmpty
-                          ? const Center(child: Text('친구가 없습니다.'))
-                          : ListView.builder(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
+                      child: RefreshIndicator(
+                        color: AppColors.primaryAble,
+                        onRefresh: () async {
+                          // 스크롤을 당기면 데이터를 강제로 다시 불러옵니다.
+                          return await ref.refresh(friendListProvider.future);
+                        },
+                        child: filteredFriends.isEmpty
+                            ? SingleChildScrollView(
+                                physics:
+                                    const AlwaysScrollableScrollPhysics(), // 친구가 없어도 스크롤을 당길 수 있게 설정
+                                child: SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.5,
+                                  child: const Center(child: Text('친구가 없습니다.')),
+                                ),
+                              )
+                            : ListView.builder(
+                                physics:
+                                    const AlwaysScrollableScrollPhysics(), // 스크롤이 가능하도록 설정
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                itemCount: filteredFriends.length,
+                                itemBuilder: (context, index) =>
+                                    buildFriendTile(filteredFriends[index]),
                               ),
-                              itemCount: filteredFriends.length,
-                              itemBuilder: (context, index) =>
-                                  buildFriendTile(filteredFriends[index]),
-                            ),
+                      ),
                     ),
                   ],
                 );
