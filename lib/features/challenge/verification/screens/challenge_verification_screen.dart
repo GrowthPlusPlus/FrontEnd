@@ -57,6 +57,13 @@ class _ChallengeVerificationScreenState
   late List<dynamic> _existingImages;
   final List<int> _imageIdsToDelete = [];
 
+  // 현재 화면에 보이는 총 사진 수 (기존 유지분 + 새로 추가분)
+  int get _totalActivePhotoCount {
+    final int initialCount = widget.existingPost?.images.length ?? 0;
+    final int remainingExisting = initialCount - _imageIdsToDelete.length;
+    return remainingExisting + _newImages.length;
+  }
+
   final ScrollController _scrollController = ScrollController();
   ImageVerificationStatus _verifyStatus = ImageVerificationStatus.idle;
   bool _showShadow = true;
@@ -65,30 +72,27 @@ class _ChallengeVerificationScreenState
   List<File> get _newImages => [..._cameraImages, ..._galleryImages];
   List<File> get _allImages => [..._cameraImages, ..._galleryImages];
 
-  // 버튼 활성화 조건
-  // 생성: 사진 1장 이상 + 텍스트 필수
-  // 수정: (기존사진 - 삭제예정 + 새사진)이 1장 이상 + 텍스트 필수
+  // 버튼 활성화 조건 (작성/수정 공용)
   bool get _isFormValid {
-    // 1. 챌린지 상세 정보를 구독 (Named Parameter 사용)
-    final challengeDetail = ref.watch(
+    final challengeAsync = ref.watch(
       challengeDetailProvider(challengeId: widget.challengeId),
     );
 
-    // 2. 사진 필수 여부 파악 (데이터 로딩 전에는 기본값 true로 설정하여 방어)
-    final bool isPhotoRequired = challengeDetail.value?.photoRequired ?? true;
+    // 💡 [수정] 정보를 불러오는 중이거나 에러여도 앱이 멈추지 않게 합니다.
+    // 정보가 없으면 기본적으로 '사진 자유'인 것처럼 행동하게 하여 유저를 막지 않습니다.
+    final bool isPhotoRequired =
+        challengeAsync.valueOrNull?.photoRequired ?? false;
 
-    // 3. 사진 및 텍스트 상태 계산
-    final int existingCount = widget.existingPost?.images.length ?? 0;
-    final int activeExistingCount = existingCount - _imageIdsToDelete.length;
-    final int totalPhotos = activeExistingCount + _newImages.length;
-    final bool isContentNotEmpty = _contentController.text.trim().isNotEmpty;
+    // 5. 텍스트 입력 여부
+    final bool hasContent = _contentController.text.trim().isNotEmpty;
+    final int totalPhotos = _totalActivePhotoCount;
 
     if (isPhotoRequired) {
-      // 📸 사진 필수: 사진 1장 이상 AND 텍스트 필수
-      return totalPhotos > 0 && isContentNotEmpty;
+      // 📸 사진 필수 챌린지
+      return totalPhotos > 0 && hasContent;
     } else {
-      // ✍️ 사진 자유: 사진 0장이어도 텍스트만 있으면 활성화
-      return isContentNotEmpty;
+      // ✍️ 사진 자유 챌린지 (텍스트만 있으면 OK)
+      return hasContent;
     }
   }
 
@@ -180,11 +184,11 @@ class _ChallengeVerificationScreenState
       height: 100, // 미리보기 영역 높이
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        // 통합 리스트 + (3장 미만일 때만) 추가 버튼
-        itemCount: _allImages.length + (_allImages.length < 3 ? 1 : 0),
+        // 💡 3장 제한 로직에 전체 사진 수 적용
+        itemCount: _newImages.length + (_totalActivePhotoCount < 3 ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index < _allImages.length) {
-            return _buildImagePreview(index); // 통합 리스트 인덱스 전달
+          if (index < _newImages.length) {
+            return _buildImagePreview(index);
           } else {
             return _buildAddPhotoButton();
           }

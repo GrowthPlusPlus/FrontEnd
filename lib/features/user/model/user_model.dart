@@ -1,6 +1,30 @@
 // 리팩토링: 강선욱
 // 사용자 객체와 관련된 정보를 관리 모델
 
+// 마이페이지 사용자 프로필 부분
+class UserProfileModel {
+  final String nickname;
+  final String introduction;
+  final String profileImageUrl;
+  final List<String> tags;
+
+  UserProfileModel({
+    required this.nickname,
+    required this.introduction,
+    required this.profileImageUrl,
+    required this.tags,
+  });
+
+  factory UserProfileModel.fromJson(Map<String, dynamic> json) {
+    return UserProfileModel(
+      nickname: json['nickname'] ?? '',
+      introduction: json['introduction'] ?? '',
+      profileImageUrl: json['profileImageUrl'] ?? '',
+      tags: List<String>.from(json['tags'] ?? []),
+    );
+  }
+}
+
 // 방장 정보를 관리하는 클래스
 class HostModel {
   final String name;

@@ -9,7 +9,6 @@ import 'package:haenaem/features/user/screens/push_notification_settings_screen.
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
@@ -17,9 +16,6 @@ import 'package:haenaem/shared/models/tag_data.dart';
 import 'withdrawal_screen.dart';
 import 'challenge_list_screen.dart';
 import 'profile_edit_screen.dart';
-import 'package:haenaem/features/auth/services/auth_service.dart';
-import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
-
 import '../widgets/profile_header.dart';
 import '../widgets/my_page_menu_item.dart';
 import '../widgets/challenge_section.dart';

@@ -2,7 +2,7 @@
 // 챌린지 관련 데이터 관리 모델
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
-import 'package:haenaem/features/challenge/model/user_model.dart';
+import 'package:haenaem/features/user/model/user_model.dart';
 import 'package:haenaem/features/challenge/model/image_model.dart';
 
 // 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형
@@ -290,6 +290,8 @@ class ChallengeComment {
 // 개별 인증글 모델
 class CertificationPostModel {
   final int postId;
+  final String postDate;
+  final int challengeId;
   final String challengeTitle;
   final int totalSuccessDays;
   final String content;
@@ -304,8 +306,9 @@ class CertificationPostModel {
   final List<ChallengeComment> comments;
 
   // 기존 UI 코드 호환성을 위한 Getter
-  String get postDate =>
-      createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt!) : "";
+  // String get postDate =>
+  //     createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt!) : "";
+
   // 수정 여부를 확인하는 Getter (필요 시 활용)
   // bool get isEdited => updatedAt != null && updatedAt != createdAt;
 
@@ -316,6 +319,8 @@ class CertificationPostModel {
 
   CertificationPostModel({
     required this.postId,
+    required this.postDate,
+    required this.challengeId,
     required this.challengeTitle,
     required this.totalSuccessDays,
     required this.content,
@@ -333,6 +338,7 @@ class CertificationPostModel {
   // 피드 탭에서 좋아요 수 업데이트를 위해 필요한 copyWith 메서드
   CertificationPostModel copyWith({
     int? postId,
+    String? postDate,
     String? challengeTitle,
     int? totalSuccessDays,
     String? content,
@@ -348,6 +354,8 @@ class CertificationPostModel {
   }) {
     return CertificationPostModel(
       postId: postId ?? this.postId,
+      challengeId: challengeId ?? challengeId,
+      postDate: postDate ?? this.postDate,
       challengeTitle: challengeTitle ?? this.challengeTitle,
       totalSuccessDays: totalSuccessDays ?? this.totalSuccessDays,
       content: content ?? this.content,
@@ -367,6 +375,11 @@ class CertificationPostModel {
     // 1. 상세 조회용 'images' 리스트 처리 (객체 형태)
     List<PostImage> extractedImages = [];
 
+    String dateStr = json['postDate'] ?? "";
+    if (dateStr.isEmpty && json['createdAt'] != null) {
+      dateStr = json['createdAt'].toString().split('T').first;
+    }
+
     // 1. 신규 규격 (객체 리스트: images) 처리
     if (json['images'] != null && json['images'] is List) {
       extractedImages = (json['images'] as List)
@@ -385,6 +398,8 @@ class CertificationPostModel {
 
     return CertificationPostModel(
       postId: json['postId'] ?? 0,
+      postDate: json['postDate'] ?? "",
+      challengeId: json['challengeId'] ?? 0,
       challengeTitle: json['challengeTitle'] ?? '제목 없음',
       totalSuccessDays: json['totalSuccessDays'] ?? 0,
       content: json['content'] ?? '',
@@ -403,30 +418,6 @@ class CertificationPostModel {
       comments: (json['comments'] as List? ?? [])
           .map((c) => ChallengeComment.fromJson(c))
           .toList(),
-    );
-  }
-}
-
-// 마이페이지 사용자 프로필 부분
-class UserProfileModel {
-  final String nickname;
-  final String introduction;
-  final String profileImageUrl;
-  final List<String> tags;
-
-  UserProfileModel({
-    required this.nickname,
-    required this.introduction,
-    required this.profileImageUrl,
-    required this.tags,
-  });
-
-  factory UserProfileModel.fromJson(Map<String, dynamic> json) {
-    return UserProfileModel(
-      nickname: json['nickname'] ?? '',
-      introduction: json['introduction'] ?? '',
-      profileImageUrl: json['profileImageUrl'] ?? '',
-      tags: List<String>.from(json['tags'] ?? []),
     );
   }
 }

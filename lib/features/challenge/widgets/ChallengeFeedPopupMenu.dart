@@ -17,10 +17,14 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: api 생기면 그때 수정
-    // 본인 글인지 확인하는 로직 (모델에 mine 필드가 없다면 닉네임 비교 가능)
-    // ♥️임시로 하드코딩♥️
-    final bool isMine = post.userNickname == "챙";
+    // 1. 현재 로그인한 내 프로필 정보를 가져옵니다.
+    final myProfileAsync = ref.watch(myProfileProvider);
+
+    // 2. 내 닉네임과 게시글 작성자 닉네임을 비교하여 '내 글' 여부 판단
+    final bool isMine = myProfileAsync.maybeWhen(
+      data: (profile) => profile.nickname == post.userNickname,
+      orElse: () => false, // 로딩 중이거나 에러 시 안전하게 false 처리
+    );
 
     return PopupMenuButton<String>(
       //popUpAnimationStyle: AnimationStyle.none, // 애니메이션 없이 즉시 노출
@@ -129,13 +133,14 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
 
     switch (value) {
       case 'edit':
-        // 💡 [로직 변경] 다이얼로그 대신 '인증하기' 화면으로 데이터와 함께 이동
+        // 다이얼로그 대신 '인증하기' 화면으로 데이터와 함께 이동
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ChallengeVerificationScreen(
-              challengeId: 0, // 챌린지 ID가 필요하다면 post 모델에 추가하거나 context에서 가져와야 함
-              existingPost: post, // 💡 현재 게시글 데이터를 전달하여 '수정 모드'로 진입
+              challengeId: post
+                  .challengeId, // 챌린지 ID가 필요하다면 post 모델에 추가하거나 context에서 가져와야 함
+              existingPost: post, // 현재 게시글 데이터를 전달하여 '수정 모드'로 진입
             ),
           ),
         );

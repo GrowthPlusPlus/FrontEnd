@@ -77,7 +77,7 @@ class FcmService {
     }
   }
 
-  // <---------백엔드와 통신하자 ♥️ ---------
+  // <---------백엔드와 통신하자 ---------
   // 💡 핵심: 메시지 수신 시 로그를 찍어주는 리스너
   void listenMessages() {
     // 1. 포그라운드(앱이 켜져 있을 때) 수신
@@ -106,7 +106,7 @@ class FcmService {
     debugPrint("📊 [Data Payload] 데이터: ${message.data}");
     debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   }
-  // --------- 백엔드와 통신하자 ♥️ ------->
+  // --------- 백엔드와 통신하자 ------->
 
   // 통합 초기화 메서드 (AuthGate에서 호출용)
   Future<void> initialize() async {
