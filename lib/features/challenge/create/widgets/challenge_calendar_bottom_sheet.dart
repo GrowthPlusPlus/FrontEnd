@@ -55,6 +55,48 @@ class _ChallengeCalendarBottomSheetState
           rowHeight: 45,
           daysOfWeekHeight: 33,
 
+          // 💡 [핵심 수정] 캘린더 빌더 추가
+          calendarBuilders: CalendarBuilders(
+            selectedBuilder: (context, date, events) {
+              return Center(
+                // 👈 Center로 감싸야 늘어나지 않고 44.62 크기가 유지됩니다.
+                child: Container(
+                  width: 44.62,
+                  height: 44.62,
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFE8F5E9), // 해냄-green-selected
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${date.day}',
+                    style: AppTypography.b1.copyWith(
+                      color: const Color(0xFF009951), // 해냄-green-primary-able
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            },
+            // 오늘 날짜도 정사각형 틀을 유지하고 싶다면 아래를 추가 (선택사항)
+            todayBuilder: (context, date, events) {
+              return Center(
+                child: SizedBox(
+                  width: 44.62,
+                  height: 44.62,
+                  child: Center(
+                    child: Text(
+                      '${date.day}',
+                      style: AppTypography.b1.copyWith(color: AppColors.black),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
           // 상단 헤더 스타일 (디자인 유지)
           headerStyle: HeaderStyle(
             headerPadding: const EdgeInsets.only(top: 0, bottom: 5),
@@ -74,22 +116,47 @@ class _ChallengeCalendarBottomSheetState
           ),
 
           // 날짜 스타일링 (디자인 유지)
+          // 날짜 스타일링
           calendarStyle: CalendarStyle(
+            // 💡 1. 평일(기본) 날짜 장식
+            defaultDecoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            // 💡 2. 주말 날짜 장식
+            weekendDecoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            // 💡 3. 비활성화된 날짜 장식 (과거 날짜 등)
+            disabledDecoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(8),
+            ),
+
             disabledTextStyle: AppTypography.b1.copyWith(
               color: AppColors.gray3,
             ),
-            todayDecoration: const BoxDecoration(
-              color: Colors.transparent,
+
+            // 오늘 날짜 디자인
+            todayDecoration: BoxDecoration(
+              //color: Colors.transparent, // 오늘 강조를 빼고 싶다면 투명
               shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(8),
             ),
             todayTextStyle: AppTypography.b1.copyWith(color: AppColors.black),
+
+            // 선택된 날짜 디자인
             selectedDecoration: BoxDecoration(
               color: AppColors.selected,
+              shape: BoxShape.rectangle,
               borderRadius: BorderRadius.circular(8),
             ),
             selectedTextStyle: AppTypography.b1.copyWith(
               color: AppColors.primaryAble,
+              fontWeight: FontWeight.bold,
             ),
+
             defaultTextStyle: AppTypography.b1.copyWith(color: AppColors.black),
             weekendTextStyle: AppTypography.b1.copyWith(color: AppColors.black),
             outsideTextStyle: AppTypography.b1.copyWith(color: AppColors.gray3),

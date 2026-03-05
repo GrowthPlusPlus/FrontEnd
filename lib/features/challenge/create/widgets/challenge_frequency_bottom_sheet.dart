@@ -19,7 +19,7 @@ class ChallengeFrequencyBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 선택지 리스트 정의
-    final items = ["매일", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회"];
+    final items = ["매일", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회"];
 
     return CustomBottomSheet(
       title: "인증 빈도",
