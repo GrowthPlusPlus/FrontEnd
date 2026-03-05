@@ -55,6 +55,11 @@ class ChallengeDetailContent extends StatelessWidget {
       }
     }
 
+    // 인증 빈도 텍스트 가공 로직
+    String frequencyText = challenge.requiredWeeklyCount == 7
+        ? '매일'
+        : '주 ${challenge.requiredWeeklyCount}회';
+
     // TagMapper 기준 정렬 로직
     final List<ChallengeTagModel> sortedTags = List.from(challenge.tags);
     final priorityList = TagMapper.tagInternalOrder.values
@@ -84,7 +89,7 @@ class ChallengeDetailContent extends StatelessWidget {
 
           _buildInfoSection('챌린지 시작일', formattedStart),
           _buildInfoSection('챌린지 마감일', '$formattedEnd $dDayString'),
-          _buildInfoSection('인증 빈도', '매일'),
+          _buildInfoSection('인증 빈도', frequencyText),
           _buildInfoSection(
             '인증 방식',
             challenge.photoRequired ? '사진 첨부 필수' : '사진 첨부 선택',
