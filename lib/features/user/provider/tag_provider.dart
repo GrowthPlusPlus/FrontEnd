@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../challenge/data/challenge_repository.dart';
 import '../../challenge/model/challenge_model.dart';
+import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../../auth/signup/models/signup_state.dart';
 
@@ -23,7 +25,7 @@ class TagNotifier extends Notifier<SignupState> {
   Future<void> initialize() async {
     state = state.copyWith(isLoading: true);
     try {
-      final repository = ref.read(challengeRepositoryProvider);
+      final repository = ref.read(userRepositoryProvider);
 
       // 전체 태그와 내 프로필 동시 로드
       final results = await Future.wait([
@@ -66,11 +68,11 @@ class TagNotifier extends Notifier<SignupState> {
     state = state.copyWith(tags: currentTags);
   }
 
-  // 2. ★ 핵심: 수정 사항 서버 전송 ★
+  // 태그 서버 전송
   Future<bool> updateInterestTags() async {
     state = state.copyWith(isLoading: true);
     try {
-      final repository = ref.read(challengeRepositoryProvider);
+      final repository = ref.read(userRepositoryProvider);
 
       // (1) 추가된 태그 이름 추출
       final addedTagNames = state.tags

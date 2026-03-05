@@ -168,7 +168,7 @@ final todayTotalStatusProvider = AutoDisposeProvider<ChallengeStatus>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef TodayTotalStatusRef = AutoDisposeProviderRef<ChallengeStatus>;
-String _$allTagsHash() => r'b5cb4a68fe06ef0f04f668222a658603ddd58ae4';
+String _$allTagsHash() => r'509a8857edbc465e553a55ab145a6a56fd3ac1f8';
 
 /// See also [allTags].
 @ProviderFor(allTags)
@@ -913,7 +913,7 @@ class _ArticleCommentsProviderElement
   int get page => (origin as ArticleCommentsProvider).page;
 }
 
-String _$myProfileHash() => r'7b5885f225dc23a4f8ef0f813be10e57d7e99bc6';
+String _$myProfileHash() => r'0536f34717b179e7bf7ba33d770c66e3781de904';
 
 /// See also [myProfile].
 @ProviderFor(myProfile)

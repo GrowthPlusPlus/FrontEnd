@@ -11,7 +11,7 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
-import 'package:haenaem/features/challenge/model/user_model.dart';
+import 'package:haenaem/features/user/model/user_model.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 part 'challenge_repository.g.dart';
 
@@ -46,35 +46,6 @@ class ChallengeRepository {
     }
   }
 
-  // 닉네임 업데이트 및 중복 체크
-  Future<void> updateNickname(String nickname) async {
-    await _dio.patch('/api/users/me/nickname', data: {"nickname": nickname});
-  }
-
-  // 프로필 이미지 업로드
-  Future<void> uploadProfileImage(File imageFile) async {
-    final formData = FormData.fromMap({
-      "image": await MultipartFile.fromFile(
-        imageFile.path,
-        filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
-      ),
-    });
-
-    await _dio.post(
-      '/api/users/me/profile-image',
-      data: formData,
-      options: Options(contentType: 'multipart/form-data'),
-    );
-  }
-
-  // 한 줄 소개 업데이트
-  Future<void> updateIntroduction(String introduction) async {
-    await _dio.patch(
-      '/api/users/me/introduction',
-      data: {"introduction": introduction},
-    );
-  }
-
   // 챌린지 상세정보 조회 수정
   Future<ChallengeDetailModel> getChallengeDetail(int challengeId) async {
     try {
@@ -87,75 +58,6 @@ class ChallengeRepository {
       print("상세 조회 에러: $e");
       rethrow;
     }
-  }
-
-  // 전체 태그 조회
-  Future<List<ChallengeTagModel>> getAllTags() async {
-    try {
-      final response = await _dio.get('/api/tags/all');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => ChallengeTagModel.fromJson(json)).toList();
-      }
-      throw Exception('태그 목록 로드 실패');
-    } on DioException catch (e) {
-      throw Exception('네트워크 에러: ${e.message}');
-    }
-  }
-
-  // 유저 태그 선택 (회원가입/프로필 수정 시 사용)
-  Future<void> updateUserTags(List<int> tagIds) async {
-    try {
-      final response = await _dio.post(
-        '/api/users/me/tags',
-        data: {'tagIds': tagIds},
-      );
-
-      if (response.statusCode != 204) {
-        throw Exception('태그 업데이트 실패');
-      }
-    } on DioException catch (e) {
-      debugPrint('❌ 태그 업데이트 에러: ${e.response?.data}');
-      throw Exception(e.response?.data['message'] ?? '태그 저장 중 오류 발생');
-    }
-  }
-
-  // 유저 태그 추가
-  Future<void> addUserTags(List<int> tagIds) async {
-    try {
-      await _dio.post('/api/users/me/tags', data: {'tagIds': tagIds});
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? '태그 추가 실패');
-    }
-  }
-
-  // 유저 태그 삭제
-  Future<void> deleteUserTags(List<int> tagIds) async {
-    try {
-      // 💡 DELETE 요청은 data 옵션을 사용해서 body를 전달해야 합니다.
-      await _dio.delete('/api/users/me/tags', data: {'tagIds': tagIds});
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? '태그 삭제 실패');
-    }
-  }
-
-  Future<void> submitSignup({
-    required String nickname,
-    required String bio,
-    required List<String> tags,
-    File? profileImage,
-  }) async {
-    // 1. Multipart 데이터 준비
-    final formData = FormData.fromMap({
-      "nickname": nickname,
-      "bio": bio,
-      "tags": tags, // List<String> 형태
-      if (profileImage != null)
-        "profileImage": await MultipartFile.fromFile(
-          profileImage.path,
-          filename: "profile_${DateTime.now().millisecondsSinceEpoch}.jpg",
-        ),
-    });
   }
 
   // 챌린지 생성 post 요청 보내기
@@ -627,21 +529,6 @@ class ChallengeRepository {
             .toList();
       }
       throw Exception('완료된 챌린지 로드 실패');
-    } on DioException catch (e) {
-      throw Exception('네트워크 에러: ${e.message}');
-    }
-  }
-
-  // 내페이지 - 사용자 프로필 정보
-  Future<UserProfileModel> getMyProfile() async {
-    try {
-      final response = await _dio.get('/api/users/me/profile');
-
-      if (response.statusCode == 200) {
-        return UserProfileModel.fromJson(response.data);
-      } else {
-        throw Exception('프로필 조회 실패');
-      }
     } on DioException catch (e) {
       throw Exception('네트워크 에러: ${e.message}');
     }

@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/model/user_model.dart';
+import 'package:haenaem/features/user/model/user_model.dart';
 import '../provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/provider/challenge_member_provider.dart';
 import 'package:haenaem/shared/widgets/challenge_exit_base_dialog.dart';
