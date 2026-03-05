@@ -95,7 +95,7 @@ class ChallengeDetailModel {
   final String title;
   final String startDate;
   final String endDate;
-  final int requiredWeeklyCount;
+  final int requiredWeeklyCount; // 인증 빈도수
   final bool photoRequired;
   final List<ChallengeTagModel> tags;
   final String description;
