@@ -293,10 +293,10 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
             decoration: BoxDecoration(
               color: isCertified
                   ? AppColors.primaryAble
-                  : (isToday ? const Color(0x7FDFE1DC) : AppColors.gray5),
-              borderRadius: BorderRadius.circular(8),
-              border: isToday
-                  ? Border.all(color: const Color(0xFF616161), width: 1)
+                  : (isToday ? AppColors.gray5 : AppColors.gray5),
+              borderRadius: BorderRadius.circular(5),
+              border: (isToday && !isCertified)
+                  ? Border.all(color: AppColors.gray2, width: 1)
                   : null,
               image: (isCertified && photoData.imageUrl != null)
                   ? DecorationImage(
@@ -310,7 +310,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
               style: TextStyle(
                 color: isCertified
                     ? Colors.white
-                    : (isToday ? const Color(0xFF616161) : AppColors.gray2),
+                    : (isToday ? AppColors.gray2 : AppColors.gray2),
                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -347,8 +347,8 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     BuildContext context, {
     required CertificationPostModel post,
   }) {
-    final String formattedDate = post.createdAt != null
-        ? DateFormat('M월 d일').format(post.createdAt!)
+    final String formattedDate = (post.postDate.isNotEmpty)
+        ? DateFormat('M월 d일').format(DateTime.parse(post.postDate))
         : "";
     return GestureDetector(
       onTap: () => Navigator.push(

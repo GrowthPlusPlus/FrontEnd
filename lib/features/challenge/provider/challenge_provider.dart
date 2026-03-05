@@ -2,7 +2,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/challenge_repository.dart';
+import 'package:haenaem/features/user/data/user_repository.dart';
 import '../model/challenge_model.dart';
+import 'package:haenaem/features/user/model/user_model.dart';
 import 'dart:io';
 
 part 'challenge_provider.g.dart';
@@ -100,7 +102,7 @@ ChallengeStatus todayTotalStatus(TodayTotalStatusRef ref) {
 // 서버 태그 목록 불러오기
 @riverpod
 Future<List<ChallengeTagModel>> allTags(AllTagsRef ref) {
-  return ref.watch(challengeRepositoryProvider).getAllTags();
+  return ref.watch(userRepositoryProvider).getAllTags();
 }
 
 // 생성 상태(로딩/성공/에러)를 관리할 notifier 추가
@@ -439,7 +441,7 @@ class ChallengeDeleteNotifier extends _$ChallengeDeleteNotifier {
 // 내페이지 사용자 프로필 정보
 @riverpod
 Future<UserProfileModel> myProfile(MyProfileRef ref) async {
-  final repository = ref.watch(challengeRepositoryProvider);
+  final repository = ref.watch(userRepositoryProvider);
   return repository.getMyProfile();
 }
 
