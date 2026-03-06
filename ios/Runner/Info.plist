@@ -12,6 +12,24 @@
 				</array>
 			</dict>
 		</array>
+		<key>LSApplicationQueriesSchemes</key>
+  		<array>
+      	<!-- 카카오톡으로 로그인 -->
+      	<string>kakaokompassauth</string>
+      	<!-- 카카오톡 공유 -->
+      	<string>kakaolink</string>
+  		</array>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>kakao1399325</string>
+				</array>
+			</dict>
+		</array>
 		<key>NSCameraUsageDescription</key>
 		<string>프로필 사진 촬영을 위해 카메라 권한이 필요합니다.</string>
 		<key>NSPhotoLibraryUsageDescription</key>

@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 // 구글 OAuth 2.0 기반의 사용자 인증과 JWT 토큰의 생명주기(발급, 재발급, 파기)를 전담하는 클래스
 // 서버로부터 받은 userStatus(NEW/ACTIVE)를 분석하여 사용자별 맞춤형 초기 화면 진입 경로를 제어
@@ -21,15 +22,35 @@ class AuthService {
 
   static final Dio _dio = Dio(
     BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
-    // BaseOptions(
-    //   // 1. 서버 주소를 팀원이 준 ngrok 주소로 변경
-    //   baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
-    //connectTimeout: const Duration(seconds: 30),
-    //receiveTimeout: const Duration(seconds: 30),
-    //   // 2. ngrok 경고창 우회를 위한 헤더 필수 추가
-    //   headers: {'ngrok-skip-browser-warning': 'true'},
-    // ),
   );
+
+  // 카카오 로그인
+  static Future<OAuthToken?> signInWithKakao() async {
+    try {
+      // 카카오톡 설치 여부 확인
+      bool isInstalled = await isKakaoTalkInstalled();
+
+      OAuthToken token = isInstalled
+          ? await UserApi.instance.loginWithKakaoTalk()
+          : await UserApi.instance.loginWithKakaoAccount();
+
+      debugPrint('✅ 카카오 로그인 성공: ${token.accessToken}');
+      return token;
+    } catch (error) {
+      debugPrint('❌ 카카오 로그인 실패: $error');
+      return null;
+    }
+  }
+
+  // 서버 통신 부분 (백엔드 엔드포인트에 맞춰 수정 필요)
+  static Future<void> sendKakaoTokenToBackend({
+    required String accessToken,
+    required BuildContext context,
+  }) async {
+    // 구글 로그인과 유사한 로직으로 작성
+    debugPrint("🚀 서버로 카카오 토큰 전송: $accessToken");
+    // response = await _dio.post('/api/oauth/kakao/token', ...);
+  }
 
   // 구글로부터 인가 코드 획득
   static Future<Map<String, String>?> signInWithGoogle() async {

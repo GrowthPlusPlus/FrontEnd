@@ -59,7 +59,22 @@ class LoginScreen extends StatelessWidget {
                   backgroundColor: const Color(0xFFFEE500),
                   textColor: Colors.black,
                   iconPath: 'assets/images/icons/kakao_logo.svg',
-                  onTap: navigateToSignup,
+                  onTap: () async {
+                    try {
+                      // 1. AuthService를 통해 카카오 로그인 수행
+                      final token = await AuthService.signInWithKakao();
+
+                      if (token != null && context.mounted) {
+                        // 2. 로그인 성공 시 서버로 토큰 전송 (필요 시)
+                        await AuthService.sendKakaoTokenToBackend(
+                          accessToken: token.accessToken,
+                          context: context,
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint('🚨 카카오 로그인 테스트 에러: $e');
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 _buildSocialButton(
