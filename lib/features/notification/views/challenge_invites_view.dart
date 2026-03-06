@@ -49,6 +49,9 @@ class ChallengeInvitesView extends ConsumerWidget {
                 await notifier.acceptInvite(invite.challengeId);
 
                 if (context.mounted) {
+                  // 위젯이 살아있을 때 안전한 Navigator를 미리 변수로 캡처해 둡니다.
+                  final safeNavigator = Navigator.of(context);
+
                   // 다이얼로그(showDialog) 대신 스낵바를 띄웁니다.
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -61,8 +64,7 @@ class ChallengeInvitesView extends ConsumerWidget {
                         textColor: AppColors.primaryAble, // 앱 테마색 (초록)
                         onPressed: () {
                           // '이동'을 누르면 해당 챌린지 방으로 라우팅
-                          Navigator.push(
-                            context,
+                          safeNavigator.push(
                             MaterialPageRoute(
                               builder: (context) => ChallengeMainScreen(
                                 challengeId: invite.challengeId,
