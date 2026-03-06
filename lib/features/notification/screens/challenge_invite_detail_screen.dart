@@ -146,7 +146,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
             }
           },
         ),
-        // 💡 [핵심] 로딩 중이거나 에러(404 등) 상태면 버튼을 아예 안 그림 -> 클릭 불가 -> 앱 터짐 방지
+        // 로딩 중이거나 에러(404 등) 상태면 버튼을 아예 안 그림 -> 클릭 불가 -> 앱 터짐 방지
         orElse: () => const SizedBox.shrink(),
       ),
     );
