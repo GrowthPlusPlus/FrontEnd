@@ -105,6 +105,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
     await fetchInitial();
   }
 
+  /*
   void markAsRead(NotificationModel targetNoti) {
     if (targetNoti.read) return; // 이미 읽은 거면 무시
 
@@ -135,6 +136,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
     // TODO: 전체 읽음 처리 API 호출
   }
+  */
 }
 
 class ChallengeInviteState {
@@ -191,7 +193,7 @@ class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
       );
     } catch (e) {
       print('수락 에러: $e');
-      // 필요 시 스낵바 에러 메시지 띄우기
+      rethrow;
     }
   }
 
@@ -207,6 +209,7 @@ class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
       );
     } catch (e) {
       print('거절 에러: $e');
+      rethrow;
     }
   }
 }

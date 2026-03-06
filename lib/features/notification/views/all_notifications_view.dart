@@ -114,7 +114,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
             onTap: () {
               // 1. 클릭 시 읽음 처리 (그냥 하얀색으로 바뀜)
               // TODO API 구현된 게 없으므로 임시 설정
-              ref.read(notificationProvider.notifier).markAsRead(noti);
+              // ref.read(notificationProvider.notifier).markAsRead(noti);
 
               // 2. 알림 타입(type)별 페이지 이동 분기
               if (noti.type == 'FRIEND_REQUEST') {

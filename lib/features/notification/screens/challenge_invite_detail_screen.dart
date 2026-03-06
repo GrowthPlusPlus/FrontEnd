@@ -99,23 +99,38 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
               .read(challengeDetailProvider(challengeId: challengeId))
               .value;
 
-          // 💡 2. 알림 프로바이더의 '수락' 함수 호출
-          await ref
-              .read(challengeInviteProvider.notifier)
-              .acceptInvite(challengeId);
+          try {
+            // 💡 2. 알림 프로바이더의 '수락' 함수 호출
+            await ref
+                .read(challengeInviteProvider.notifier)
+                .acceptInvite(challengeId);
 
-          if (context.mounted) {
-            // 💡 3. 상세 화면을 먼저 닫습니다 (다이얼로그 뒤에 남지 않도록)
-            Navigator.pop(context);
+            if (context.mounted) {
+              // 💡 3. 상세 화면을 먼저 닫습니다 (다이얼로그 뒤에 남지 않도록)
+              Navigator.pop(context);
 
-            // 💡 4. 참여 완료 다이얼로그 띄우기!
-            showDialog(
-              context: context,
-              builder: (context) => EnterConfirmDialog(
-                challengeId: challengeId,
-                challengeTitle: challenge?.title ?? '챌린지', // 제목 전달
-              ),
-            );
+              // 💡 4. 참여 완료 다이얼로그 띄우기!
+              showDialog(
+                context: context,
+                builder: (context) => EnterConfirmDialog(
+                  challengeId: challengeId,
+                  challengeTitle: challenge?.title ?? '챌린지', // 제목 전달
+                ),
+              );
+            }
+          } catch (e) {
+            // 수락 실패 시 에러 메시지 띄우기
+            if (context.mounted) {
+              final errorMsg = e.toString().replaceAll('Exception: ', '');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(errorMsg),
+                  backgroundColor: AppColors.black, // 에러 느낌을 주려면 변경 가능
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
           }
         },
       ),
