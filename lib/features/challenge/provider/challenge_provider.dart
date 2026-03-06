@@ -167,7 +167,7 @@ Future<List<ChallengeCalendarPhoto>> challengeCalendarPhotos(
   );
 }
 
-// 챌린지 생성 로직
+// 챌린지 인증글 생성 로직
 @riverpod
 class ArticleCreateNotifier extends _$ArticleCreateNotifier {
   @override
@@ -176,7 +176,7 @@ class ArticleCreateNotifier extends _$ArticleCreateNotifier {
   Future<bool> submitArticle({
     required int challengeId,
     required String content,
-    required List<File> imageFiles,
+    required List<int> tempImageIds, // 💡 File 리스트에서 int(ID) 리스트로 변경
   }) async {
     state = const AsyncValue.loading();
 
@@ -186,12 +186,31 @@ class ArticleCreateNotifier extends _$ArticleCreateNotifier {
           .createArticle(
             challengeId: challengeId,
             content: content,
-            imageFiles: imageFiles,
+            tempImageIds: tempImageIds,
           ),
     );
 
     state = result;
     return !result.hasError;
+  }
+}
+
+// 이미지 검증
+@riverpod
+class ImageVerifyNotifier extends _$ImageVerifyNotifier {
+  @override
+  AsyncValue<int?> build() => const AsyncValue.data(null);
+
+  Future<int?> verify(File file, int challengeId) async {
+    state = const AsyncValue.loading();
+
+    final result = await AsyncValue.guard(
+      () =>
+          ref.read(challengeRepositoryProvider).verifyImage(file, challengeId),
+    );
+
+    state = result;
+    return result.valueOrNull; // 성공 시 tempImageId 반환
   }
 }
 
@@ -215,7 +234,7 @@ class ArticleUpdateNotifier extends _$ArticleUpdateNotifier {
     required int postId,
     required String content,
     List<int> deleteImageIds = const [],
-    List<File> newImages = const [],
+    List<int> tempImageIds = const [], // 💡 새 이미지 파일 대신 검증된 ID 리스트를 받음
   }) async {
     state = const AsyncValue.loading();
 
@@ -226,14 +245,13 @@ class ArticleUpdateNotifier extends _$ArticleUpdateNotifier {
             postId: postId,
             content: content,
             deleteImageIds: deleteImageIds,
-            newImages: newImages,
+            tempImageIds: tempImageIds,
           ),
     );
 
     if (!result.hasError) {
-      // 💡 수정 성공 시 캐시 갱신
-      ref.invalidate(articleDetailProvider(postId: postId)); // 상세 페이지 갱신
-      ref.invalidate(challengePostsProvider); // 리스트 갱신
+      ref.invalidate(articleDetailProvider(postId: postId));
+      ref.invalidate(challengePostsProvider);
     }
 
     state = result;

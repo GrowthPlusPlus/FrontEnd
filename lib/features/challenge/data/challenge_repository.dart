@@ -180,43 +180,18 @@ class ChallengeRepository {
   Future<CertificationPostModel> createArticle({
     required int challengeId,
     required String content,
-    required List<File> imageFiles,
+    required List<int> tempImageIds, // 💡 파일 대신 ID 리스트를 받음
   }) async {
     try {
-      final formData = FormData();
-
-      // JSON 데이터를 파일 파트처럼 추가하여 타입을 명시
-      formData.files.add(
-        MapEntry(
-          'data',
-          MultipartFile.fromString(
-            jsonEncode({
-              "challengeId": challengeId,
-              "content": content,
-            }), // 필요한 데이터만
-            contentType: MediaType('application', 'json'),
-          ),
-        ),
+      // ✨ 이제 Multipart가 아닌 일반 JSON 전송입니다.
+      final response = await _dio.post(
+        '/api/articles',
+        data: {
+          "content": content,
+          "challengeId": challengeId,
+          "tempImageIds": tempImageIds,
+        },
       );
-
-      // 이미지 파일 추가
-      if (imageFiles.isNotEmpty) {
-        for (var file in imageFiles) {
-          formData.files.add(
-            MapEntry(
-              'image', // API 명세상의 키값과 일치 확인
-              await MultipartFile.fromFile(
-                file.path,
-                contentType: MediaType('image', 'jpeg'),
-              ),
-            ),
-          );
-        }
-      }
-
-      debugPrint('🚀 [API Request] /api/articles (Multipart 전송 시작)');
-
-      final response = await _dio.post('/api/articles', data: formData);
 
       if (response.statusCode == 201) {
         return CertificationPostModel.fromJson(response.data);
@@ -224,7 +199,7 @@ class ChallengeRepository {
         throw Exception('인증글 생성 실패: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 서버 응답 에러 (${e.response?.statusCode}): ${e.response?.data}');
+      debugPrint('❌ 인증글 생성 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '게시글 업로드 실패');
     }
   }
@@ -233,51 +208,26 @@ class ChallengeRepository {
   Future<CertificationPostModel> updateArticle({
     required int postId,
     required String content,
-    required List<int> deleteImageIds, // 삭제할 이미지 ID들
-    required List<File> newImages, // 새로 추가할 이미지 파일들
+    required List<int> deleteImageIds,
+    required List<int> tempImageIds,
   }) async {
     try {
-      final formData = FormData();
-
-      // 1. JSON 데이터 (request 파트)
-      formData.files.add(
-        MapEntry(
-          'request',
-          MultipartFile.fromString(
-            jsonEncode({"content": content, "deleteImageIds": deleteImageIds}),
-            contentType: MediaType('application', 'json'),
-          ),
-        ),
-      );
-
-      // 2. 새 이미지 파일들 (images 파트)
-      for (var file in newImages) {
-        formData.files.add(
-          MapEntry(
-            'images',
-            await MultipartFile.fromFile(
-              file.path,
-              filename: file.path.split('/').last,
-              contentType: MediaType('image', 'jpeg'),
-            ),
-          ),
-        );
-      }
-
-      debugPrint('🚀 [PATCH Request] /api/articles/$postId (Multipart)');
-
       final response = await _dio.patch(
         '/api/articles/$postId',
-        data: formData,
+        data: {
+          "content": content,
+          "deleteImageIds": deleteImageIds,
+          "tempImageIds": tempImageIds,
+        },
       );
-
       if (response.statusCode == 200) {
+        debugPrint('✅ 인증글 수정 성공: ${response.data}');
         return CertificationPostModel.fromJson(response.data);
       } else {
         throw Exception('수정 실패: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 수정 에러: ${e.response?.data}');
+      debugPrint('❌ 수정 에러 상세: ${e.response?.data}');
       throw Exception(e.response?.data?['message'] ?? '수정 중 오류 발생');
     }
   }
@@ -301,49 +251,32 @@ class ChallengeRepository {
   }
 
   // 인증 사진 검증
-  Future<bool> verifyImage(File imageFile) async {
+  Future<int?> verifyImage(File imageFile, int challengeId) async {
     try {
-      // 1. Multipart 데이터(FormData) 생성
       final formData = FormData.fromMap({
-        // 스웨거 명세서의 키 이름이 "images"이므로 이를 따릅니다.
-        // 만약 백엔드에서 단수형 "image"를 원한다면 수정이 필요할 수 있습니다.
-        "images": await MultipartFile.fromFile(
+        "image": await MultipartFile.fromFile(
           imageFile.path,
           filename: imageFile.path.split('/').last,
+          contentType: MediaType('image', 'jpeg'),
         ),
       });
 
-      debugPrint('🚀 [API Request] /api/image/verify (Multipart) 전송 시작');
-
-      // 2. API 호출
+      // 💡 queryParameters에 challengeId 전달
       final response = await _dio.post(
         '/api/image/verify',
         data: formData,
-        options: Options(contentType: 'multipart/form-data'), // Multipart 형식 명시
+        queryParameters: {'challengeId': challengeId},
       );
 
-      // 3. 성공 처리 (204 No Content)
-      if (response.statusCode == 204) {
-        debugPrint('✅ [204] 이미지 검증 성공');
-        return true;
+      // Swagger에는 204로 되어있으나 응답 바디가 있다면 tempImageId 추출
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        debugPrint('✅ 이미지 검증 및 임시 업로드 성공: ${response.data}');
+        return response.data['tempImageId'];
       }
-
-      return false;
+      return null;
     } on DioException catch (e) {
-      final statusCode = e.response?.statusCode;
-      final errorData = e.response?.data;
-
-      debugPrint('❌ 이미지 검증 에러 ($statusCode): $errorData');
-
-      // 413 에러(용량 초과)가 난다면 이미지 압축이 필요할 수 있습니다.
-      if (statusCode == 413) {
-        debugPrint('🚨 요청 용량 초과: 이미지 리사이징을 고려하세요.');
-      }
-
-      return false;
-    } catch (e) {
-      debugPrint('💻 [Client Error] 앱 내부 오류: $e');
-      return false;
+      debugPrint('❌ 이미지 검증 에러: ${e.response?.data}');
+      return null;
     }
   }
 

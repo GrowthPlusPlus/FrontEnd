@@ -1,4 +1,5 @@
 // 최초 작성자 : 강선욱
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -21,10 +22,17 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
     final myProfileAsync = ref.watch(myProfileProvider);
 
     // 2. 내 닉네임과 게시글 작성자 닉네임을 비교하여 '내 글' 여부 판단
-    final bool isMine = myProfileAsync.maybeWhen(
-      data: (profile) => profile.nickname == post.userNickname,
-      orElse: () => false, // 로딩 중이거나 에러 시 안전하게 false 처리
-    );
+    final bool isMine = post.author;
+
+    // 2. [날짜 체크] 오늘 날짜 문자열(yyyy-MM-dd) 생성
+    final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    // 3. 게시글의 postDate와 오늘 날짜 비교
+    final bool isToday = post.postDate.trim().startsWith(todayStr);
+
+    // 💡 디버깅을 위해 로그를 한 번 찍어보세요. (문제 확인용)
+    debugPrint('🔍 비교 날짜 - 서버 데이터: "${post.postDate}", 오늘 날짜: "$todayStr"');
+    debugPrint('🔍 판정 결과 - isMine: $isMine, isToday: $isToday');
 
     return PopupMenuButton<String>(
       //popUpAnimationStyle: AnimationStyle.none, // 애니메이션 없이 즉시 노출
@@ -47,21 +55,35 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
       // 내 글이냐 아니냐에 따라 아이템 리스트만 교체
       itemBuilder: (context) {
         if (isMine) {
-          return [
-            _buildPopupItem(
-              '수정하기',
-              'assets/images/icons/edit_icon.svg',
-              'edit',
-            ),
-            _buildDivider(),
-            _buildPopupItem(
-              '삭제하기',
-              'assets/images/icons/small_trash_icon.svg',
-              'delete',
-              isDanger: true,
-            ),
-          ];
+          if (isToday) {
+            // 📅 오늘 올린 글: 수정/삭제 가능
+            return [
+              _buildPopupItem(
+                '수정하기',
+                'assets/images/icons/edit_icon.svg',
+                'edit',
+              ),
+              _buildDivider(),
+              _buildPopupItem(
+                '삭제하기',
+                'assets/images/icons/small_trash_icon.svg',
+                'delete',
+                isDanger: true,
+              ),
+            ];
+          } else {
+            // 🕰️ 지난 날짜 글: 내 글이라도 수정/삭제 불가 (대신 챌린지 보기만 노출)
+            // 자신이 쓴 글을 신고할 순 없으니 '챌린지 보기'만 넣어주는 게 자연스러워요!
+            return [
+              _buildPopupItem(
+                '챌린지 보기',
+                'assets/images/icons/eye.svg',
+                'view_challenge',
+              ),
+            ];
+          }
         } else {
+          // ✨ 타인의 글: 기존과 동일 (보기/신고)
           return [
             _buildPopupItem(
               '챌린지 보기',
@@ -156,28 +178,46 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
         );
 
         if (confirmed == true) {
-          final success = await ref
-              .read(articleDeleteNotifierProvider.notifier)
-              .removeArticle(post.postId);
+          try {
+            // 💡 삭제 시도
+            final success = await ref
+                .read(articleDeleteNotifierProvider.notifier)
+                .removeArticle(post.postId);
 
-          if (success && context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text("인증글이 삭제되었습니다.")));
+            if (success && context.mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("인증글이 삭제되었습니다.")));
 
-            // 관련된 모든 Provider를 무효화하여 한꺼번에 새로고침
-            ref.invalidate(challengePostsProvider); // 하단 리스트 새로고침
-            ref.invalidate(challengeCalendarPhotosProvider); // 캘린더 사진 새로고침
-            ref.invalidate(challengeCalendarDataProvider); // 상단 정보 새로고침
-            Navigator.pop(context); // 상세 페이지 닫기
+              // 갱신 로직
+              ref.invalidate(challengePostsProvider);
+              ref.invalidate(challengeCalendarPhotosProvider);
+              ref.invalidate(challengeCalendarDataProvider);
+
+              // 만약 상세페이지라면 뒤로가기
+              Navigator.pop(context);
+            }
+          } catch (e) {
+            // 💡 [핵심] 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 처리
+            String errorMessage = "삭제에 실패했습니다.";
+
+            if (e.toString().contains("PAST_POST_CANNOT_DELETE")) {
+              errorMessage = "지나간 날짜의 인증글은 삭제할 수 없습니다. ✊";
+            }
+
+            if (context.mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(errorMessage)));
+            }
           }
         }
-
         break;
+
       case 'view_challenge':
         // TODO: 챌린지 상세(소개) 페이지로 이동하거나 탭을 전환하는 로직
         debugPrint('🚀 [Action] 챌린지 보기 클릭');
-        // Navigator.push(...) 혹은 현재 탭 전환 로직 추가
+        // TODO: Navigator.push(...) 혹은 현재 탭 전환 로직 추가
         break;
       case 'complain':
         ScaffoldMessenger.of(

@@ -53,6 +53,18 @@ class _ChallengeVerificationScreenState
   final List<File> _galleryImages = []; // 갤러리 전용 바구니
   final List<AssetEntity> _selectedAssets = []; // 갤러리 체크 상태 유지용
 
+  // 현재 "살아있는" 모든 사진의 총 합 (기존 사진 - 삭제할 것 + 새 사진)
+  int get _currentTotalPhotoCount {
+    final int existingCount = widget.existingPost?.images.length ?? 0;
+    final int activeExisting = existingCount - _imageIdsToDelete.length;
+    return activeExisting + _newImages.length;
+  }
+
+  // 서버에서 받아온 임시 이미지 ID들을 순서대로 저장할 바구니
+  final List<int> _tempImageIds = [];
+  // 새 사진들에 대한 ID 보관함
+  final Map<String, int> _newImageIdMap = {};
+
   // 기존 이미지 관리용 (수정 모드 전용)
   late List<dynamic> _existingImages;
   final List<int> _imageIdsToDelete = [];
@@ -78,21 +90,22 @@ class _ChallengeVerificationScreenState
       challengeDetailProvider(challengeId: widget.challengeId),
     );
 
-    // 💡 [수정] 정보를 불러오는 중이거나 에러여도 앱이 멈추지 않게 합니다.
-    // 정보가 없으면 기본적으로 '사진 자유'인 것처럼 행동하게 하여 유저를 막지 않습니다.
-    final bool isPhotoRequired =
-        challengeAsync.valueOrNull?.photoRequired ?? false;
+    // 💡 정보 로딩 중에는 버튼을 잠시 끕니다. (가장 안전한 방법)
+    if (challengeAsync.isLoading) return false;
 
-    // 5. 텍스트 입력 여부
+    // 정보를 못 가져왔다면 유저를 위해 '사진 자유'로 간주하거나 서버 설정을 따릅니다.
+    final bool isPhotoRequired = challengeAsync.value?.photoRequired ?? false;
     final bool hasContent = _contentController.text.trim().isNotEmpty;
-    final int totalPhotos = _totalActivePhotoCount;
+
+    // 💡 검증이 진행 중인 사진이 있는지 확인 (AI 분석 중에는 기다려야 함)
+    final bool isVerifying = _verifyStatus == ImageVerificationStatus.loading;
 
     if (isPhotoRequired) {
-      // 📸 사진 필수 챌린지
-      return totalPhotos > 0 && hasContent;
+      // 📸 사진 필수: (전체 사진 > 0) && 텍스트 있음 && (새 사진은 모두 검증 완료)
+      return _currentTotalPhotoCount > 0 && hasContent && !isVerifying;
     } else {
-      // ✍️ 사진 자유 챌린지 (텍스트만 있으면 OK)
-      return hasContent;
+      // ✍️ 사진 자유: 텍스트만 있으면 OK
+      return hasContent && !isVerifying;
     }
   }
 
@@ -158,16 +171,19 @@ class _ChallengeVerificationScreenState
     );
   }
 
+  // 이미지 삭제 -> id 바구니에서 제거
   void _handleDeleteImage(int index) {
     setState(() {
       if (index < _cameraImages.length) {
-        // 카메라 사진 삭제
         _cameraImages.removeAt(index);
+        if (index < _tempImageIds.length)
+          _tempImageIds.removeAt(index); // ID 동기화
       } else {
-        // 갤러리 사진 삭제 (인덱스 보정)
         int galleryIndex = index - _cameraImages.length;
         _galleryImages.removeAt(galleryIndex);
-        _selectedAssets.removeAt(galleryIndex); // 갤러리 체크 동기화
+        _selectedAssets.removeAt(galleryIndex);
+        // 전체 리스트에서의 인덱스로 ID 제거
+        if (index < _tempImageIds.length) _tempImageIds.removeAt(index);
       }
     });
   }
@@ -181,11 +197,11 @@ class _ChallengeVerificationScreenState
   // 사진 업로드/미리보기
   Widget _buildPhotoUploadBox() {
     return SizedBox(
-      height: 100, // 미리보기 영역 높이
+      height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        // 💡 3장 제한 로직에 전체 사진 수 적용
-        itemCount: _newImages.length + (_totalActivePhotoCount < 3 ? 1 : 0),
+        // 💡 (새 사진 개수) + (전체 사진이 3장 미만일 때만 추가 버튼 노출)
+        itemCount: _newImages.length + (_currentTotalPhotoCount < 3 ? 1 : 0),
         itemBuilder: (context, index) {
           if (index < _newImages.length) {
             return _buildImagePreview(index);
@@ -334,25 +350,22 @@ class _ChallengeVerificationScreenState
   }
 
   // 이미지 검증 로직 함수
-  // TODO: 백엔드 api 수정 중이라서 임시 성공 처리
   Future<void> _runImageVerification(File file) async {
     setState(() => _verifyStatus = ImageVerificationStatus.loading);
 
-    // 실제 리포지토리 호출 주석 처리
-    // final repository = ref.read(challengeRepositoryProvider);
-    // final isSuccess = await repository.verifyImage(file);
-
-    // ⏳ AI가 열심히 사진을 분석하는 척 2초간 대기합니다.
-    await Future.delayed(const Duration(seconds: 2));
-
-    // 💡 무조건 성공으로 설정
-    const isSuccess = true;
+    // 1. 서버에 사진 검증 및 임시 업로드 요청 (Notifier 호출)
+    final int? tempId = await ref
+        .read(imageVerifyNotifierProvider.notifier)
+        .verify(file, widget.challengeId);
 
     if (mounted) {
       setState(() {
-        _verifyStatus = isSuccess
-            ? ImageVerificationStatus.success
-            : ImageVerificationStatus.fail;
+        if (tempId != null) {
+          _tempImageIds.add(tempId); // ✅ 발급받은 ID 저장
+          _verifyStatus = ImageVerificationStatus.success;
+        } else {
+          _verifyStatus = ImageVerificationStatus.fail;
+        }
       });
     }
   }
@@ -593,25 +606,26 @@ class _ChallengeVerificationScreenState
 
     try {
       if (isEditMode) {
+        // ✨ editArticle의 파라미터명을 tempImageIds로 맞춤
         success = await ref
             .read(articleUpdateNotifierProvider.notifier)
             .editArticle(
               postId: widget.existingPost!.postId,
               content: content,
               deleteImageIds: _imageIdsToDelete,
-              newImages: _newImages,
+              tempImageIds: _tempImageIds, // 💡 File 대신 ID 리스트 전달
             );
       } else {
+        // ✨ submitArticle의 파라미터명을 tempImageIds로 맞춤
         success = await ref
             .read(articleCreateNotifierProvider.notifier)
             .submitArticle(
               challengeId: widget.challengeId,
               content: content,
-              imageFiles: _newImages,
+              tempImageIds: _tempImageIds, // 💡 File 대신 ID 리스트 전달
             );
       }
     } catch (e) {
-      debugPrint('❌ 인증 저장 중 오류 발생: $e');
       success = false;
     }
 
