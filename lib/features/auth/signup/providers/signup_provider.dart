@@ -7,6 +7,7 @@ import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import '../models/signup_state.dart';
+import 'package:haenaem/features/user/data/user_repository.dart';
 
 // 회원가입 상태를 관리하는 Provider 정의
 final signupProvider = NotifierProvider<SignupNotifier, SignupState>(() {
@@ -71,7 +72,7 @@ class SignupNotifier extends Notifier<SignupState> {
   Future<void> fetchAllTags() async {
     try {
       // 리포지토리 호출
-      final repository = ref.read(challengeRepositoryProvider);
+      final repository = ref.read(userRepositoryProvider);
       _allServerTags = await repository.getAllTags();
 
       // 카테고리별 분류 로직
@@ -167,40 +168,63 @@ class SignupNotifier extends Notifier<SignupState> {
   //   }
   // }
 
-  Future<bool> submitSignup() async {
-    if (!state.isTagsValid) {
-      debugPrint("🚨 태그 선택 미달로 가입을 중단합니다.");
-      return false;
+  // 닉네임 중복 여부만 확인 (서버 저장 X)
+  // 반환값: true (중복 발생/사용 불가), false (사용 가능)
+  Future<bool> checkNicknameDuplicate(String nickname) async {
+    try {
+      final repository = ref.read(userRepositoryProvider);
+
+      // 백엔드 명세: GET /api/users/nickname-availability/{nickname}
+      // 리포지토리에 해당 API 호출 메서드가 구현되어 있다고 가정합니다.
+      final String message = await repository.checkNicknameAvailability(
+        nickname,
+      );
+
+      // 응답 메시지에 "존재합니다"가 포함되어 있으면 중복으로 판단
+      if (message.contains("동일한 닉네임이 존재합니다")) {
+        debugPrint("🚩 중복 닉네임 감지: $nickname");
+        return true;
+      }
+      return false; // 사용 가능
+    } catch (e) {
+      debugPrint("🚨 닉네임 중복 확인 실패: $e");
+      // 에러 발생 시 안전하게 중복으로 간주하거나 예외 처리
+      return true;
     }
+  }
+
+  /// 모든 정보를 한꺼번에 서버에 저장 (최종 가입)
+  Future<bool> submitSignup() async {
+    if (!state.isTagsValid) return false;
 
     state = state.copyWith(isLoading: true);
-
     try {
-      final repository = ref.read(challengeRepositoryProvider);
+      final repository = ref.read(userRepositoryProvider);
 
-      // 1️⃣ 닉네임 설정
+      // 💡 여기서 실제 데이터 저장이 순차적으로 일어납니다.
+      // 1️⃣ 닉네임 설정 (이때 DB에 처음으로 저장됨)
       await repository.updateNickname(state.nickname);
 
-      // 2️⃣ 프로필 이미지 업로드 (이미지가 있을 때만)
+      // 2️⃣ 프로필 이미지 업로드
       if (state.profileImage != null) {
         await repository.uploadProfileImage(state.profileImage!);
       }
 
-      // 3️⃣ 한 줄 소개 업데이트 (내용이 있을 때만)
+      // 3️⃣ 한 줄 소개 업데이트
       if (state.bio.isNotEmpty) {
         await repository.updateIntroduction(state.bio);
       }
 
-      // 4️⃣ 태그 업데이트 (이름을 ID로 변환하여 전송)
+      // 4️⃣ 태그 업데이트
       final List<int> selectedTagIds = state.tags.map((name) {
         return _allServerTags.firstWhere((t) => t.tag == name).tagId;
       }).toList();
       await repository.updateUserTags(selectedTagIds);
 
-      debugPrint("🎉 모든 API 연쇄 호출 성공! 회원가입 완료.");
+      debugPrint("🎉 모든 정보 저장 완료. 가입 성공!");
       return true;
     } catch (e) {
-      debugPrint("🚨 가입 처리 중 오류 발생: $e");
+      debugPrint("🚨 가입 처리 중 오류: $e");
       return false;
     } finally {
       state = state.copyWith(isLoading: false);

@@ -5,8 +5,8 @@ import '../../services/auth_service.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'signup_main_screen.dart';
-import 'package:haenaem/features/challenge/data/challenge_repository.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/user/data/user_repository.dart';
+import 'package:haenaem/features/user/model/user_model.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
 // 앱을 껐다 켰을 때 저장된 토큰을 확인
@@ -29,7 +29,7 @@ class AuthGate extends ConsumerWidget {
         if (snapshot.hasData && snapshot.data != null) {
           // 💡 핵심: 서버에 내 프로필을 물어봐서 가입이 끝났는지 확인합니다.
           return FutureBuilder<UserProfileModel>(
-            future: ref.read(challengeRepositoryProvider).getMyProfile(),
+            future: ref.read(userRepositoryProvider).getMyProfile(),
             builder: (context, profileSnapshot) {
               if (profileSnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(

@@ -67,11 +67,25 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
 
   Future<void> _checkNickname() async {
     final nickname = _nicknameController.text;
-    // 💡 서버에 찌르지 않고 로컬 상태만 바꾼 뒤 다음 페이지로!
-    ref.read(signupProvider.notifier).updateNickname(nickname);
-    widget.onNext();
 
-    // TODO: 닉네임 중복 체크 API가 나오면 그때 여기에 중복 체크 로직만 추가하면 됩니다.
+    // 1. 로딩 상태 시작 (버튼 중복 클릭 방지용)
+    setState(() => _isButtonEnabled = false);
+
+    // 2. 서버에 중복 확인 요청 (GET 방식이라 저장되지 않음)
+    final isDuplicate = await ref
+        .read(signupProvider.notifier)
+        .checkNicknameDuplicate(nickname);
+
+    if (isDuplicate) {
+      setState(() {
+        _isDuplicate = true;
+        _isButtonEnabled = true;
+      });
+    } else {
+      // 3. 중복이 아니면 로컬 상태만 업데이트하고 다음 단계로 이동!
+      ref.read(signupProvider.notifier).updateNickname(nickname);
+      widget.onNext();
+    }
   }
 
   @override
