@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 // 구글 OAuth 2.0 기반의 사용자 인증과 JWT 토큰의 생명주기(발급, 재발급, 파기)를 전담하는 클래스
 // 서버로부터 받은 userStatus(NEW/ACTIVE)를 분석하여 사용자별 맞춤형 초기 화면 진입 경로를 제어
@@ -12,24 +13,113 @@ class AuthService {
   static const FlutterAppAuth _appAuth = FlutterAppAuth();
   static const _storage = FlutterSecureStorage(); // 보안 저장소
 
-  // OAuth 2.0 설정을 위한 Google 클라이언트 정보
+  // 구글 설정 정보
   static const String androidClientId =
       '433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i.apps.googleusercontent.com';
   static const String customScheme =
       'com.googleusercontent.apps.433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i';
   static const String redirectUri = '$customScheme:/oauth2redirect';
 
+  // 카카오 설정 정보
+  static const String kakaoRestApiKey = '9fdd13c0777c415d8fa4055b5b26a6c5';
+  static const String kakaoNativeAppKey = '05a36f172ea2945260862834654385ea';
+  // static const String kakaoRedirectUri =
+  //     'https://hanaem.onrender.com/api/oauth/kakao/token';
+  static const String kakaoRedirectUri =
+      'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
+
   static final Dio _dio = Dio(
     BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
-    // BaseOptions(
-    //   // 1. 서버 주소를 팀원이 준 ngrok 주소로 변경
-    //   baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
-    //connectTimeout: const Duration(seconds: 30),
-    //receiveTimeout: const Duration(seconds: 30),
-    //   // 2. ngrok 경고창 우회를 위한 헤더 필수 추가
-    //   headers: {'ngrok-skip-browser-warning': 'true'},
-    // ),
   );
+
+  // 카카오 로그인
+  static Future<Map<String, String>?> signInWithKakao() async {
+    try {
+      // 구글과 동일하게 인가 요청을 보냅니다.
+      final AuthorizationResponse result = await _appAuth.authorize(
+        AuthorizationRequest(
+          kakaoRestApiKey, // clientId 자리에 REST API 키 사용
+          kakaoRedirectUri,
+          serviceConfiguration: const AuthorizationServiceConfiguration(
+            authorizationEndpoint: 'https://kauth.kakao.com/oauth/authorize',
+            tokenEndpoint: 'https://kauth.kakao.com/oauth/token',
+          ),
+          scopes: ['profile_nickname', 'profile_image'], // 필요한 권한
+        ),
+      );
+
+      if (result.authorizationCode != null && result.codeVerifier != null) {
+        debugPrint('✅ 카카오 인가 코드 획득 성공');
+        return {
+          "code": result.authorizationCode!,
+          "codeVerifier": result.codeVerifier!,
+        };
+      }
+    } catch (e) {
+      debugPrint('🚨 카카오 PKCE 인증 에러: $e');
+    }
+    return null;
+  }
+
+  // 서버 통신 부분 (백엔드 엔드포인트에 맞춰 수정 필요)
+  static Future<void> sendKakaoAuthToBackend({
+    required String code,
+    required String codeVerifier,
+    required BuildContext context,
+  }) async {
+    try {
+      debugPrint("🚀 서버로 카카오 인가 데이터 전송 시작...");
+
+      final response = await _dio.post(
+        '/api/oauth/kakao/token',
+        data: {
+          "code": code,
+          "codeVerifier": codeVerifier, // 백엔드 변수명과 일치
+          "fcmToken": "", // 현재는 빈 값으로 전송
+        },
+        options: Options(contentType: Headers.jsonContentType),
+      );
+
+      debugPrint("📥 서버 응답 코드: ${response.statusCode}");
+      debugPrint("📥 서버 응답 데이터: ${response.data}");
+
+      if (response.statusCode == 200 && response.data != null) {
+        await _handleAuthResponse(response.data, context);
+      }
+    } on DioException catch (e) {
+      debugPrint('🌐 서버 통신 에러: ${e.response?.statusCode}');
+      debugPrint('내용: ${e.response?.data}');
+    }
+  }
+
+  // 공통 응답 처리 (유저 상태에 따른 화면 전환)
+  static Future<void> _handleAuthResponse(
+    Map<String, dynamic> data,
+    BuildContext context,
+  ) async {
+    final String? accessToken = data['accessToken'];
+    final String? refreshToken = data['refreshToken'];
+    final String? userStatus = data['userStatus'];
+
+    if (accessToken != null) {
+      await _storage.write(key: 'accessToken', value: accessToken);
+      await _storage.write(key: 'refreshToken', value: refreshToken);
+    }
+
+    if (!context.mounted) return;
+
+    if (userStatus == "NEW") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignupMainScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    }
+  }
 
   // 구글로부터 인가 코드 획득
   static Future<Map<String, String>?> signInWithGoogle() async {

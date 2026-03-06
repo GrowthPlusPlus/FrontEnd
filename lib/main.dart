@@ -16,6 +16,8 @@ import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
 void main() async {
   // 플러터 엔진 초기화 확인
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +46,9 @@ void main() async {
 
   // 파이어베이스 초기화
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 카카오 SDK 초기화
+  KakaoSdk.init(nativeAppKey: '05a36f172ea2945260862834654385ea');
 
   runApp(const ProviderScope(child: MyApp()));
 }
