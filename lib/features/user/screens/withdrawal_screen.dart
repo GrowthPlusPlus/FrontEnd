@@ -168,16 +168,6 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          // 취소 버튼
-          Expanded(
-            child: buildActionButton(
-              text: '취소',
-              color: const Color(0xFFDFE1DC).withAlpha(127),
-              textColor: AppColors.gray2,
-              onTap: () => Navigator.pop(context),
-            ),
-          ),
-          const SizedBox(width: 10),
           // 탈퇴하기 버튼 (상태에 따라 변화)
           Expanded(
             child: buildActionButton(
@@ -217,6 +207,16 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       }
                     }
                   : null, // 비활성화 상태
+            ),
+          ),
+          const SizedBox(width: 10),
+          // 취소 버튼
+          Expanded(
+            child: buildActionButton(
+              text: '취소',
+              color: const Color(0xFFDFE1DC).withAlpha(127),
+              textColor: AppColors.gray2,
+              onTap: () => Navigator.pop(context),
             ),
           ),
         ],

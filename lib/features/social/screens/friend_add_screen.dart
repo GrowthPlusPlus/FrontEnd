@@ -664,7 +664,7 @@ class FriendAddScreenState extends ConsumerState<FriendAddScreen>
           ? Center(
               child: SvgPicture.asset(
                 'assets/images/icons/default_profile_icon.svg',
-                width: size * 0.6,
+                width: size,
               ),
             )
           : null,

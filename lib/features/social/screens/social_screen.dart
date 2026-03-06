@@ -62,22 +62,41 @@ class _SocialScreenState extends ConsumerState<SocialScreen> {
       ),
       body: Column(
         children: [
-          // 검색창
+          // 검색창 (friend_add_screen.dart 스타일로 수정됨)
           Padding(
             padding: const EdgeInsets.all(20),
-            child: TextField(
-              controller: searchController,
-              onChanged: (value) => setState(() => searchQuery = value),
-              decoration: InputDecoration(
-                hintText: '내 친구 검색',
-                hintStyle: AppTypography.b2.copyWith(color: AppColors.gray2),
-                prefixIcon: const Icon(Icons.search, color: AppColors.gray2),
-                filled: true,
-                fillColor: const Color(0x7FDFE1DC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.gray4), // 연한 회색 테두리
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/icons/search_icon.svg',
+                    width: 18,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.gray3,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: (value) => setState(() => searchQuery = value),
+                      decoration: const InputDecoration(
+                        hintText: '친구 검색',
+                        hintStyle: AppTypography.b2,
+                        border: InputBorder.none, // 기본 TextField 테두리 제거
+                        isDense: true, // 텍스트 필드 내부 여백 최소화 (중앙 정렬 도움)
+                      ),
+                      style: AppTypography.b1,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
