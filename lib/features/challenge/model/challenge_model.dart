@@ -303,14 +303,8 @@ class CertificationPostModel {
   final int likeNumber;
   final int commentNumber;
   final bool liked;
+  final bool author;
   final List<ChallengeComment> comments;
-
-  // 기존 UI 코드 호환성을 위한 Getter
-  // String get postDate =>
-  //     createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt!) : "";
-
-  // 수정 여부를 확인하는 Getter (필요 시 활용)
-  // bool get isEdited => updatedAt != null && updatedAt != createdAt;
 
   String? get imageUrl => images.isNotEmpty ? images.first.imageUrl : null;
   String? get userName => userNickname;
@@ -332,6 +326,7 @@ class CertificationPostModel {
     this.likeNumber = 0,
     this.commentNumber = 0,
     this.liked = false,
+    this.author = false,
     this.comments = const [],
   });
 
@@ -350,6 +345,7 @@ class CertificationPostModel {
     int? likeNumber,
     int? commentNumber,
     bool? liked,
+    bool? author,
     List<ChallengeComment>? comments,
   }) {
     return CertificationPostModel(
@@ -367,6 +363,7 @@ class CertificationPostModel {
       likeNumber: likeNumber ?? this.likeNumber,
       commentNumber: commentNumber ?? this.commentNumber,
       liked: liked ?? this.liked,
+      author: author ?? this.author,
       comments: comments ?? this.comments,
     );
   }
@@ -398,7 +395,7 @@ class CertificationPostModel {
 
     return CertificationPostModel(
       postId: json['postId'] ?? 0,
-      postDate: json['postDate'] ?? "",
+      postDate: json['postDate'] ?? dateStr,
       challengeId: json['challengeId'] ?? 0,
       challengeTitle: json['challengeTitle'] ?? '제목 없음',
       totalSuccessDays: json['totalSuccessDays'] ?? 0,
@@ -415,6 +412,7 @@ class CertificationPostModel {
       likeNumber: json['likeNumber'] ?? 0,
       commentNumber: json['commentNumber'] ?? 0,
       liked: json['liked'] ?? false,
+      author: json['author'] ?? false,
       comments: (json['comments'] as List? ?? [])
           .map((c) => ChallengeComment.fromJson(c))
           .toList(),

@@ -1523,7 +1523,7 @@ final challengeCreateNotifierProvider =
 typedef _$ChallengeCreateNotifier =
     AutoDisposeNotifier<AsyncValue<ChallengeCreateResponse?>>;
 String _$articleCreateNotifierHash() =>
-    r'c0e6c78cade064e5681ab8a936ee60310e3cc633';
+    r'558fb00ff45dc4f321919d42368c1a94c415f602';
 
 /// See also [ArticleCreateNotifier].
 @ProviderFor(ArticleCreateNotifier)
@@ -1543,8 +1543,25 @@ final articleCreateNotifierProvider =
 
 typedef _$ArticleCreateNotifier =
     AutoDisposeNotifier<AsyncValue<CertificationPostModel?>>;
+String _$imageVerifyNotifierHash() =>
+    r'91d07f6c3d486d31cdeba206cb43812ca95edd7f';
+
+/// See also [ImageVerifyNotifier].
+@ProviderFor(ImageVerifyNotifier)
+final imageVerifyNotifierProvider =
+    AutoDisposeNotifierProvider<ImageVerifyNotifier, AsyncValue<int?>>.internal(
+      ImageVerifyNotifier.new,
+      name: r'imageVerifyNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$imageVerifyNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ImageVerifyNotifier = AutoDisposeNotifier<AsyncValue<int?>>;
 String _$articleUpdateNotifierHash() =>
-    r'5e786c39b65b475094585bb6f073586039684794';
+    r'0b6c9f85f15de5b114787f2332ca7eae0668c6a2';
 
 /// See also [ArticleUpdateNotifier].
 @ProviderFor(ArticleUpdateNotifier)
