@@ -51,13 +51,23 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primaryAble),
         ),
-        error: (error, stack) => Center(
-          child: Text(
-            '데이터를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
-            textAlign: TextAlign.center,
-            style: AppTypography.b1.copyWith(color: AppColors.gray2),
-          ),
-        ),
+        error: (error, stack) {
+          // 에러 메시지에 404 또는 NOT_FOUND가 포함되어 있는지 확인합니다.
+          final errorString = error.toString();
+          final isDeleted =
+              errorString.contains('404') || errorString.contains('NOT_FOUND');
+
+          return Center(
+            child: Text(
+              // 상황에 따라 다른 텍스트를 노출합니다.
+              isDeleted
+                  ? '이미 삭제되었거나\n존재하지 않는 챌린지입니다.'
+                  : '데이터를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
+              textAlign: TextAlign.center,
+              style: AppTypography.b1.copyWith(color: AppColors.gray2),
+            ),
+          );
+        },
         data: (challenge) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -88,51 +98,56 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
         ),
       ),
 
-      // 3. [하단 버튼] 기존 프로젝트에 있는 공통 버튼 위젯 재활용!
-      bottomNavigationBar: BottomActionButton(
-        text: '초대 수락하기',
-        backgroundColor: AppColors.primaryAble,
-        textColor: Colors.white,
-        onPressed: () async {
-          // 💡 1. 다이얼로그에 넘겨줄 챌린지 제목을 가져옵니다.
-          final challenge = ref
-              .read(challengeDetailProvider(challengeId: challengeId))
-              .value;
+      // 하단 버튼 - 초대 수락하기 (클릭 시 수락 API 호출 + 참여 완료 다이얼로그 띄우기)
+      bottomNavigationBar: challengeAsync.maybeWhen(
+        // 데이터 로드 성공 시에만 버튼 표시
+        data: (challenge) => BottomActionButton(
+          text: '초대 수락하기',
+          backgroundColor: AppColors.primaryAble,
+          textColor: Colors.white,
+          onPressed: () async {
+            // 💡 1. 다이얼로그에 넘겨줄 챌린지 제목을 가져옵니다.
+            final challenge = ref
+                .read(challengeDetailProvider(challengeId: challengeId))
+                .value;
 
-          try {
-            // 💡 2. 알림 프로바이더의 '수락' 함수 호출
-            await ref
-                .read(challengeInviteProvider.notifier)
-                .acceptInvite(challengeId);
+            try {
+              // 💡 2. 알림 프로바이더의 '수락' 함수 호출
+              await ref
+                  .read(challengeInviteProvider.notifier)
+                  .acceptInvite(challengeId);
 
-            if (context.mounted) {
-              // 💡 3. 상세 화면을 먼저 닫습니다 (다이얼로그 뒤에 남지 않도록)
-              Navigator.pop(context);
+              if (context.mounted) {
+                // 💡 3. 상세 화면을 먼저 닫습니다 (다이얼로그 뒤에 남지 않도록)
+                Navigator.pop(context);
 
-              // 💡 4. 참여 완료 다이얼로그 띄우기!
-              showDialog(
-                context: context,
-                builder: (context) => EnterConfirmDialog(
-                  challengeId: challengeId,
-                  challengeTitle: challenge?.title ?? '챌린지', // 제목 전달
-                ),
-              );
+                // 💡 4. 참여 완료 다이얼로그 띄우기!
+                showDialog(
+                  context: context,
+                  builder: (context) => EnterConfirmDialog(
+                    challengeId: challengeId,
+                    challengeTitle: challenge?.title ?? '챌린지', // 제목 전달
+                  ),
+                );
+              }
+            } catch (e) {
+              // 수락 실패 시 에러 메시지 띄우기
+              if (context.mounted) {
+                final errorMsg = e.toString().replaceAll('Exception: ', '');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(errorMsg),
+                    backgroundColor: AppColors.black, // 에러 느낌을 주려면 변경 가능
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
             }
-          } catch (e) {
-            // 수락 실패 시 에러 메시지 띄우기
-            if (context.mounted) {
-              final errorMsg = e.toString().replaceAll('Exception: ', '');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(errorMsg),
-                  backgroundColor: AppColors.black, // 에러 느낌을 주려면 변경 가능
-                  behavior: SnackBarBehavior.floating,
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            }
-          }
-        },
+          },
+        ),
+        // 💡 [핵심] 로딩 중이거나 에러(404 등) 상태면 버튼을 아예 안 그림 -> 클릭 불가 -> 앱 터짐 방지
+        orElse: () => const SizedBox.shrink(),
       ),
     );
   }
