@@ -49,6 +49,7 @@ class HomeScreen extends ConsumerWidget {
                         // 알림 배지 (data.notificationNumber 사용)
                         _buildNotificationIcon(
                           context,
+                          ref,
                           data.notificationNumber,
                         ),
                       ],
@@ -102,18 +103,29 @@ class HomeScreen extends ConsumerWidget {
   }
 
   // 알림 아이콘 빌더
-  Widget _buildNotificationIcon(BuildContext context, int count) {
+  Widget _buildNotificationIcon(
+    BuildContext context,
+    WidgetRef ref,
+    int count,
+  ) {
     return Stack(
       alignment: Alignment.center,
       children: [
         IconButton(
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            // 💡 2. await를 붙여서 알림 페이지(NotificationMainScreen)가 닫힐 때까지 기다립니다.
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const NotificationMainScreen(),
               ),
             );
+
+            // 💡 3. 알림 페이지에서 뒤로가기(pop)를 눌러서 홈으로 돌아온 직후 실행됩니다!
+            // 홈 화면 전체 데이터를 새로고침(refresh) 하여 뱃지 개수와 챌린지 목록을 최신화합니다.
+            if (context.mounted) {
+              ref.read(challengeHomeNotifierProvider.notifier).refresh();
+            }
           },
           icon: SvgPicture.asset('assets/images/icons/home_notice_icon.svg'),
         ),
