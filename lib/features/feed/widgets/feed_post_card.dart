@@ -25,11 +25,6 @@ class FeedPostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint('--- Post Date Debug ---');
-    debugPrint('Post ID: ${post.postId}');
-    debugPrint('updatedAt: ${post.updatedAt}'); // 이게 null로 나오는지 확인!
-    debugPrint('createdAt: ${post.createdAt}');
-
     final displayDate = post.updatedAt ?? post.createdAt;
 
     String formattedDate = displayDate != null
@@ -80,12 +75,6 @@ class FeedPostCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(post.userName ?? '해냄', style: AppTypography.b1),
-                      Text(
-                        "명예 해냄 개발자",
-                        style: AppTypography.c1.copyWith(
-                          color: AppColors.gray2,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -117,19 +106,8 @@ class FeedPostCard extends ConsumerWidget {
             ),
           ),
           // 3. 이미지
-          if (post.hasImage && post.imageUrl != null) ...[
-            Image.network(
-              post.imageUrl!,
-              width: double.infinity,
-              height: 375,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 200,
-                color: AppColors.gray5,
-                child: const Icon(Icons.error),
-              ),
-            ),
-          ],
+          if (post.hasImage && post.images.isNotEmpty)
+            _PostImageSlider(post: post),
           // 4. 하단 아이콘 정보
           Padding(
             padding: const EdgeInsets.fromLTRB(15, 12, 15, 16),
@@ -210,6 +188,90 @@ class FeedPostCard extends ConsumerWidget {
         ),
         const SizedBox(width: 4),
         Text(count, style: AppTypography.b2.copyWith(color: color)),
+      ],
+    );
+  }
+}
+
+// ✅ 이미지 슬라이더와 인디케이터 상태를 관리하기 위한 내부 위젯
+class _PostImageSlider extends StatefulWidget {
+  final CertificationPostModel post;
+
+  const _PostImageSlider({required this.post});
+
+  @override
+  State<_PostImageSlider> createState() => _PostImageSliderState();
+}
+
+class _PostImageSliderState extends State<_PostImageSlider> {
+  int _currentImagePage = 0; // 💡 인디케이터 상태 관리
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 375, // 기존 FeedPostCard 이미지 높이와 통일
+          width: double.infinity,
+          child: PageView.builder(
+            itemCount: widget.post.images.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentImagePage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final String path = widget.post.images[index].imageUrl;
+              // 💡 경로 처리: http로 시작하지 않으면 서버 주소 붙여주기
+              final String fullUrl = path.startsWith('http')
+                  ? path
+                  : 'https://hanaem.onrender.com$path';
+
+              return Image.network(
+                fullUrl,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: AppColors.gray5,
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: AppColors.gray5,
+                    child: const Center(
+                      child: Icon(Icons.broken_image, color: AppColors.gray3),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+        // 💡 이미지가 2장 이상일 때만 하단에 페이지 점(Indicator) 표시
+        if (widget.post.images.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(widget.post.images.length, (index) {
+                return Container(
+                  width: 6,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    // 현재 페이지면 브랜드 컬러, 아니면 회색
+                    color: _currentImagePage == index
+                        ? AppColors.primaryAble
+                        : AppColors.gray4,
+                  ),
+                );
+              }),
+            ),
+          ),
       ],
     );
   }

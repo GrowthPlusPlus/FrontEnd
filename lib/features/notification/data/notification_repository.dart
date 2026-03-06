@@ -105,8 +105,25 @@ class NotificationRepository {
     try {
       await dio.post('/api/challenges/$challengeId/invites/accept');
     } on DioException catch (e) {
-      print('❌ [수락 에러]: ${e.response?.data}');
-      throw Exception('초대 수락 실패');
+      // 💡 1. 백엔드 에러 응답을 안전하게 가져옵니다.
+      final data = e.response?.data;
+      String errorMessage = '초대 수락에 실패했습니다.';
+
+      // 💡 2. 데이터가 Map(JSON) 형태인지 확인 후 안전하게 파싱합니다. (앱 터짐 방지)
+      if (data != null && data is Map<String, dynamic>) {
+        final reason = data['reason'];
+
+        // 💡 3. 백엔드 에러 메시지에 맞게 한글로 변환해 줍니다.
+        if (reason == 'CHALLENGE_INVITE_NOT_FOUND') {
+          errorMessage = '이미 취소되거나 존재하지 않는 초대입니다.';
+        } else if (reason != null) {
+          errorMessage = reason; // 예: "이미 처리된 초대입니다." 그대로 노출
+        }
+      }
+      // UI 단으로 에러 메시지를 던집니다.
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('알 수 없는 오류가 발생했습니다.');
     }
   }
 
