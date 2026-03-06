@@ -9,6 +9,7 @@ import 'package:haenaem/features/challenge/model/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
 import 'package:haenaem/features/notification/screens/notification_main_screen.dart';
+import 'package:haenaem/features/notification/provider/notification_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -113,6 +114,10 @@ class HomeScreen extends ConsumerWidget {
       children: [
         IconButton(
           onPressed: () async {
+            // 💡 1. 들어가기 전에 뱃지 숫자를 확인합니다.
+            // 0보다 크다면, 서버에서 '읽음' 처리될 것이 100% 확실하므로 새로고침을 예약해 둡니다.
+            final hasUnreadInitially = count > 0;
+
             // 💡 2. await를 붙여서 알림 페이지(NotificationMainScreen)가 닫힐 때까지 기다립니다.
             await Navigator.push(
               context,
@@ -124,7 +129,16 @@ class HomeScreen extends ConsumerWidget {
             // 💡 3. 알림 페이지에서 뒤로가기(pop)를 눌러서 홈으로 돌아온 직후 실행됩니다!
             // 홈 화면 전체 데이터를 새로고침(refresh) 하여 뱃지 개수와 챌린지 목록을 최신화합니다.
             if (context.mounted) {
-              ref.read(challengeHomeNotifierProvider.notifier).refresh();
+              // 💡 알림 페이지 안에서 '수락'이나 '거절'을 눌렀는지 확인
+              final hasActionOccurred = ref.read(needsHomeRefreshProvider);
+
+              // 처음 들어갈 때 안 읽은 알림이 있었거나 OR 안에서 챌린지 수락/거절을 했다면 새로고침!
+              if (hasUnreadInitially || hasActionOccurred) {
+                ref.read(challengeHomeNotifierProvider.notifier).refresh();
+
+                // 스위치는 다시 꺼줍니다
+                ref.read(needsHomeRefreshProvider.notifier).state = false;
+              }
             }
           },
           icon: SvgPicture.asset('assets/images/icons/home_notice_icon.svg'),

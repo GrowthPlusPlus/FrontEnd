@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/notification_repository.dart';
 import '../model/notification_model.dart';
 
+// 홈 화면 새로고침이 필요한지 여부를 저장하는 스위치 (초기값: false)
+final needsHomeRefreshProvider = StateProvider<bool>((ref) => false);
+
 // 상태 클래스 정의
 class NotificationState {
   final List<NotificationModel> notifications;

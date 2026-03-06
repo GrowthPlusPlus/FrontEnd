@@ -48,6 +48,9 @@ class ChallengeInvitesView extends ConsumerWidget {
               try {
                 await notifier.acceptInvite(invite.challengeId);
 
+                ref.read(needsHomeRefreshProvider.notifier).state =
+                    true; // 홈 화면 새로고침 필요 플래그 켜기
+
                 if (context.mounted) {
                   // 위젯이 살아있을 때 안전한 Navigator를 미리 변수로 캡처해 둡니다.
                   final safeNavigator = Navigator.of(context);
@@ -93,6 +96,9 @@ class ChallengeInvitesView extends ConsumerWidget {
             onReject: () async {
               try {
                 await notifier.rejectInvite(invite.challengeId);
+
+                ref.read(needsHomeRefreshProvider.notifier).state =
+                    true; // 홈 화면 새로고침 필요 플래그 켜기
 
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
