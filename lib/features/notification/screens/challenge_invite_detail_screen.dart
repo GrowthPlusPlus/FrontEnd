@@ -117,6 +117,9 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
                   .read(challengeInviteProvider.notifier)
                   .acceptInvite(challengeId);
 
+              // 수락이 성공적으로 끝났으니 홈 화면 새로고침 스위치 ON!
+              ref.read(needsHomeRefreshProvider.notifier).state = true;
+
               if (context.mounted) {
                 // 💡 3. 상세 화면을 먼저 닫습니다 (다이얼로그 뒤에 남지 않도록)
                 Navigator.pop(context);
