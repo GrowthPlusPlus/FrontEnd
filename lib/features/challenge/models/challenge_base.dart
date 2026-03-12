@@ -1,7 +1,9 @@
+// 최초 작성자: 강선욱
+// 챌린지 기본 정보를 정의한 모델
 class ChallengeBase {
   final String id;
   final String title;
-  final bool isLeader;
+  final bool isLeader; // 현재 로그인 중인 유저가 해당 챌린지의 방장인지 여부
 
   const ChallengeBase({
     required this.id,
