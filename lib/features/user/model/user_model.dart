@@ -2,6 +2,7 @@
 // 사용자 객체와 관련된 정보를 관리 모델
 
 // 마이페이지 사용자 프로필 부분
+@Deprecated('shared/models/user.dart에 정의된 model을 대신 사용')
 class UserProfileModel {
   final String nickname;
   final String introduction;
@@ -26,6 +27,7 @@ class UserProfileModel {
 }
 
 // 방장 정보를 관리하는 클래스
+@Deprecated('shared/models/user.dart에 정의된 model을 대신 사용')
 class HostModel {
   final String name;
   final String profileImageUrl;
@@ -41,6 +43,7 @@ class HostModel {
 }
 
 // 챌린지 참여 멤버 정보를 관리하는 클래스
+@Deprecated('shared/models/user.dart에 정의된 model을 대신 사용')
 class ParticipantModel {
   final String name;
   final String profileImageUrl;
@@ -56,6 +59,7 @@ class ParticipantModel {
 }
 
 // 친구 정보를 관리하는 클래스
+@Deprecated('shared/models/user.dart에 정의된 model을 대신 사용')
 class FriendModel {
   final int id;
   final String email;
@@ -84,6 +88,7 @@ class FriendModel {
 // challenge_member_provider.dart
 // challenge_repository.dart
 // challenge_members_screen.dart
+@Deprecated('shared/models/user.dart에 정의된 model을 대신 사용')
 class ChallengeMember {
   final int memberId;
   final String nickname;
