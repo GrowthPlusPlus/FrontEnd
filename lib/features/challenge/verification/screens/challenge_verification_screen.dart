@@ -8,8 +8,8 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
-import 'package:haenaem/features/challenge/model/image_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/image_model.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';

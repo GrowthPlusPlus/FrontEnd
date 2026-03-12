@@ -6,7 +6,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_popup_menu.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';

@@ -2,7 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../challenge/data/challenge_repository.dart';
-import '../../challenge/model/challenge_model.dart';
+import '../../challenge/models/challenge_model.dart';
 import 'package:haenaem/features/user/model/user_model.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:flutter/foundation.dart';

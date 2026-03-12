@@ -1,4 +1,4 @@
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
 
 // 피드 상태를 관리하는 클래스
 // 로딩 상태, 에러 상태 관리

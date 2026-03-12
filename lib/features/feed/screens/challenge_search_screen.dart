@@ -6,7 +6,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/screens/challenge_detail_screen.dart'; // 챌린지 소개 화면 뷰 재활용
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/user/model/user_model.dart';
 
 class ChallengeSearchScreen extends ConsumerStatefulWidget {
