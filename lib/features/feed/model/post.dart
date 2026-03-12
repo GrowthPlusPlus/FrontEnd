@@ -4,6 +4,7 @@ import 'package:haenaem/shared/models/user.dart';
 // 인증글 모델 클래스
 // User에 정의된 필드(id, profileUrl, nickname)를 작성자 정보로 재사용
 class Post {
+  final String id; // 인증글 id
   final String title; // 인증글 제목
   final String content; // 인증글 내용
   final String? pictureUrl; // 인증글 사진 주소
@@ -14,6 +15,7 @@ class Post {
   final User writer; // 작성자 정보 (id, profileUrl, nickname)
 
   const Post({
+    required this.id,
     required this.title,
     required this.content,
     this.pictureUrl,
@@ -26,6 +28,7 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
+      id: json['id'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
       pictureUrl: json['picture_url'] as String?,
@@ -38,6 +41,7 @@ class Post {
   }
 
   Post copyWith({
+    String? id,
     String? title,
     String? content,
     String? pictureUrl,
@@ -48,6 +52,7 @@ class Post {
     User? writer,
   }) {
     return Post(
+      id: id ?? this.id,
       title: title ?? this.title,
       content: content ?? this.content,
       pictureUrl: pictureUrl ?? this.pictureUrl,
