@@ -3,7 +3,7 @@ library;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../model/social_model.dart';
+import '../models/social_model.dart';
 import '../../auth/services/auth_service.dart';
 import 'package:flutter/material.dart';
 

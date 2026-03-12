@@ -9,7 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'friend_add_screen.dart';
 import '../data/social_repository.dart';
-import '../model/social_model.dart';
+import '../models/social_model.dart';
 import '../../../core/utils/korean_string_utils.dart';
 
 class SocialScreen extends ConsumerStatefulWidget {
