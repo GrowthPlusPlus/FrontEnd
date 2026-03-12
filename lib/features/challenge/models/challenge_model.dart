@@ -3,7 +3,7 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/user/model/user_model.dart';
-import 'package:haenaem/features/challenge/model/image_model.dart';
+import 'package:haenaem/features/challenge/models/image_model.dart';
 
 // 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형
 enum ChallengeStatus {
@@ -13,6 +13,9 @@ enum ChallengeStatus {
 }
 
 // 메인화면에서 관리하는 챌린지 모델
+@Deprecated(
+  'challenge/models/home_challenge_card.dart에 정의된 모델 대신 사용 / notificationNumber 변수는 따로 관리',
+)
 class ChallengeMainModel {
   final int notificationNumber;
   final List<Map<String, dynamic>> myChallenges;
