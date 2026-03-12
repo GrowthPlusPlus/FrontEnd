@@ -83,6 +83,9 @@ class SearchResultUser {
 }
 
 /// 클래스의 용도: 받은 친구 요청의 상세 정보를 관리하는 데이터 모델
+@Deprecated(
+  'social/models/friend_request_card.dart에 FriendRequestCard 모델 대신 사용',
+)
 class ReceivedRequest {
   final int requestId;
   final int fromUserId;
