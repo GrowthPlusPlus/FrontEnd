@@ -232,6 +232,7 @@ class ChallengeCalendarPhoto {
 }
 
 // 댓글 데이터 관리
+@Deprecated('feed/models/comment.dart 내부에 정의된 Comment 모델 대신 사용')
 class ChallengeComment {
   final int commentId;
   final String userNickname;
@@ -291,6 +292,7 @@ class ChallengeComment {
 }
 
 // 개별 인증글 모델
+@Deprecated('feed/models/post.dart 내부에 정의된 Post 모델을 대신 사용')
 class CertificationPostModel {
   final int postId;
   final String postDate;
