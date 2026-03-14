@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../provider/friend_request_provider.dart'; // 이전 단계에서 생성한 Provider 보낸 요청 카드 UI 위젯
+import '../provider/friend_request_provider.dart';
 import '../../../shared/widgets/animated_toast.dart';
 import '../widgets/received_request_card.dart';
 
