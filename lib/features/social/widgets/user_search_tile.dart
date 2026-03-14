@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
-import 'package:haenaem/shared/widgets/user_profile_circle.dart';
 import 'package:haenaem/features/social/models/user_search_card.dart';
+import 'package:haenaem/shared/widgets/user_list_tile.dart';
 
 class UserSearchTile extends StatelessWidget {
   final UserSearchCard searchCard;
@@ -20,30 +20,10 @@ class UserSearchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          UserProfileCircle(imageUrl: searchCard.user.profileUrl, size: 44),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  searchCard.user.nickname,
-                  style: AppTypography.h3.copyWith(fontSize: 15),
-                ),
-                Text(
-                  "해냄 메이트", // 추후 칭호 기능 추가 시 연동
-                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
-                ),
-              ],
-            ),
-          ),
-          _buildRequestButton(),
-        ],
-      ),
+    return UserListTile(
+      user: searchCard.user,
+      padding: const EdgeInsets.symmetric(vertical: 12), // 여기만 12
+      trailing: _buildRequestButton(),
     );
   }
 
