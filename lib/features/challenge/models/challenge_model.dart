@@ -2,7 +2,7 @@
 // 챌린지 관련 데이터 관리 모델
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/features/challenge/models/image_model.dart';
 
 // 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형

@@ -6,7 +6,7 @@ import 'package:haenaem/features/main/screens/main_screen.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'signup_main_screen.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
 // 앱을 껐다 켰을 때 저장된 토큰을 확인

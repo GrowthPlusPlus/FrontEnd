@@ -7,7 +7,7 @@ import 'package:haenaem/features/feed/screens/challenge_detail_screen.dart'; // 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
 
 class ChallengeSearchScreen extends ConsumerStatefulWidget {
   const ChallengeSearchScreen({super.key});
