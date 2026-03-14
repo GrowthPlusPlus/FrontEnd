@@ -429,6 +429,9 @@ class CertificationPostModel {
 enum MyPageTab { inProgress, success, fail }
 
 // 내 페이지 - 나의 챌린지 - 진행중인 챌린지
+@Deprecated(
+  'user/models/my_page_challenge_card.dart내에 MyPageChallengeCard 모델 대신 사용',
+)
 class ChallengeInProgressModel {
   final int challengeId;
   final String title;
