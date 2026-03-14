@@ -496,6 +496,9 @@ class ChallengeInProgressModel {
 
 // 챌린지 검색
 // TODO: 챌린지 아이디 부분 수정
+@Deprecated(
+  'shared/models/search_challenge_card.dart에 있는 SearchChallengeCard 모델 대신 사용',
+)
 class SearchChallengeModel {
   final int challengeId;
   final String title;
