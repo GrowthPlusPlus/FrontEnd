@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../challenge/model/challenge_model.dart';
+import '../../challenge/models/challenge_model.dart';
 import '../../challenge/provider/challenge_provider.dart';
 import '../screens/challenge_list_screen.dart';
 

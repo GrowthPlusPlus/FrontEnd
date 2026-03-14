@@ -8,7 +8,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/core/utils/korean_string_utils.dart';
 import 'package:haenaem/features/challenge/data/challenge_repository.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
 // import 'package:share_plus/share_plus.dart';
 
 // [공통 위젯] 챌린지 초대 본문 (링크 공유 + 친구 검색 + 리스트)

@@ -7,7 +7,7 @@ import 'package:haenaem/features/feed/screens/post_detail_screen.dart'; // Ïù∏Ï¶
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 

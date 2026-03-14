@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../model/social_model.dart';
+import '../models/social_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/social_repository.dart';
 import '../../../core/utils/korean_string_utils.dart';

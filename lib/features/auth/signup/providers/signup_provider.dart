@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import '../models/signup_state.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 

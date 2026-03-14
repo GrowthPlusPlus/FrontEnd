@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/challenge_repository.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
-import '../model/challenge_model.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import '../models/challenge_model.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
 import 'dart:io';
 
 part 'challenge_provider.g.dart';

@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/shared/models/tag_data.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';

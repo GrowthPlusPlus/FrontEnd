@@ -2,8 +2,8 @@
 // 챌린지 관련 데이터 관리 모델
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
-import 'package:haenaem/features/challenge/model/image_model.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/features/challenge/models/image_model.dart';
 
 // 챌린지의 상태(완료, 실패 위기, 일반)를 정의하는 열거형
 enum ChallengeStatus {
@@ -13,6 +13,9 @@ enum ChallengeStatus {
 }
 
 // 메인화면에서 관리하는 챌린지 모델
+@Deprecated(
+  'challenge/models/home_challenge_card.dart에 정의된 모델 대신 사용 / notificationNumber 변수는 따로 관리',
+)
 class ChallengeMainModel {
   final int notificationNumber;
   final List<Map<String, dynamic>> myChallenges;
@@ -91,6 +94,7 @@ class ChallengeMainModel {
 // }
 
 // 챌린지 상세정보에서 사용하는 챌린지 모델
+@Deprecated('shared/models/challenge_detail.dart에 있는 ChallengeDetail 모델 대신 사용')
 class ChallengeDetailModel {
   final String title;
   final String startDate;
@@ -145,6 +149,7 @@ class ChallengeDetailModel {
 }
 
 // 챌린지 생성 데이터 관리 클래스
+@Deprecated('사용 X')
 class ChallengeCreateResponse {
   final int id;
   final String challengeLink;
@@ -187,6 +192,7 @@ class ChallengeCreateResponse {
 }
 
 // 챌린지 내 현황 탭 데이터 관리 클래스
+@Deprecated('사용 X')
 class ChallengeCalendarModel {
   final int totalSuccessDays;
   final int currentStreakDays;
@@ -208,6 +214,7 @@ class ChallengeCalendarModel {
 }
 
 // 챌린지 내 현황 달력 그리드 모델
+@Deprecated('feed/models/post.dart에 있는 모델 대신 사용')
 class ChallengeCalendarPhoto {
   final int postId;
   final String postDate;
@@ -229,6 +236,7 @@ class ChallengeCalendarPhoto {
 }
 
 // 댓글 데이터 관리
+@Deprecated('feed/models/comment.dart 내부에 정의된 Comment 모델 대신 사용')
 class ChallengeComment {
   final int commentId;
   final String userNickname;
@@ -288,6 +296,7 @@ class ChallengeComment {
 }
 
 // 개별 인증글 모델
+@Deprecated('feed/models/post.dart 내부에 정의된 Post 모델을 대신 사용')
 class CertificationPostModel {
   final int postId;
   final String postDate;
@@ -424,6 +433,9 @@ class CertificationPostModel {
 enum MyPageTab { inProgress, success, fail }
 
 // 내 페이지 - 나의 챌린지 - 진행중인 챌린지
+@Deprecated(
+  'user/models/my_page_challenge_card.dart내에 MyPageChallengeCard 모델 대신 사용',
+)
 class ChallengeInProgressModel {
   final int challengeId;
   final String title;
@@ -491,6 +503,9 @@ class ChallengeInProgressModel {
 
 // 챌린지 검색
 // TODO: 챌린지 아이디 부분 수정
+@Deprecated(
+  'shared/models/search_challenge_card.dart에 있는 SearchChallengeCard 모델 대신 사용',
+)
 class SearchChallengeModel {
   final int challengeId;
   final String title;

@@ -1,0 +1,166 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:haenaem/core/theme/app_colors.dart';
+import 'package:haenaem/core/theme/app_typography.dart';
+
+import 'package:haenaem/shared/models/home_challenge_card.dart';
+import '../enums/challenge_status.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
+
+class ChallengeCard extends StatelessWidget {
+  final Map<String, dynamic> challenge;
+  final ChallengeStatus status;
+
+  const ChallengeCard({
+    super.key,
+    required this.challenge,
+    required this.status,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChallengeMainScreen(
+              challengeId: challenge['challengeId'] ?? 0,
+              challengeTitle: challenge['title'],
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: _getCardColor(status),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        challenge['title'] ?? '',
+                        style: AppTypography.b1.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _buildSuccessDays(),
+                      const SizedBox(height: 4),
+                      _buildBottomInfo(),
+                    ],
+                  ),
+                ),
+                _buildDivider(),
+                SizedBox(width: 44, child: Center(child: _buildStatusIcon())),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuccessDays() {
+    final during = challenge['duringDate'] ?? 0;
+    final isDone = challenge['doIt'] ?? false;
+    return Row(
+      children: [
+        if (during >= 2 && isDone)
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: SvgPicture.asset(
+              'assets/images/icons/small_fire_icon.svg',
+              width: 16,
+              height: 16,
+            ),
+          ),
+        Text('$during일째', style: AppTypography.b2.copyWith(fontSize: 14)),
+      ],
+    );
+  }
+
+  Widget _buildBottomInfo() {
+    if (status == ChallengeStatus.urgent) {
+      return const Text(
+        '오늘 챌린지를 하지 않으면 실패해요!',
+        style: TextStyle(color: AppColors.notification, fontSize: 12),
+      );
+    }
+    return Row(
+      children: [
+        SvgPicture.asset(
+          'assets/images/icons/mini_success_icon.svg',
+          width: 16,
+          height: 16,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '인증인원 ${challenge['todaySuccessCount']}/${challenge['participantNumber']}',
+          style: AppTypography.b2.copyWith(fontSize: 14),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDivider() {
+    return SizedBox(
+      width: 40,
+      child: Center(
+        child: CustomPaint(
+          size: const Size(1, double.infinity),
+          painter: VerticalDashPainter(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusIcon() {
+    if (status == ChallengeStatus.completed)
+      return SvgPicture.asset('assets/images/icons/success_icon.svg');
+    if (status == ChallengeStatus.urgent)
+      return SvgPicture.asset('assets/images/icons/warning_icon.svg');
+    return const SizedBox(width: 24);
+  }
+
+  Color _getCardColor(ChallengeStatus status) {
+    if (status == ChallengeStatus.completed) return AppColors.success;
+    if (status == ChallengeStatus.urgent) return AppColors.warning;
+    return AppColors.gray5;
+  }
+}
+
+class VerticalDashPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashHeight = 5, dashSpace = 3, startY = 0;
+    // 캔버스의 중앙 X축 계산
+    final double centerX = size.width / 2;
+    final paint = Paint()
+      ..color = AppColors
+          .gray3 // 점선 색상 농도 조절
+      ..strokeWidth = 1;
+
+    while (startY < size.height) {
+      // Offset의 X좌표를 centerX로 고정하여 직선도 유지
+      canvas.drawLine(
+        Offset(centerX, startY),
+        Offset(centerX, startY + dashHeight),
+        paint,
+      );
+      startY += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}

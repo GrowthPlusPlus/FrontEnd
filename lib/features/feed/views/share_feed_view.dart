@@ -7,7 +7,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/provider/feed_provider.dart';
 import 'package:haenaem/features/feed/widgets/feed_post_card.dart';
-import 'package:haenaem/features/feed/model/feed_model.dart';
+import 'package:haenaem/features/feed/models/feed_model.dart';
 
 class ShareFeedView extends ConsumerStatefulWidget {
   final ScrollController scrollController;

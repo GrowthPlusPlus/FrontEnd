@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 /// 클래스의 용도: 친구 정보를 관리하는 데이터 모델
+@Deprecated('shared/models/user.dart에 User 모델 대신 사용')
 class Friend {
   final int id;
   final String nickname;
@@ -29,6 +30,7 @@ class Friend {
 }
 
 /// 클래스의 용도: 검색 결과 유저 정보 및 요청 상태를 저장하는 모델
+@Deprecated('social/models/user_search_card.dart에 UserSearchCard 모델 대신 사용')
 class SearchResultUser {
   final int? userId; // 검색 시 사용
   final int? requestId; // 요청 취소 시 사용
@@ -81,6 +83,9 @@ class SearchResultUser {
 }
 
 /// 클래스의 용도: 받은 친구 요청의 상세 정보를 관리하는 데이터 모델
+@Deprecated(
+  'social/models/friend_request_card.dart에 FriendRequestCard 모델 대신 사용',
+)
 class ReceivedRequest {
   final int requestId;
   final int fromUserId;

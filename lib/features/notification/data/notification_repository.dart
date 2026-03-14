@@ -3,7 +3,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../model/notification_model.dart';
+import 'package:haenaem/features/notification/models/invite_challenge_card.dart';
 
 // 1. SecureStorage 프로바이더 생성
 final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
@@ -86,12 +86,12 @@ class NotificationRepository {
   }
 
   // 챌린지 초대 목록 조회
-  Future<List<ChallengeInviteModel>> getChallengeInvites() async {
+  Future<List<InviteChallengecard>> getChallengeInvites() async {
     try {
       final response = await dio.get('/api/challenges/invites');
       // 응답이 배열(List) 형태
       final List<dynamic> data = response.data;
-      return data.map((e) => ChallengeInviteModel.fromJson(e)).toList();
+      return data.map((e) => InviteChallengecard.fromJson(e)).toList();
     } on DioException catch (e) {
       print('❌ [초대 조회 에러]: ${e.response?.data}');
       throw Exception('초대 목록을 불러오는데 실패했습니다.');
