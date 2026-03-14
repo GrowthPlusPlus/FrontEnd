@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/notification_repository.dart';
 import '../models/notification_model.dart';
+import 'package:haenaem/features/notification/models/invite_challenge_card.dart';
 
 // 홈 화면 새로고침이 필요한지 여부를 저장하는 스위치 (초기값: false)
 final needsHomeRefreshProvider = StateProvider<bool>((ref) => false);
@@ -143,13 +144,13 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 }
 
 class ChallengeInviteState {
-  final List<ChallengeInviteModel> invites;
+  final List<InviteChallengecard> invites;
   final bool isLoading;
 
   ChallengeInviteState({required this.invites, this.isLoading = false});
 
   ChallengeInviteState copyWith({
-    List<ChallengeInviteModel>? invites,
+    List<InviteChallengecard>? invites,
     bool? isLoading,
   }) {
     return ChallengeInviteState(
@@ -191,7 +192,7 @@ class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
       // 성공하면 UI 목록에서 해당 카드 즉시 제거
       state = state.copyWith(
         invites: state.invites
-            .where((i) => i.challengeId != challengeId)
+            .where((i) => i.challengeInfo.base.id != challengeId)
             .toList(),
       );
     } catch (e) {
@@ -207,7 +208,7 @@ class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
       // 성공하면 UI 목록에서 해당 카드 즉시 제거
       state = state.copyWith(
         invites: state.invites
-            .where((i) => i.challengeId != challengeId)
+            .where((i) => i.challengeInfo.base.id != challengeId)
             .toList(),
       );
     } catch (e) {

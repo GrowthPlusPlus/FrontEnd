@@ -53,6 +53,7 @@ class NotificationModel {
   }
 }
 
+/*
 @Deprecated(
   'notification/models/challenge_invite_card내에 ChallengeInviteCard 대신 사용',
 )
@@ -93,3 +94,4 @@ class ChallengeInviteModel {
     );
   }
 }
+*/
