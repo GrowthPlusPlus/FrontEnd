@@ -1,7 +1,7 @@
 // 최초 작성자: 강선욱
 // 챌린지 기본 정보를 정의한 모델
 class ChallengeBase {
-  final String id;
+  final int id;
   final String title;
   final bool isLeader; // 현재 로그인 중인 유저가 해당 챌린지의 방장인지 여부
 
@@ -13,13 +13,13 @@ class ChallengeBase {
 
   factory ChallengeBase.fromJson(Map<String, dynamic> json) {
     return ChallengeBase(
-      id: json['id'] as String,
+      id: json['id'] as int,
       title: json['title'] as String,
       isLeader: json['is_leader'] as bool,
     );
   }
 
-  ChallengeBase copyWith({String? id, String? title, bool? isLeader}) {
+  ChallengeBase copyWith({int? id, String? title, bool? isLeader}) {
     return ChallengeBase(
       id: id ?? this.id,
       title: title ?? this.title,
