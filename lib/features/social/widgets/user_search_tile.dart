@@ -1,8 +1,12 @@
+// 최초 작성자: 정승빈
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
-import '../models/user_search_card.dart';
+
+import 'package:haenaem/core/theme/app_colors.dart';
+import 'package:haenaem/core/theme/app_typography.dart';
+
+import 'package:haenaem/features/social/models/user_search_card.dart';
 
 class UserSearchTile extends StatelessWidget {
   final UserSearchCard searchCard;

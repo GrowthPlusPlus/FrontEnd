@@ -1,4 +1,4 @@
-/// 최초 작성자: 정승빈
+// 최초 작성자: 정승빈
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -71,6 +71,7 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
                           // 스크롤을 당기면 데이터를 강제로 다시 불러옵니다.
                           return await ref.refresh(friendListProvider.future);
                         },
+                        // 친구 목록이 비어있을 때 빈 상태 표시, 그렇지 않으면 친구 목록 표시
                         child: filteredFriends.isEmpty
                             ? _buildEmptyState()
                             : _buildFriendList(filteredFriends),
@@ -89,6 +90,7 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
     );
   }
 
+  // AppBar 위젯을 별도의 메서드로 분리
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
@@ -113,6 +115,7 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
     );
   }
 
+  // 검색 바 위젯
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -153,6 +156,7 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
     );
   }
 
+  // 친구 목록 헤더 위젯
   Widget _buildListHeader(int count, List<User> totalFriends) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),

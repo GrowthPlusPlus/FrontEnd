@@ -1,8 +1,13 @@
+// 최초 작성자: 정승빈
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+
 import '../../../shared/models/user.dart';
+import 'package:haenaem/shared/widgets/user_profile_circle.dart';
 
 class FriendEditTile extends StatelessWidget {
   final User user;
@@ -20,7 +25,7 @@ class FriendEditTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          _buildProfileCircle(user.profileUrl, 44),
+          UserProfileCircle(imageUrl: user.profileUrl, size: 44),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -50,33 +55,6 @@ class FriendEditTile extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildProfileCircle(String? imageUrl, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0x7FDFE1DC),
-        shape: BoxShape.circle,
-        image: imageUrl != null && imageUrl.startsWith('http')
-            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
-            : (imageUrl != null
-                  ? DecorationImage(
-                      image: AssetImage(imageUrl),
-                      fit: BoxFit.cover,
-                    )
-                  : null),
-      ),
-      child: imageUrl == null
-          ? Center(
-              child: SvgPicture.asset(
-                'assets/images/icons/default_profile_icon.svg',
-                width: size,
-              ),
-            )
-          : null,
     );
   }
 }

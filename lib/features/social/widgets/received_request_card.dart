@@ -1,9 +1,13 @@
+// 최초 작성자: 정승빈
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
-import '../models/friend_request_card.dart';
+
+import 'package:haenaem/core/theme/app_colors.dart';
+import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:haenaem/shared/widgets/user_profile_circle.dart';
+
+import 'package:haenaem/features/social/models/friend_request_card.dart';
 
 class ReceivedRequestCard extends StatelessWidget {
   final FriendRequestCard request;
@@ -30,7 +34,7 @@ class ReceivedRequestCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              _buildProfileCircle(request.user.profileUrl, 48),
+              UserProfileCircle(imageUrl: request.user.profileUrl, size: 48),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -100,33 +104,6 @@ class ReceivedRequestCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildProfileCircle(String? imageUrl, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0x7FDFE1DC),
-        shape: BoxShape.circle,
-        image: imageUrl != null && imageUrl.startsWith('http')
-            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
-            : (imageUrl != null
-                  ? DecorationImage(
-                      image: AssetImage(imageUrl),
-                      fit: BoxFit.cover,
-                    )
-                  : null),
-      ),
-      child: imageUrl == null
-          ? Center(
-              child: SvgPicture.asset(
-                'assets/images/icons/default_profile_icon.svg',
-                width: size,
-              ),
-            )
-          : null,
     );
   }
 }

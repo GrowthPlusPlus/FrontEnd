@@ -1,4 +1,4 @@
-/// 최초 작성자: 정승빈
+// 최초 작성자: 정승빈
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -16,7 +16,7 @@ class FriendAddScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
-      initialIndex: initialTabIndex,
+      initialIndex: initialTabIndex, // 초기 탭 인덱스 설정
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(

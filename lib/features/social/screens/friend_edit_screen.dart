@@ -1,4 +1,4 @@
-/// 최초 작성자: 정승빈
+// 최초 작성자: 정승빈
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -81,6 +81,7 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
 
             if (!mounted) return;
 
+            // 삭제 성공 시 로컬 리스트에서 제거 및 UI 업데이트
             setState(() {
               totalList.removeWhere((u) => u.nickname == user.nickname);
               filterList(searchController.text);

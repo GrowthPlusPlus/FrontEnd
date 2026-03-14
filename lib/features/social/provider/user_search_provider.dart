@@ -1,3 +1,4 @@
+// 최초 작성자: 정승빈
 // 유저 검색 상태 관리
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
