@@ -1,7 +1,7 @@
 // 최초 작성자: 정승빈
 
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../core/theme/app_typography.dart';
 
 // 토스트를 띄우기 위한 공통 함수
 void displayToast(BuildContext context, String message) {

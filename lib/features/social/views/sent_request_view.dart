@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../provider/friend_request_provider.dart';
-import '../widgets/animated_toast.dart';
+import '../../../shared/widgets/animated_toast.dart';
 import '../widgets/sent_request_card.dart';
 
 class SentRequestView extends ConsumerWidget {

@@ -7,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../core/utils/korean_string_utils.dart';
 import '../../../shared/models/user.dart';
-import '../widgets/animated_toast.dart';
+import '../../../shared/widgets/animated_toast.dart';
 import '../provider/friend_list_provider.dart';
 import '../widgets/delete_confirm_dialog.dart';
 import '../widgets/friend_edit_tile.dart';

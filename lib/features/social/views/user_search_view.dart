@@ -7,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../models/user_search_card.dart';
 import '../provider/user_search_provider.dart';
-import '../widgets/animated_toast.dart';
+import '../../../shared/widgets/animated_toast.dart';
 import '../widgets/user_search_tile.dart';
 
 class UserSearchView extends ConsumerStatefulWidget {
