@@ -1,11 +1,11 @@
 // 최초 작성자: 정승빈
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
+import 'package:haenaem/shared/widgets/user_profile_circle.dart';
 import 'package:haenaem/features/social/models/user_search_card.dart';
 
 class UserSearchTile extends StatelessWidget {
@@ -24,7 +24,7 @@ class UserSearchTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          _buildProfileCircle(searchCard.user.profileUrl, 44),
+          UserProfileCircle(imageUrl: searchCard.user.profileUrl, size: 44),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -72,33 +72,6 @@ class UserSearchTile extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildProfileCircle(String? imageUrl, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0x7FDFE1DC),
-        shape: BoxShape.circle,
-        image: imageUrl != null && imageUrl.startsWith('http')
-            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
-            : (imageUrl != null
-                  ? DecorationImage(
-                      image: AssetImage(imageUrl),
-                      fit: BoxFit.cover,
-                    )
-                  : null),
-      ),
-      child: imageUrl == null
-          ? Center(
-              child: SvgPicture.asset(
-                'assets/images/icons/default_profile_icon.svg',
-                width: size,
-              ),
-            )
-          : null,
     );
   }
 }
