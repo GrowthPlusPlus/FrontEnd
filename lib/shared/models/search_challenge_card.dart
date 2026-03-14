@@ -1,4 +1,4 @@
-import 'package:haenaem/features/challenge/models/challenge_base.dart';
+import 'package:haenaem/shared/models/challenge_base.dart';
 
 // 최초 작성자: 강선욱
 // 챌린지 검색 후 검색 결과로 나오는 챌린지 카드 모델
