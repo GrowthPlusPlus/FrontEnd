@@ -1,14 +1,13 @@
 // 최초 작성자: 정승빈
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../models/user_search_card.dart';
 import '../provider/user_search_provider.dart';
 import '../../../shared/widgets/animated_toast.dart';
 import '../widgets/user_search_tile.dart';
+import 'package:haenaem/shared/widgets/custom_search_bar.dart';
 
 class UserSearchView extends ConsumerStatefulWidget {
   const UserSearchView({super.key});
@@ -91,40 +90,10 @@ class _UserSearchViewState extends ConsumerState<UserSearchView> {
   Widget _buildSearchInputSection() {
     return Padding(
       padding: const EdgeInsets.all(20),
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.gray4),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              'assets/images/icons/search_icon.svg',
-              width: 18,
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray3,
-                BlendMode.srcIn,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: searchController,
-                onSubmitted: (_) => performSearch(),
-                textInputAction: TextInputAction.search,
-                decoration: const InputDecoration(
-                  hintText: '닉네임을 검색하세요',
-                  hintStyle: AppTypography.b2,
-                  border: InputBorder.none,
-                  isDense: true,
-                ),
-                style: AppTypography.b1,
-              ),
-            ),
-          ],
-        ),
+      child: CustomSearchBar(
+        controller: searchController,
+        hintText: '닉네임을 검색하세요',
+        onSubmitted: (_) => performSearch(), // onChanged 대신 엔터를 쳤을 때 작동
       ),
     );
   }

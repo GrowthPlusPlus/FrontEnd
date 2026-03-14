@@ -1,7 +1,6 @@
 // 최초 작성자: 정승빈
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -11,6 +10,7 @@ import '../../../shared/widgets/animated_toast.dart';
 import '../provider/friend_list_provider.dart';
 import '../widgets/delete_confirm_dialog.dart';
 import '../widgets/friend_edit_tile.dart';
+import 'package:haenaem/shared/widgets/custom_search_bar.dart';
 
 class FriendEditScreen extends ConsumerStatefulWidget {
   final List<User> initialFriends; // 초기 친구 목록을 전달받는 매개변수
@@ -131,43 +131,14 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
   }
 
   // 검색창 영역 빌드
+  // 검색창 영역 빌드
   Widget _buildSearchHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.gray4),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              'assets/images/icons/search_icon.svg',
-              width: 18,
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray3,
-                BlendMode.srcIn,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: searchController,
-                onChanged: filterList,
-                decoration: const InputDecoration(
-                  hintText: '친구 검색',
-                  hintStyle: AppTypography.b2,
-                  border: InputBorder.none,
-                  isDense: true,
-                ),
-                style: AppTypography.b2,
-              ),
-            ),
-          ],
-        ),
+      child: CustomSearchBar(
+        controller: searchController,
+        hintText: '친구 검색',
+        onChanged: filterList,
       ),
     );
   }

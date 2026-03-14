@@ -11,6 +11,7 @@ import '../provider/friend_list_provider.dart';
 import '../widgets/friend_list_tile.dart';
 import 'friend_add_screen.dart';
 import 'friend_edit_screen.dart';
+import 'package:haenaem/shared/widgets/custom_search_bar.dart';
 
 class SocialMainScreen extends ConsumerStatefulWidget {
   const SocialMainScreen({super.key});
@@ -119,39 +120,10 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.all(20),
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.gray4),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              'assets/images/icons/search_icon.svg',
-              width: 18,
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray3,
-                BlendMode.srcIn,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: searchController,
-                onChanged: (value) => setState(() => searchQuery = value),
-                decoration: const InputDecoration(
-                  hintText: '친구 검색',
-                  hintStyle: AppTypography.b2,
-                  border: InputBorder.none,
-                  isDense: true,
-                ),
-                style: AppTypography.b1,
-              ),
-            ),
-          ],
-        ),
+      child: CustomSearchBar(
+        controller: searchController,
+        hintText: '친구 검색',
+        onChanged: (value) => setState(() => searchQuery = value),
       ),
     );
   }
