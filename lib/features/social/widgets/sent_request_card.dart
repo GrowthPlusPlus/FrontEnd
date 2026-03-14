@@ -55,7 +55,6 @@ class SentRequestCard extends StatelessWidget {
                   ),
                 ],
               ),
-              _buildBadge('대기 중'),
             ],
           ),
           const SizedBox(height: 16),
@@ -79,20 +78,6 @@ class SentRequestCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBadge(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Color(0xFF444444), fontSize: 12),
       ),
     );
   }
