@@ -5,7 +5,7 @@ import 'package:haenaem/shared/models/user.dart';
 // User에 정의된 필드(id, profileUrl, nickname)를 재사용
 class FriendRequestCard {
   final User user; // 요청자 정보 (id, profileUrl, nickname)
-  final String requestId; // 친구 요청 id
+  final int requestId; // 친구 요청 id
   final DateTime requestDate; // 친구 요청 날짜
 
   const FriendRequestCard({
@@ -17,14 +17,14 @@ class FriendRequestCard {
   factory FriendRequestCard.fromJson(Map<String, dynamic> json) {
     return FriendRequestCard(
       user: User.fromJson(json['user'] as Map<String, dynamic>),
-      requestId: json['request_id'] as String,
+      requestId: json['request_id'] as int,
       requestDate: DateTime.parse(json['request_date'] as String),
     );
   }
 
   FriendRequestCard copyWith({
     User? user,
-    String? requestId,
+    int? requestId,
     DateTime? requestDate,
   }) {
     return FriendRequestCard(
