@@ -94,6 +94,7 @@ class ChallengeMainModel {
 // }
 
 // 챌린지 상세정보에서 사용하는 챌린지 모델
+@Deprecated('shared/models/challenge_detail.dart에 있는 ChallengeDetail 모델 대신 사용')
 class ChallengeDetailModel {
   final String title;
   final String startDate;
@@ -148,6 +149,7 @@ class ChallengeDetailModel {
 }
 
 // 챌린지 생성 데이터 관리 클래스
+@Deprecated('사용 X')
 class ChallengeCreateResponse {
   final int id;
   final String challengeLink;
@@ -190,6 +192,7 @@ class ChallengeCreateResponse {
 }
 
 // 챌린지 내 현황 탭 데이터 관리 클래스
+@Deprecated('사용 X')
 class ChallengeCalendarModel {
   final int totalSuccessDays;
   final int currentStreakDays;
@@ -211,6 +214,7 @@ class ChallengeCalendarModel {
 }
 
 // 챌린지 내 현황 달력 그리드 모델
+@Deprecated('feed/models/post.dart에 있는 모델 대신 사용')
 class ChallengeCalendarPhoto {
   final int postId;
   final String postDate;
