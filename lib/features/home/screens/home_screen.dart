@@ -1,4 +1,4 @@
-// // 최초 작성자 : 강선욱
+// 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';

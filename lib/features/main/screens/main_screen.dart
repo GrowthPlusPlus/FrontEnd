@@ -1,6 +1,6 @@
 // 최초 작성자 : 김채영
 import 'package:flutter/material.dart';
-import 'package:haenaem/features/home/home_screen.dart';
+import 'package:haenaem/features/home/screens/home_screen.dart';
 import 'package:haenaem/features/social/screens/social_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'package:haenaem/features/user/screens/my_page_screen.dart';
