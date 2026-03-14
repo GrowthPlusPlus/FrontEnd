@@ -1,4 +1,4 @@
-import 'challenge_base.dart';
+import 'package:haenaem/shared/models/challenge_base.dart';
 
 // 최초 작성자: 강선욱
 // 홈 화면 챌린지 카드 모델
