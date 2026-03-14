@@ -2,7 +2,7 @@
 // 알림 목록 상태 및 탭 상태 관리
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/notification_repository.dart';
-import '../model/notification_model.dart';
+import '../models/notification_model.dart';
 
 // 홈 화면 새로고침이 필요한지 여부를 저장하는 스위치 (초기값: false)
 final needsHomeRefreshProvider = StateProvider<bool>((ref) => false);

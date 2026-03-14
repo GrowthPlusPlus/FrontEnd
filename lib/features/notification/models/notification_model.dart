@@ -1,5 +1,5 @@
 // 최초 작성자: 정승빈
-// 알림 데이터 모델 (enum으로 알림 타입 구분)
+// 알림 데이터 모델
 class NotificationModel {
   final String message;
   final String type;
@@ -53,6 +53,9 @@ class NotificationModel {
   }
 }
 
+@Deprecated(
+  'notification/models/challenge_invite_card내에 ChallengeInviteCard 대신 사용',
+)
 // 챌린지 초대 목록 아이템 모델
 class ChallengeInviteModel {
   final int challengeId;
