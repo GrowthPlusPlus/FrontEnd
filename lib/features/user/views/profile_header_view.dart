@@ -7,13 +7,13 @@ import '../../../shared/models/tag_data.dart';
 import '../../../shared/widgets/tag_badge.dart';
 
 // 이미지, 닉네임, 소개글, 그리고 복잡했던 태그 정렬 로직
-class ProfileHeader extends StatelessWidget {
+class ProfileHeaderView extends StatelessWidget {
   final String nickname;
   final String introduction;
   final String profileImageUrl;
   final List<String> tags;
 
-  const ProfileHeader({
+  const ProfileHeaderView({
     super.key,
     required this.nickname,
     required this.introduction,
