@@ -1,7 +1,7 @@
 // 최초 작성자: 김채영
 
 import 'package:flutter/material.dart';
-import 'package:haenaem/features/social/screens/social_screen.dart';
+import 'package:haenaem/features/social/screens/social_main_screen.dart';
 import 'features/challenge/create/screens/challenge_create_screen.dart';
 import 'features/user/screens/my_page_screen.dart';
 import 'features/main/screens/main_screen.dart';

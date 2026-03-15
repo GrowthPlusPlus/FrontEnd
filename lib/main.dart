@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'package:haenaem/features/social/screens/social_screen.dart';
+import 'package:haenaem/features/social/screens/social_main_screen.dart';
 import 'package:haenaem/features/user/screens/my_page_screen.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
