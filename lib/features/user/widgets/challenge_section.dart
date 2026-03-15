@@ -7,18 +7,16 @@ import '../../../core/theme/app_typography.dart';
 import '../../challenge/models/challenge_model.dart';
 import '../../challenge/provider/challenge_provider.dart';
 import '../screens/challenge/challenge_list_screen.dart';
-import '../widgets/my_challenge_card.dart'; // 💡 공통 카드 위젯 추가 (위치가 widgets 내부일 경우 경로 주의)
+import 'my_challenge_card.dart'; // 💡 공통 카드 위젯 추가 (위치가 widgets 내부일 경우 경로 주의)
 
-class MyChallengeSectionView extends ConsumerStatefulWidget {
-  const MyChallengeSectionView({super.key});
+class ChallengeSection extends ConsumerStatefulWidget {
+  const ChallengeSection({super.key});
 
   @override
-  ConsumerState<MyChallengeSectionView> createState() =>
-      _MyChallengeSectionViewState();
+  ConsumerState<ChallengeSection> createState() => _ChallengeSectionState();
 }
 
-class _MyChallengeSectionViewState
-    extends ConsumerState<MyChallengeSectionView> {
+class _ChallengeSectionState extends ConsumerState<ChallengeSection> {
   // 섹션 내부에서 탭 상태 관리
   MyPageTab selectedTab = MyPageTab.inProgress;
 

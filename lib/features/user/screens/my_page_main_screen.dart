@@ -7,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
-import 'profile_edit_screen.dart'; // 4단계에서 경로 수정 예정
+import 'profile/profile_edit_screen.dart';
 import '../views/profile_header_view.dart';
 import '../views/my_challenge_section_view.dart';
 import '../views/my_page_menu_view.dart';

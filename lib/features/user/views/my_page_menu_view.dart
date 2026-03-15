@@ -1,8 +1,8 @@
 // 최초 작성자: 정승빈
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../screens/push_notification_settings_screen.dart'; // 4단계에서 경로 수정 예정
-import '../screens/withdrawal_screen.dart'; // 4단계에서 경로 수정 예정
+import '../screens/settings/push_notification_settings_screen.dart'; // 4단계에서 경로 수정 예정
+import '../screens/settings/withdrawal_screen.dart'; // 4단계에서 경로 수정 예정
 import '../widgets/my_page_menu_item.dart';
 import '../widgets/logout_dialog.dart';
 
