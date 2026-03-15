@@ -108,6 +108,8 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
               MaterialPageRoute(builder: (context) => const FriendAddScreen()),
             );
 
+            if (!mounted) return;
+
             // 화면이 닫히고 돌아오면 친구 목록 Provider를 강제로 새로고침
             ref.invalidate(friendListProvider);
           },
@@ -146,6 +148,8 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
                       FriendEditScreen(initialFriends: totalFriends),
                 ),
               );
+
+              if (!mounted) return;
 
               // 편집 화면에서 돌아오면 친구 목록 새로고침 (삭제 반영)
               ref.invalidate(friendListProvider);

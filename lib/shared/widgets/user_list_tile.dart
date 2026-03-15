@@ -37,11 +37,13 @@ class UserListTile extends StatelessWidget {
                   user.nickname,
                   style: AppTypography.b1.copyWith(color: AppColors.black),
                 ),
+                /*
                 Text(
                   "해냄 메이트",
                   // TODO 추후 칭호 기능 연동 시 User 모델에서 받아오도록 수정
                   style: AppTypography.c1.copyWith(color: AppColors.gray2),
                 ),
+                */
               ],
             ),
           ),

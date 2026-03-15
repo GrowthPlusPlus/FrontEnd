@@ -12,6 +12,9 @@ class UserProfileCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 디버깅용 콘솔 출력 추가: 어떤 URL 값이 들어오는지 확인
+    debugPrint('UserProfileCircle - 전달받은 imageUrl: $imageUrl');
+
     return Container(
       width: size,
       height: size,
