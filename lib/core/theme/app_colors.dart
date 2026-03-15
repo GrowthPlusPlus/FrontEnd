@@ -9,7 +9,8 @@ class AppColors {
   static const Color gray2 = Color(0xFF616161);
   static const Color gray3 = Color(0xFF8c8c8c);
   static const Color gray4 = Color(0xFFD9D9D9);
-  static final Color gray5 = const Color(0xFFd9d9d9).withValues(alpha: 0.5);
+  static const Color gray5 = Color(0x7Fd9d9d9);
+  //static final Color gray5 = const Color(0xFFd9d9d9).withValues(alpha: 0.5);
 
   // Green - primary
   static const Color primaryAble = Color(0xff009951);
