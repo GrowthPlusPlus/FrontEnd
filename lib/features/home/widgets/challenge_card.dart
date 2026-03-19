@@ -54,9 +54,14 @@ class ChallengeCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      _buildStreakInfo(),
+                      _buildFrequencyAndDDayInfo(),
                       const SizedBox(height: 4),
-                      _buildBottomInfo(),
+                      _buildStreakAndParticipantInfo(),
+
+                      if (challenge.warning) ...[
+                        const SizedBox(height: 4),
+                        _buildWarningText(),
+                      ],
                     ],
                   ),
                 ),
@@ -70,26 +75,18 @@ class ChallengeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStreakInfo() {
-    final streakCount = challenge.streakCount;
-
-    return Row(
-      children: [
-        if (streakCount > 0 && challenge.isDone)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: SvgPicture.asset(
-              'assets/images/icons/small_fire_icon.svg',
-              width: 16,
-              height: 16,
-            ),
-          ),
-        Text('$streakCount일째', style: AppTypography.b2.copyWith(fontSize: 14)),
-      ],
+  Widget _buildFrequencyAndDDayInfo() {
+    final frequencyText = challenge.weeklyFrequency == 7
+        ? '매일'
+        : '주 ${challenge.weeklyFrequency}회';
+    final dDayText = challenge.dDay == 0 ? '오늘 종료' : 'D-${challenge.dDay}';
+    return Text(
+      '$frequencyText, $dDayText',
+      style: AppTypography.b2.copyWith(fontSize: 14),
     );
   }
 
-  Widget _buildBottomInfo() {
+  Widget _buildStreakAndParticipantInfo() {
     if (challenge.warning) {
       return const Text(
         '오늘 챌린지를 하지 않으면 실패해요!',
@@ -98,6 +95,22 @@ class ChallengeCard extends StatelessWidget {
     }
     return Row(
       children: [
+        // 스트릭 정보: streakCount > 0 && isDone일 때 불꽃 아이콘 표시
+        if (challenge.streakCount > 0 && challenge.isDone)
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: SvgPicture.asset(
+              'assets/images/icons/small_fire_icon.svg',
+              width: 16,
+              height: 16,
+            ),
+          ),
+        Text(
+          '${challenge.streakCount}일째',
+          style: AppTypography.b2.copyWith(fontSize: 14),
+        ),
+        const SizedBox(width: 12),
+        // 인증인원 정보
         SvgPicture.asset(
           'assets/images/icons/mini_success_icon.svg',
           width: 16,
@@ -105,10 +118,17 @@ class ChallengeCard extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          '인증인원 ${challenge.successParticipantCount}/${challenge.participantCount}',
+          '${challenge.successParticipantCount}/${challenge.participantCount}명',
           style: AppTypography.b2.copyWith(fontSize: 14),
         ),
       ],
+    );
+  }
+
+  Widget _buildWarningText() {
+    return const Text(
+      '오늘 챌린지를 하지 않으면 실패해요!',
+      style: TextStyle(color: AppColors.notification, fontSize: 12),
     );
   }
 
