@@ -12,7 +12,7 @@ import '../../../../core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
-import 'package:haenaem/shared/models/tag_data.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
 import 'withdrawal_screen.dart';
 import 'challenge_list_screen.dart';
 import 'profile_edit_screen.dart';

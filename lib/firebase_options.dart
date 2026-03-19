@@ -47,6 +47,7 @@ class DefaultFirebaseOptions {
     projectId: 'haenaem-65e32',
     authDomain: 'haenaem-65e32.firebaseapp.com',
     storageBucket: 'haenaem-65e32.firebasestorage.app',
+    measurementId: 'G-RNH78P04WT',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -82,5 +83,7 @@ class DefaultFirebaseOptions {
     projectId: 'haenaem-65e32',
     authDomain: 'haenaem-65e32.firebaseapp.com',
     storageBucket: 'haenaem-65e32.firebasestorage.app',
+    measurementId: 'G-1RWZ2HT5L8',
   );
+
 }

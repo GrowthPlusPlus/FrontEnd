@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/shared/models/tag_data.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
 import 'package:haenaem/shared/widgets/tag_badge.dart';
 
 class ChallengeDetailContent extends StatelessWidget {
