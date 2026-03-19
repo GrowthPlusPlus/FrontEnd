@@ -7,6 +7,7 @@ import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'signup_main_screen.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
 // 앱을 껐다 켰을 때 저장된 토큰을 확인
@@ -39,22 +40,26 @@ class AuthGate extends ConsumerWidget {
 
               // 프로필 정보가 있고, 특정 필드(예: 태그)가 비어있다면 가입 미완료로 간주
               final profile = profileSnapshot.data;
+
+              // 가입 미완료 판별 로직
               if (profile == null || profile.tags.isEmpty) {
-                debugPrint("⚠️ 가입 미완료 유저 감지: 회원가입 화면으로 이동");
-                return const SignupMainScreen(); // 닉네임 설정부터 다시!
+                debugPrint("⚠️ 가입 미완료 유저: 회원가입 화면으로 안내");
+                return const SignupMainScreen();
               }
 
-              // 가입 완료가 확인되어 메인으로 가기 전, FCM 토큰을 업데이트
+              // 성공적으로 정보를 가져왔다면 전역 Provider에 저장
+              // 프레임 렌더링 후에 상태를 업데이트하도록 처리
               WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(currentUserProvider.notifier).setUser(profile);
+                // FCM 초기화 등 추가 작업
                 ref.read(fcmServiceProvider).initialize();
               });
 
-              return const MainScreen(); // 모든 정보가 있을 때만 홈으로!
+              return const MainScreen();
             },
           );
         }
-
-        // 2. 토큰이 없는 경우
+        // 토큰이 없는 경우 (로그아웃 상태)
         return const LoginScreen();
       },
     );
