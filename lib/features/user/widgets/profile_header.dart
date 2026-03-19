@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/models/tag_data.dart';
+import '../../../shared/models/tag_model.dart';
 import '../../../shared/widgets/tag_badge.dart';
 
 // 이미지, 닉네임, 소개글, 그리고 복잡했던 태그 정렬 로직

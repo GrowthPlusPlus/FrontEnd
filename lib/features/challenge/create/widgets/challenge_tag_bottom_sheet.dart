@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/create/widgets/plus_button.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
-import 'package:haenaem/shared/models/tag_data.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
 
 // 서버에서 태그 목록을 불러와 카테고리별로 표시하고 선택을 관리하는 바텀시트
 class ChallengeTagBottomSheet extends ConsumerStatefulWidget {

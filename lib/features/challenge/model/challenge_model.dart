@@ -373,7 +373,9 @@ class CertificationPostModel {
     List<PostImage> extractedImages = [];
 
     String dateStr = json['postDate'] ?? "";
-    if (dateStr.isEmpty && json['createdAt'] != null) {
+
+    if ((json['postDate'] == null || json['postDate'] == "") &&
+        json['createdAt'] != null) {
       dateStr = json['createdAt'].toString().split('T').first;
     }
 
@@ -395,7 +397,9 @@ class CertificationPostModel {
 
     return CertificationPostModel(
       postId: json['postId'] ?? 0,
-      postDate: json['postDate'] ?? dateStr,
+      postDate: (json['postDate'] != null && json['postDate'] != "")
+          ? json['postDate']
+          : dateStr,
       challengeId: json['challengeId'] ?? 0,
       challengeTitle: json['challengeTitle'] ?? '제목 없음',
       totalSuccessDays: json['totalSuccessDays'] ?? 0,

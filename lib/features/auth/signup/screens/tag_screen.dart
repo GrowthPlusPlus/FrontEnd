@@ -7,7 +7,7 @@ import '../providers/signup_provider.dart';
 import '../models/signup_state.dart';
 import 'package:haenaem/features/auth/signup/widgets/signup_page_layout.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
-import 'package:haenaem/shared/models/tag_data.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
 
 // 태그 설정 화면
 class TagScreen extends ConsumerStatefulWidget {
