@@ -23,16 +23,17 @@ class AuthService {
   // 카카오 설정 정보
   static const String kakaoRestApiKey = '9fdd13c0777c415d8fa4055b5b26a6c5';
   static const String kakaoNativeAppKey = '05a36f172ea2945260862834654385ea';
-  // static const String kakaoRedirectUri =
-  //     'https://hanaem.onrender.com/api/oauth/kakao/token';
   static const String kakaoRedirectUri =
-      'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
+      'https://hanaem.onrender.com/api/oauth/kakao/token';
+  //static const String kakaoRedirectUri =
+  //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
 
   static final Dio _dio = Dio(
     BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
   );
 
   // 카카오 로그인
+
   static Future<Map<String, String>?> signInWithKakao() async {
     try {
       // 구글과 동일하게 인가 요청을 보냅니다.
