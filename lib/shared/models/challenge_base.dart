@@ -3,19 +3,19 @@
 class ChallengeBase {
   final int id;
   final String title;
-  final bool isLeader; // 현재 로그인 중인 유저가 해당 챌린지의 방장인지 여부
+  // final bool isLeader; // 현재 로그인 중인 유저가 해당 챌린지의 방장인지 여부
 
   const ChallengeBase({
     required this.id,
     required this.title,
-    required this.isLeader,
+    // required this.isLeader,
   });
 
   factory ChallengeBase.fromJson(Map<String, dynamic> json) {
     return ChallengeBase(
-      id: json['id'] as int,
+      id: json['challengeId'] as int,
       title: json['title'] as String,
-      isLeader: json['is_leader'] as bool,
+      // isLeader: json['is_leader'] as bool,
     );
   }
 
@@ -23,7 +23,7 @@ class ChallengeBase {
     return ChallengeBase(
       id: id ?? this.id,
       title: title ?? this.title,
-      isLeader: isLeader ?? this.isLeader,
+      // isLeader: isLeader ?? this.isLeader,
     );
   }
 }
