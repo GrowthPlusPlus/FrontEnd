@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:haenaem/features/feed/data/feed_repository.dart';
-import 'package:haenaem/features/feed/model/feed_model.dart';
+import 'package:haenaem/features/feed/models/feed_model.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 
 // 1. Repository Provider 추가 (Dio 객체는 별도의 공통 Provider에서 가져오는 것이 좋습니다)

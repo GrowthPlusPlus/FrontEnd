@@ -9,7 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:haenaem/core/utils/korean_string_utils.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_member_provider.dart';
 import 'widgets/kick_confirm_dialog.dart';
 

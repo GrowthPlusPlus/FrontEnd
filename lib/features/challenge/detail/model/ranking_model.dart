@@ -1,3 +1,4 @@
+@Deprecated('challenge/models/rank_card.dart에 정의된 모델을 대신 사용')
 class RankingResponse {
   final List<RankingUser> topRankings;
   final RankingUser myRanking;
@@ -14,6 +15,7 @@ class RankingResponse {
   }
 }
 
+@Deprecated('challenge/models/rank_card.dart에 정의된 모델을 대신 사용')
 class RankingUser {
   final int userId;
   final String nickname;

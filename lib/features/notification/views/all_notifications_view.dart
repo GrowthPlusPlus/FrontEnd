@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../provider/notification_provider.dart';
-import '../model/notification_model.dart';
+import '../models/notification_model.dart';
 import '../widgets/notification_date_header.dart';
 import '../widgets/notification_list_tile.dart';
 import '../../../core/theme/app_colors.dart';

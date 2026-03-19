@@ -8,8 +8,8 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
-import 'package:haenaem/features/challenge/model/image_model.dart';
+import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/features/challenge/models/image_model.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
@@ -25,7 +25,7 @@ import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/features/challenge/widgets/verification_cancel_dialog.dart';
-import 'package:haenaem/features/feed/model/feed_model.dart';
+import 'package:haenaem/features/feed/models/feed_model.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {

@@ -3,9 +3,13 @@ library;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../model/social_model.dart';
-import '../../auth/services/auth_service.dart';
 import 'package:flutter/material.dart';
+
+// 새 모델들 Import
+import '../../../shared/models/user.dart';
+import '../models/user_search_card.dart';
+import '../models/friend_request_card.dart';
+import '../../auth/services/auth_service.dart';
 
 // Dio Provider with Interceptor for adding Authorization header
 final dioProvider = Provider<Dio>((ref) {
@@ -54,22 +58,37 @@ class SocialRepository {
   SocialRepository(this._dio);
 
   // 1. 친구 목록 조회 (GET /api/users/friend/list)
-  Future<List<Friend>> getFriendList() async {
+  Future<List<User>> getFriendList() async {
     final response = await _dio.get('/api/users/friend/list');
     // 응답 데이터가 null일 경우를 대비해 빈 리스트 처리를 추가합니다.
-    return (response.data as List?)?.map((e) => Friend.fromJson(e)).toList() ??
+    return (response.data as List?)?.map((e) => User.fromJson(e)).toList() ??
         [];
   }
 
   // 2. 유저 검색 (GET /api/users/search)
-  Future<List<SearchResultUser>> searchUsers(String nickname) async {
+  Future<List<UserSearchCard>> searchUsers(String nickname) async {
     final response = await _dio.get(
       '/api/users/search',
       queryParameters: {'nickname': nickname},
     );
-    return (response.data as List?)
-            ?.map((e) => SearchResultUser.fromSearchJson(e))
-            .toList() ??
+    return (response.data as List?)?.map((e) {
+          // 서버의 relationshipStatus를 FriendState enum으로 변환
+          FriendState state = FriendState.stranger;
+          if (e['relationshipStatus'] == 'FRIEND') {
+            state = FriendState.friend;
+          } else if (e['relationshipStatus'] == 'PENDING_SENT') {
+            state = FriendState.pending;
+          }
+
+          return UserSearchCard(
+            user: User.fromJson({
+              'id': e['userId'],
+              'nickname': e['nickname'],
+              'profileUrl': e['profileImageUrl'],
+            }),
+            state: state,
+          );
+        }).toList() ??
         [];
   }
 
@@ -80,12 +99,23 @@ class SocialRepository {
   }
 
   // 4. 보낸 신청 목록 조회 (GET /api/users/friend/request/sent)
-  Future<List<SearchResultUser>> getSentRequests() async {
+  Future<List<FriendRequestCard>> getSentRequests() async {
     // Swagger operationId: getSentRequests
     final response = await _dio.get('/api/users/friend/request/sent');
-    return (response.data as List?)
-            ?.map((e) => SearchResultUser.fromSentJson(e))
-            .toList() ??
+
+    return (response.data as List?)?.map((e) {
+          return FriendRequestCard(
+            user: User.fromJson({
+              'id': e['userId'] ?? 0, // 보낸 대상의 id (서버 응답 확인 필요)
+              'nickname': e['nickname'],
+              'profileUrl': e['profileImageUrl'],
+            }),
+            requestId: e['requestId'],
+            requestDate: e['createdAt'] != null
+                ? DateTime.parse(e['createdAt'])
+                : DateTime.now(),
+          );
+        }).toList() ??
         [];
   }
 
@@ -96,12 +126,23 @@ class SocialRepository {
   }
 
   // 6. 받은 신청 목록 조회 (GET /api/users/friend/request/received)
-  Future<List<ReceivedRequest>> getReceivedRequests() async {
+  Future<List<FriendRequestCard>> getReceivedRequests() async {
     // Swagger operationId: getReceivedRequests
     final response = await _dio.get('/api/users/friend/request/received');
-    return (response.data as List?)
-            ?.map((e) => ReceivedRequest.fromJson(e))
-            .toList() ??
+
+    return (response.data as List?)?.map((e) {
+          return FriendRequestCard(
+            user: User.fromJson({
+              'id': e['fromUserId'],
+              'nickname': e['nickname'],
+              'profileUrl': e['profileImageUrl'],
+            }),
+            requestId: e['requestId'],
+            requestDate: e['createdAt'] != null
+                ? DateTime.parse(e['createdAt'])
+                : DateTime.now(),
+          );
+        }).toList() ??
         [];
   }
 
@@ -123,17 +164,3 @@ class SocialRepository {
     await _dio.delete('/api/users/friend/delete/$nickname');
   }
 }
-
-// 1. 친구 목록을 서버에서 가져오는 FutureProvider
-// SocialScreen에서 ref.watch(friendListProvider)로 사용합니다.
-final friendListProvider = FutureProvider<List<Friend>>((ref) async {
-  final repo = ref.watch(socialRepositoryProvider);
-  return await repo.getFriendList(); // GET /api/users/friend/list 호출
-});
-
-// 2. (옵션) 보낸/받은 요청 목록도 Provider로 관리하면 화면 갱신이 더 편해집니다.
-final receivedRequestsProvider = FutureProvider<List<ReceivedRequest>>((
-  ref,
-) async {
-  return await ref.watch(socialRepositoryProvider).getReceivedRequests();
-});
