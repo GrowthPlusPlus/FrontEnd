@@ -1,5 +1,8 @@
 // 최초 작성자: 김채영
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
@@ -23,46 +26,74 @@ class AuthService {
   // 카카오 설정 정보
   static const String kakaoRestApiKey = '9fdd13c0777c415d8fa4055b5b26a6c5';
   static const String kakaoNativeAppKey = '05a36f172ea2945260862834654385ea';
-  static const String kakaoRedirectUri =
-      'https://hanaem.onrender.com/api/oauth/kakao/token';
+  // static const String kakaoRedirectUri =
+  //     'https://hanaem.onrender.com/api/oauth/kakao/token';
+  // static const String kakaoRedirectUri =
+  //     'https://hanaem.onrender.com/oauth/kakao/callback';
+
   //static const String kakaoRedirectUri =
   //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
 
+  // ♥️ 로컬 서버로 테스트
+  static const String kakaoRedirectUri =
+      'https://ungenially-undebatable-sindy.ngrok-free.dev/oauth/kakao/callback';
+
+  // static final Dio _dio = Dio(
+  //   BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
+  // );
+
+  // ♥️ 로컬 서버로 테스트
   static final Dio _dio = Dio(
-    BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
+    BaseOptions(
+      baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+        'Content-Type': 'application/json',
+      },
+    ),
   );
 
-  // 카카오 로그인
+  // 1. PKCE 쌍 생성 (RFC 7636 표준 방식)
+  static Map<String, String> generatePkcePair() {
+    // 1-1. Verifier 생성: 표준에 정의된 [A-Z, a-z, 0-9, -, ., _, ~] 문자만 사용
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    final random = Random.secure();
 
-  static Future<Map<String, String>?> signInWithKakao() async {
-    try {
-      // 구글과 동일하게 인가 요청을 보냅니다.
-      final AuthorizationResponse result = await _appAuth.authorize(
-        AuthorizationRequest(
-          kakaoRestApiKey, // clientId 자리에 REST API 키 사용
-          kakaoRedirectUri,
-          serviceConfiguration: const AuthorizationServiceConfiguration(
-            authorizationEndpoint: 'https://kauth.kakao.com/oauth/authorize',
-            tokenEndpoint: 'https://kauth.kakao.com/oauth/token',
-          ),
-          scopes: ['profile_nickname', 'profile_image'], // 필요한 권한
-        ),
-      );
+    // 64자리의 무작위 문자열 생성 (표준 범위 43~128자 준수)
+    final verifier = List.generate(
+      64,
+      (_) => chars[random.nextInt(chars.length)],
+    ).join();
+    debugPrint("verifier 생성: $verifier");
 
-      if (result.authorizationCode != null && result.codeVerifier != null) {
-        debugPrint('✅ 카카오 인가 코드 획득 성공');
-        return {
-          "code": result.authorizationCode!,
-          "codeVerifier": result.codeVerifier!,
-        };
-      }
-    } catch (e) {
-      debugPrint('🚨 카카오 PKCE 인증 에러: $e');
-    }
-    return null;
+    // 1-2. Challenge 생성: Verifier를 SHA256으로 해싱 후 Base64Url 인코딩
+    final bytes = utf8.encode(verifier); // plain string을 바이트로 변환
+    final digest = sha256.convert(bytes); // SHA256 해싱
+
+    // Base64UrlEncode 후 패딩(=) 제거 및 특수문자 치환
+    final challenge = base64UrlEncode(
+      digest.bytes,
+    ).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+    debugPrint('🔒 생성된 Challenge: $challenge');
+
+    return {'codeVerifier': verifier, 'challenge': challenge};
   }
 
-  // 서버 통신 부분 (백엔드 엔드포인트에 맞춰 수정 필요)
+  // 2. 카카오 인증 URL 생성
+  static String getKakaoAuthUrl(String challenge) {
+    final clientId = kakaoRestApiKey;
+    final redirectUri = Uri.encodeComponent(kakaoRedirectUri);
+
+    return 'https://kauth.kakao.com/oauth/authorize'
+        '?client_id=$clientId'
+        '&redirect_uri=$redirectUri'
+        '&response_type=code'
+        '&code_challenge=$challenge'
+        '&code_challenge_method=S256';
+  }
+
+  // 서버 통신 부분
   static Future<void> sendKakaoAuthToBackend({
     required String code,
     required String codeVerifier,
@@ -70,6 +101,7 @@ class AuthService {
   }) async {
     try {
       debugPrint("🚀 서버로 카카오 인가 데이터 전송 시작...");
+      debugPrint("서버 전송 verifier: $codeVerifier");
 
       final response = await _dio.post(
         '/api/oauth/kakao/token',
