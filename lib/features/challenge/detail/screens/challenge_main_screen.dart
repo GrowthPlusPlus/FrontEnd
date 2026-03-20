@@ -9,6 +9,7 @@ import 'package:haenaem/features/challenge/widgets/challenge_popup_menu.dart';
 import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
+import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/challenge/detail/screens/member_ranking_screen.dart';
 
@@ -36,9 +37,8 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
       _ChallengeDetailScreenState();
 }
 
-class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
+  int _currentTabIndex = 1;
 
   // 스크롤 컨트롤러들
   final ScrollController _infoScrollController = ScrollController();
@@ -48,14 +48,6 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
   @override
   void initState() {
     super.initState();
-    // 탭 3개: 소개(0), 내 현황(1), 멤버 현황(2)
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
-
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {}); // 인덱스 변경 완료 시 UI 업데이트
-      }
-    });
 
     // 챌린지 생성 직후라면 생성 성공 다이얼로그 실행
     if (widget.isJustCreated && widget.createdData != null) {
@@ -64,18 +56,8 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
         showDialog(
           context: context,
           barrierColor: const Color(0x7F1A1D1B),
-          builder: (context) => ChallengeCreateSuccessDialog(
-            // [수정 1] friends 파라미터 삭제 (이제 필요 없음)
-            // friends: widget.createdData!.friends,
-
-            // [수정 2] challengeId 추가 (필수)
-            // 주의: createdData 객체 안에 있는 ID 변수명을 정확히 적어주세요. (예: .id 또는 .challengeId)
-            // challengeId: widget.createdData!.id,
-
-            // // 기존 유지
-            // challengeLink: widget.createdData!.challengeLink,
-            createdData: widget.createdData!,
-          ),
+          builder: (context) =>
+              ChallengeCreateSuccessDialog(createdData: widget.createdData!),
         );
       });
     }
@@ -83,21 +65,10 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _infoScrollController.dispose();
     _calendarScrollController.dispose();
     _memberScrollController.dispose();
     super.dispose();
-  }
-
-  void _scrollToTop(ScrollController controller) {
-    if (controller.hasClients) {
-      controller.animateTo(
-        0,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOut,
-      );
-    }
   }
 
   @override
@@ -144,23 +115,18 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
             error: (_, __) => const SizedBox(),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primaryAble,
-          unselectedLabelColor: AppColors.gray2,
-          indicatorColor: AppColors.primaryAble,
-          indicatorWeight: 1,
-          indicatorSize: TabBarIndicatorSize.tab,
-          labelStyle: AppTypography.b1.copyWith(color: AppColors.primaryAble),
-          tabs: const [
-            Tab(text: '소개'),
-            Tab(text: '내 현황'),
-            Tab(text: '멤버 현황'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: CustomTabBar(
+        initialIndex: 1,
+        tabs: const ['소개', '내 현황', '멤버 현황'],
+        scrollControllers: [
+          _infoScrollController,
+          _calendarScrollController,
+          _memberScrollController,
+        ],
+        onTabChanged: (index) {
+          setState(() => _currentTabIndex = index);
+        },
         children: [
           InformationView(
             challengeId: widget.challengeId,
@@ -183,7 +149,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
   Widget _buildBottomButton() {
     // 0: 소개, 1: 내 현황 -> '인증하기'
     // 2: 멤버 현황 -> '내 순위 확인하기'
-    final bool isMemberTab = _tabController.index == 2;
+    final bool isMemberTab = _currentTabIndex == 2;
 
     return BottomActionButton(
       // 1. 텍스트 분기
@@ -219,16 +185,6 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
           );
         }
       },
-    );
-  }
-
-  void _scrollToMyRank() {
-    // MemberView에서 내 순위를 찾는 로직을 구현하거나
-    // scrollController를 통해 하단으로 이동시키는 로직 등을 수행합니다.
-    _memberScrollController.animateTo(
-      500, // 예시 값
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOut,
     );
   }
 }
