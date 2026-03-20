@@ -1,23 +1,24 @@
-// 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_screen.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
+import '../provider/home_provider.dart';
 import 'package:haenaem/features/notification/screens/notification_main_screen.dart';
 import 'package:haenaem/features/notification/provider/notification_provider.dart';
+import 'package:haenaem/shared/models/home_challenge_card.dart';
+import '../widgets/challenge_card.dart';
+import '../widgets/day_chip.dart';
 
+// 최초 작성자 : 강선욱
+// 홈 화면 빌드 클래스
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homeDataAsync = ref.watch(challengeHomeNotifierProvider);
-    final todayStatus = ref.watch(todayTotalStatusProvider);
+    final homeDataAsync = ref.watch(homeNotifierProvider);
 
     DateTime now = DateTime.now();
     DateTime firstDayOfWeek = now.subtract(Duration(days: now.weekday % 7));
@@ -32,72 +33,80 @@ class HomeScreen extends ConsumerWidget {
         child: homeDataAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, stack) => Center(child: Text('데이터 에러: $err')),
-          data: (data) => Stack(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 상단 바
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        Text(getFormattedDate(), style: AppTypography.h2),
-                        const Spacer(),
-                        // 알림 배지 (data.notificationNumber 사용)
-                        _buildNotificationIcon(
-                          context,
-                          ref,
-                          data.notificationNumber,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 주간 캘린더
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 4,
-                    ),
-                    child: Row(
-                      children: weekDays.map((date) {
-                        final isToday =
-                            date.year == now.year &&
-                            date.month == now.month &&
-                            date.day == now.day;
-                        return _DayChip(
-                          date: date,
-                          isSelected: isToday,
-                          status: isToday
-                              ? todayStatus
-                              : ChallengeStatus.normal,
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // 챌린지 리스트 (data.myChallenges 전달)
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () => ref
-                          .read(challengeHomeNotifierProvider.notifier)
-                          .refresh(),
-                      child: ChallengeListView(
-                        challenges:
-                            data.myChallenges, // List<Map<String, dynamic>>
-                        model: data, // getStatus 호출을 위해 모델 전달
+          data: (data) {
+            // 모든 챌린지가 isDone이면 오늘 완료로 판단
+            final todayIsDone =
+                data.myChallenges.isNotEmpty &&
+                data.myChallenges.every((c) => c.isDone);
+            // 하나라도 warning이면 오늘 위험으로 판단
+            final todayIsWarning = data.myChallenges.any((c) => c.warning);
+
+            return Stack(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 상단 바
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 32,
+                        right: 20,
+                        top: 12,
+                        bottom: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(getFormattedDate(), style: AppTypography.h2),
+                          const Spacer(),
+                          // 알림 배지 (data.notificationNumber 사용)
+                          _buildNotificationIcon(
+                            context,
+                            ref,
+                            data.notificationNumber,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-              // Floating Action Button
-              _buildFAB(context),
-            ],
-          ),
+                    // 주간 캘린더
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: weekDays.map((date) {
+                          final isToday =
+                              date.year == now.year &&
+                              date.month == now.month &&
+                              date.day == now.day;
+                          return DayChip(
+                            date: date,
+                            isSelected: isToday,
+                            isDone: isToday ? todayIsDone : false,
+                            isWarning: isToday ? todayIsWarning : false,
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // 챌린지 리스트 (data.myChallenges 전달)
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: () =>
+                            ref.read(homeNotifierProvider.notifier).refresh(),
+                        child: ChallengeListView(
+                          challenges:
+                              data.myChallenges, // getStatus 호출을 위해 모델 전달
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // Floating Action Button
+                _buildFAB(context),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -134,7 +143,7 @@ class HomeScreen extends ConsumerWidget {
 
               // 처음 들어갈 때 안 읽은 알림이 있었거나 OR 안에서 챌린지 수락/거절을 했다면 새로고침!
               if (hasUnreadInitially || hasActionOccurred) {
-                ref.read(challengeHomeNotifierProvider.notifier).refresh();
+                ref.read(homeNotifierProvider.notifier).refresh();
 
                 // 스위치는 다시 꺼줍니다
                 ref.read(needsHomeRefreshProvider.notifier).state = false;
@@ -190,14 +199,9 @@ class HomeScreen extends ConsumerWidget {
 
 // 챌린지 리스트 뷰
 class ChallengeListView extends StatelessWidget {
-  final List<Map<String, dynamic>> challenges;
-  final ChallengeMainModel model; // 상태 계산 로직을 쓰기 위해 추가
+  final List<HomeChallengeCard> challenges;
 
-  const ChallengeListView({
-    super.key,
-    required this.challenges,
-    required this.model,
-  });
+  const ChallengeListView({super.key, required this.challenges});
 
   @override
   Widget build(BuildContext context) {
@@ -207,10 +211,7 @@ class ChallengeListView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 100),
       itemCount: challenges.length,
       itemBuilder: (context, index) {
-        return ChallengeCard(
-          challenge: challenges[index],
-          status: model.getStatus(index), // 모델의 헬퍼 함수 활용
-        );
+        return ChallengeCard(challenge: challenges[index]);
       },
     );
   }
@@ -232,247 +233,5 @@ class ChallengeListView extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-// 챌린지 카드
-class ChallengeCard extends StatelessWidget {
-  final Map<String, dynamic> challenge;
-  final ChallengeStatus status;
-
-  const ChallengeCard({
-    super.key,
-    required this.challenge,
-    required this.status,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChallengeMainScreen(
-              challengeId: challenge['challengeId'] ?? 0,
-              challengeTitle: challenge['title'],
-            ),
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: _getCardColor(status),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: IntrinsicHeight(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        challenge['title'] ?? '',
-                        style: AppTypography.b1.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      _buildSuccessDays(),
-                      const SizedBox(height: 4),
-                      _buildBottomInfo(),
-                    ],
-                  ),
-                ),
-                _buildDivider(),
-                SizedBox(width: 44, child: Center(child: _buildStatusIcon())),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSuccessDays() {
-    final during = challenge['duringDate'] ?? 0;
-    final isDone = challenge['doIt'] ?? false;
-    return Row(
-      children: [
-        if (during >= 2 && isDone)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: SvgPicture.asset(
-              'assets/images/icons/small_fire_icon.svg',
-              width: 16,
-              height: 16,
-            ),
-          ),
-        Text('$during일째', style: AppTypography.b2.copyWith(fontSize: 14)),
-      ],
-    );
-  }
-
-  Widget _buildBottomInfo() {
-    if (status == ChallengeStatus.urgent) {
-      return const Text(
-        '오늘 챌린지를 하지 않으면 실패해요!',
-        style: TextStyle(color: AppColors.notification, fontSize: 12),
-      );
-    }
-    return Row(
-      children: [
-        SvgPicture.asset(
-          'assets/images/icons/mini_success_icon.svg',
-          width: 16,
-          height: 16,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          '인증인원 ${challenge['todaySuccessCount']}/${challenge['participantNumber']}',
-          style: AppTypography.b2.copyWith(fontSize: 14),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDivider() {
-    return SizedBox(
-      width: 40,
-      child: Center(
-        child: CustomPaint(
-          size: const Size(1, double.infinity),
-          painter: VerticalDashPainter(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusIcon() {
-    if (status == ChallengeStatus.completed)
-      return SvgPicture.asset('assets/images/icons/success_icon.svg');
-    if (status == ChallengeStatus.urgent)
-      return SvgPicture.asset('assets/images/icons/warning_icon.svg');
-    return const SizedBox(width: 24);
-  }
-
-  Color _getCardColor(ChallengeStatus status) {
-    if (status == ChallengeStatus.completed) return AppColors.success;
-    if (status == ChallengeStatus.urgent) return AppColors.warning;
-    return AppColors.gray5;
-  }
-}
-
-class VerticalDashPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    double dashHeight = 5, dashSpace = 3, startY = 0;
-    // 캔버스의 중앙 X축 계산
-    final double centerX = size.width / 2;
-    final paint = Paint()
-      ..color = AppColors
-          .gray3 // 점선 색상 농도 조절
-      ..strokeWidth = 1;
-
-    while (startY < size.height) {
-      // Offset의 X좌표를 centerX로 고정하여 직선도 유지
-      canvas.drawLine(
-        Offset(centerX, startY),
-        Offset(centerX, startY + dashHeight),
-        paint,
-      );
-      startY += dashHeight + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
-class _DayChip extends StatelessWidget {
-  final DateTime date;
-  final bool isSelected;
-  final ChallengeStatus status; // 추가됨
-
-  const _DayChip({
-    required this.date,
-    this.isSelected = false,
-    this.status = ChallengeStatus.normal,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const Color black = AppColors.black;
-    const Color gray2 = AppColors.gray2;
-
-    // 요일 레이블 매핑
-    const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토'];
-    String label = weekdayLabels[date.weekday % 7];
-    String day = date.day.toString();
-
-    // 테두리 결정 로직
-    final bool showBorder = isSelected && status == ChallengeStatus.normal;
-
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label, style: AppTypography.b1.copyWith(color: AppColors.black)),
-          const SizedBox(height: 8),
-          Container(
-            width: 40,
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
-            decoration: ShapeDecoration(
-              color: getBackgroundColor(),
-              shape: RoundedRectangleBorder(
-                // 💡 오늘 날짜일 때만 테두리(Outside) 적용
-                side: showBorder
-                    ? const BorderSide(
-                        width: 1,
-                        strokeAlign: BorderSide.strokeAlignOutside,
-                        color: gray2,
-                      )
-                    : BorderSide.none,
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              day,
-              style: TextStyle(
-                color: isSelected && status != ChallengeStatus.normal
-                    ? Colors.white
-                    : gray2,
-                fontSize: 14,
-                fontFamily: 'Pretendard',
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                height: 1.50,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color getBackgroundColor() {
-    if (!isSelected) return AppColors.gray5;
-
-    // 💡 오늘일 경우: 상태에 따른 강조색
-    switch (status) {
-      case ChallengeStatus.urgent:
-        return AppColors.notification; // 실패 위기 (빨강)
-      case ChallengeStatus.completed:
-        return AppColors.primaryAble; // 완료 (초록)
-      case ChallengeStatus.normal:
-      default:
-        return AppColors.gray5; // 미완료 상태인 오늘 (회색)
-    }
   }
 }

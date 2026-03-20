@@ -4,18 +4,18 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
 import 'package:haenaem/shared/models/home_challenge_card.dart';
-import '../enums/challenge_status.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
 
 class ChallengeCard extends StatelessWidget {
-  final Map<String, dynamic> challenge;
-  final ChallengeStatus status;
+  final HomeChallengeCard challenge;
 
-  const ChallengeCard({
-    super.key,
-    required this.challenge,
-    required this.status,
-  });
+  const ChallengeCard({super.key, required this.challenge});
+
+  Color get _cardColor {
+    if (challenge.isDone) return AppColors.success;
+    if (challenge.warning) return AppColors.warning;
+    return AppColors.gray5;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +25,8 @@ class ChallengeCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => ChallengeMainScreen(
-              challengeId: challenge['challengeId'] ?? 0,
-              challengeTitle: challenge['title'],
+              challengeId: challenge.challengeBase.id,
+              challengeTitle: challenge.challengeBase.title,
             ),
           ),
         );
@@ -36,7 +36,7 @@ class ChallengeCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: _getCardColor(status),
+            color: _cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: IntrinsicHeight(
@@ -47,16 +47,21 @@ class ChallengeCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        challenge['title'] ?? '',
+                        challenge.challengeBase.title,
                         style: AppTypography.b1.copyWith(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      _buildSuccessDays(),
+                      _buildFrequencyAndDDayInfo(),
                       const SizedBox(height: 4),
-                      _buildBottomInfo(),
+                      _buildStreakAndParticipantInfo(),
+
+                      if (challenge.warning) ...[
+                        const SizedBox(height: 4),
+                        _buildWarningText(),
+                      ],
                     ],
                   ),
                 ),
@@ -70,12 +75,28 @@ class ChallengeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSuccessDays() {
-    final during = challenge['duringDate'] ?? 0;
-    final isDone = challenge['doIt'] ?? false;
+  Widget _buildFrequencyAndDDayInfo() {
+    final frequencyText = challenge.weeklyFrequency == 7
+        ? '매일'
+        : '주 ${challenge.weeklyFrequency}회';
+    final dDayText = challenge.dDay == 0 ? '오늘 종료' : 'D-${challenge.dDay}';
+    return Text(
+      '$frequencyText, $dDayText',
+      style: AppTypography.b2.copyWith(fontSize: 14),
+    );
+  }
+
+  Widget _buildStreakAndParticipantInfo() {
+    if (challenge.warning) {
+      return const Text(
+        '오늘 챌린지를 하지 않으면 실패해요!',
+        style: TextStyle(color: AppColors.notification, fontSize: 12),
+      );
+    }
     return Row(
       children: [
-        if (during >= 2 && isDone)
+        // 스트릭 정보: streakCount > 0 && isDone일 때 불꽃 아이콘 표시
+        if (challenge.streakCount > 0 && challenge.isDone)
           Padding(
             padding: const EdgeInsets.only(right: 4),
             child: SvgPicture.asset(
@@ -84,20 +105,12 @@ class ChallengeCard extends StatelessWidget {
               height: 16,
             ),
           ),
-        Text('$during일째', style: AppTypography.b2.copyWith(fontSize: 14)),
-      ],
-    );
-  }
-
-  Widget _buildBottomInfo() {
-    if (status == ChallengeStatus.urgent) {
-      return const Text(
-        '오늘 챌린지를 하지 않으면 실패해요!',
-        style: TextStyle(color: AppColors.notification, fontSize: 12),
-      );
-    }
-    return Row(
-      children: [
+        Text(
+          '${challenge.streakCount}일째',
+          style: AppTypography.b2.copyWith(fontSize: 14),
+        ),
+        const SizedBox(width: 12),
+        // 인증인원 정보
         SvgPicture.asset(
           'assets/images/icons/mini_success_icon.svg',
           width: 16,
@@ -105,10 +118,17 @@ class ChallengeCard extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          '인증인원 ${challenge['todaySuccessCount']}/${challenge['participantNumber']}',
+          '${challenge.successParticipantCount}/${challenge.participantCount}명',
           style: AppTypography.b2.copyWith(fontSize: 14),
         ),
       ],
+    );
+  }
+
+  Widget _buildWarningText() {
+    return const Text(
+      '오늘 챌린지를 하지 않으면 실패해요!',
+      style: TextStyle(color: AppColors.notification, fontSize: 12),
     );
   }
 
@@ -125,17 +145,11 @@ class ChallengeCard extends StatelessWidget {
   }
 
   Widget _buildStatusIcon() {
-    if (status == ChallengeStatus.completed)
+    if (challenge.isDone)
       return SvgPicture.asset('assets/images/icons/success_icon.svg');
-    if (status == ChallengeStatus.urgent)
+    if (challenge.warning)
       return SvgPicture.asset('assets/images/icons/warning_icon.svg');
     return const SizedBox(width: 24);
-  }
-
-  Color _getCardColor(ChallengeStatus status) {
-    if (status == ChallengeStatus.completed) return AppColors.success;
-    if (status == ChallengeStatus.urgent) return AppColors.warning;
-    return AppColors.gray5;
   }
 }
 
