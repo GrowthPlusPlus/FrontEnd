@@ -27,6 +27,7 @@ class ChallengeCard extends StatelessWidget {
             builder: (context) => ChallengeMainScreen(
               challengeId: challenge.challengeBase.id,
               challengeTitle: challenge.challengeBase.title,
+              streakCount: challenge.streakCount,
             ),
           ),
         );
