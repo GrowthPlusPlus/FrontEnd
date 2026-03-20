@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import '../provider/post_provider.dart';
+import '../widgets/calendar_grid.dart';
+import '../models/calendar_post.dart';
+import '../widgets/calendar_post_card.dart';
 import 'package:intl/intl.dart';
 
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
@@ -13,11 +16,15 @@ import 'package:haenaem/features/challenge/models/challenge_model.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
   final int challengeId;
+  final String? challengeTitle;
+  final int streakCount;
   final ScrollController scrollController;
 
   const CalendarView({
     super.key,
     required this.challengeId,
+    required this.challengeTitle,
+    required this.streakCount,
     required this.scrollController,
   });
 
@@ -48,16 +55,16 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
       challengeCalendarDataProvider(widget.challengeId),
     );
 
-    final photosAsync = ref.watch(
-      challengeCalendarPhotosProvider(
-        challengeId: widget.challengeId,
-        year: _focusedDay.year,
-        month: _focusedDay.month,
-      ),
-    );
+    // final photosAsync = ref.watch(
+    //   challengeCalendarPhotosProvider(
+    //     challengeId: widget.challengeId,
+    //     year: _focusedDay.year,
+    //     month: _focusedDay.month,
+    //   ),
+    // );
 
     final postsAsync = ref.watch(
-      challengePostsProvider(
+      monthlyChallengePostsProvider(
         challengeId: widget.challengeId,
         year: _focusedDay.year,
         month: _focusedDay.month,
@@ -82,16 +89,14 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
               const SizedBox(height: 10),
               _buildWeekdayHeader(),
               const SizedBox(height: 10),
-              photosAsync.when(
-                data: (photos) {
-                  final allPosts = postsAsync.value ?? [];
-                  return _buildCalendarGrid(_focusedDay, photos, allPosts);
-                },
+              postsAsync.when(
+                data: (posts) =>
+                    CalendarGrid(focusedDay: _focusedDay, posts: posts),
                 loading: () => const SizedBox(
                   height: 200,
                   child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (e, s) => const Text('달력을 불러오지 못했습니다.'),
+                error: (e, s) => Text('달력을 불러오지 못했습니다. $e'),
               ),
               const SizedBox(height: 20),
               _buildPostsHeader(postsAsync),
@@ -104,11 +109,11 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: posts.length,
                     itemBuilder: (context, index) =>
-                        _buildCertCard(context, post: posts[index]),
+                        CalendarPostCard(post: posts[index]),
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => const Text('인증글 로드 중 에러'),
+                error: (e, s) => Text('인증글 로드 중 에러 $e'),
               ),
             ],
           ),
@@ -122,7 +127,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
       children: [
         _buildStatCard(data.totalSuccessDays.toString(), '완료 일수'),
         const SizedBox(width: 12),
-        _buildStatCard(data.currentStreakDays.toString(), '연속 일수'),
+        _buildStatCard(widget.streakCount.toString(), '연속 일수'),
       ],
     );
   }
@@ -239,90 +244,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     );
   }
 
-  Widget _buildCalendarGrid(
-    DateTime date,
-    List<ChallengeCalendarPhoto> photos,
-    List<CertificationPostModel> allPosts,
-  ) {
-    final int skipDays = DateTime(date.year, date.month, 1).weekday % 7;
-    final int lastDayOfMonth = DateTime(date.year, date.month + 1, 0).day;
-    final now = DateTime.now();
-
-    return GridView.builder(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: skipDays + lastDayOfMonth,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 7,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-      ),
-      itemBuilder: (context, index) {
-        if (index < skipDays) return const SizedBox();
-        int day = index - skipDays + 1;
-        final bool isToday =
-            now.year == date.year && now.month == date.month && now.day == day;
-        final String targetDateStr =
-            "${date.year}-${date.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
-
-        final photoData = photos.firstWhereOrNull(
-          (p) => p.postDate == targetDateStr,
-        );
-        bool isCertified = photoData != null && photoData.postId != -1;
-
-        final CertificationPostModel? fullPost = isCertified
-            ? allPosts.firstWhereOrNull((p) => p.postId == photoData.postId) ??
-                  allPosts.firstWhereOrNull((p) => p.postDate == targetDateStr)
-            : null;
-
-        return GestureDetector(
-          onTap: (isCertified && fullPost != null)
-              ? () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PostDetailScreen(
-                      postId: fullPost.postId,
-                      post: fullPost,
-                    ),
-                  ),
-                )
-              : null,
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isCertified
-                  ? AppColors.primaryAble
-                  : (isToday ? AppColors.gray5 : AppColors.gray5),
-              borderRadius: BorderRadius.circular(5),
-              border: (isToday && !isCertified)
-                  ? Border.all(color: AppColors.gray2, width: 1)
-                  : null,
-              image: (isCertified && photoData.imageUrl != null)
-                  ? DecorationImage(
-                      image: NetworkImage(photoData.imageUrl!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: Text(
-              '$day',
-              style: TextStyle(
-                color: isCertified
-                    ? Colors.white
-                    : (isToday ? AppColors.gray2 : AppColors.gray2),
-                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPostsHeader(
-    AsyncValue<List<CertificationPostModel>> postsAsync,
-  ) {
+  Widget _buildPostsHeader(AsyncValue<List<CalendarPost>> postsAsync) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -342,77 +264,4 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     padding: EdgeInsets.symmetric(vertical: 40),
     child: Text('이번 달 인증글이 없습니다.', style: TextStyle(color: AppColors.gray2)),
   );
-
-  Widget _buildCertCard(
-    BuildContext context, {
-    required CertificationPostModel post,
-  }) {
-    final String formattedDate = (post.postDate.isNotEmpty)
-        ? DateFormat('M월 d일').format(DateTime.parse(post.postDate))
-        : "";
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PostDetailScreen(post: post, postId: post.postId),
-        ),
-      ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 15),
-        padding: const EdgeInsets.all(13),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.gray4),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (post.imageUrl != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  post.imageUrl!,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/icons/green_calendar.svg',
-                        width: 12,
-                        height: 12,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        formattedDate,
-                        style: AppTypography.c1.copyWith(
-                          color: AppColors.primaryAble,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    post.content,
-                    style: AppTypography.b2.copyWith(color: AppColors.black),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
