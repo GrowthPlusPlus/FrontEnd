@@ -3,7 +3,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/ranking_repository.dart';
-import '../model/ranking_model.dart';
+import '../models/ranking_model.dart';
 
 part 'ranking_provider.g.dart';
 
