@@ -67,9 +67,7 @@ class InviteResponse {
       ),
       participantCount:
           participantCount, // 'participantCount' → SearchChallengeCard.participantCount
-      dDay: DateTime.now().add(
-        Duration(days: remainingDays),
-      ), // 'remainingDays'(int) → DateTime
+      dDay: remainingDays,
       tags: tags, // 'tags' → SearchChallengeCard.tags
     );
   }
