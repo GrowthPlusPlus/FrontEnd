@@ -96,7 +96,7 @@ class ChallengeInviteCard extends StatelessWidget {
                         Text(
                           challengeInfo.dDay == 0
                               ? '오늘 완료'
-                              : '완료까지 ${challengeInfo.dDay}일',
+                              : '완료까지 D-${challengeInfo.dDay}',
                           style: AppTypography.b2.copyWith(
                             color: AppColors.gray2,
                           ),
