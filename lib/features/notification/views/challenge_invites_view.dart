@@ -36,13 +36,7 @@ class ChallengeInvitesView extends ConsumerWidget {
           final invite = state.invites[index];
 
           return ChallengeInviteCard(
-            challengeId: invite.challengeInfo.base.id,
-            inviterName: invite.inviterUser.nickname,
-            inviterProfileImageUrl: invite.inviterUser.profileUrl,
-            challengeName: invite.challengeInfo.base.title,
-            participantCount: invite.challengeInfo.participantCount,
-            dDay: 'D-${invite.challengeInfo.dDay}',
-            labels: invite.challengeInfo.tags,
+            inviteChallenge: invite,
             // 수락 콜백 연결
             onAccept: () async {
               try {

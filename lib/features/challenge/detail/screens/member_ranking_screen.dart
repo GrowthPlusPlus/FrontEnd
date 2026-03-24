@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/detail/provider/ranking_provider.dart';
-import 'package:haenaem/features/challenge/detail/model/ranking_model.dart';
+import 'package:haenaem/features/challenge/detail/models/ranking_model.dart';
 
 class MemberRankingScreen extends ConsumerWidget {
   final int challengeId;
