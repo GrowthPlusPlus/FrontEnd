@@ -29,6 +29,7 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
     super.key,
     required this.challengeId,
     this.challengeTitle,
+    // 새로 가입, 생성한 챌린지는 streakCount가 0
     this.streakCount = 0,
     this.isJustCreated = false,
     this.createdData,

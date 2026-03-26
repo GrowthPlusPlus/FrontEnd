@@ -88,12 +88,6 @@ class ChallengeCard extends StatelessWidget {
   }
 
   Widget _buildStreakAndParticipantInfo() {
-    if (challenge.warning) {
-      return const Text(
-        '오늘 챌린지를 하지 않으면 실패해요!',
-        style: TextStyle(color: AppColors.notification, fontSize: 12),
-      );
-    }
     return Row(
       children: [
         // 스트릭 정보: streakCount > 0 && isDone일 때 불꽃 아이콘 표시
