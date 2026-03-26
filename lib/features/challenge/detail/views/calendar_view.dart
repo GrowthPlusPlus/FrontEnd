@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../provider/post_provider.dart';
+import '../../../../shared/provider/post_provider.dart';
 import '../provider/stats_provider.dart';
 import '../widgets/calendar_grid.dart';
 import '../widgets/calendar_post_card.dart';

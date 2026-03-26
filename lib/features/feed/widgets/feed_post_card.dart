@@ -78,7 +78,7 @@ class FeedPostCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                ChallengeFeedPopupMenu(post: post),
+                // ChallengeFeedPopupMenu(post: post),
               ],
             ),
           ),

@@ -7,10 +7,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/models/image_model.dart';
-import 'package:intl/intl.dart';
+
+import 'package:haenaem/shared/models/post.dart';
+import 'package:haenaem/shared/models/challenge_detail.dart';
+import '../provider/verification_provider.dart';
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
+// import 'package:haenaem/features/challenge/models/image_model.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
@@ -30,7 +35,7 @@ import 'package:haenaem/features/feed/models/feed_model.dart';
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {
   final int challengeId;
-  final CertificationPostModel? existingPost; // 데이터가 있으면 수정 모드
+  final Post? existingPost; // 데이터가 있으면 수정 모드
 
   const ChallengeVerificationScreen({
     super.key,
@@ -610,7 +615,8 @@ class _ChallengeVerificationScreenState
         success = await ref
             .read(articleUpdateNotifierProvider.notifier)
             .editArticle(
-              postId: widget.existingPost!.postId,
+              postId: widget.existingPost!.id,
+              challengeId: widget.challengeId,
               content: content,
               deleteImageIds: _imageIdsToDelete,
               tempImageIds: _tempImageIds, // 💡 File 대신 ID 리스트 전달
@@ -629,37 +635,37 @@ class _ChallengeVerificationScreenState
       success = false;
     }
 
-    if (success && mounted) {
-      // 💡 [에러 해결] 이 프로바이더만 이름 없이 숫자만 넣습니다 (Positional)
-      ref.invalidate(challengeCalendarDataProvider(widget.challengeId));
+    // if (success && mounted) {
+    //   // 💡 [에러 해결] 이 프로바이더만 이름 없이 숫자만 넣습니다 (Positional)
+    //   ref.invalidate(challengeCalendarDataProvider(widget.challengeId));
 
-      // 💡 아래 프로바이더들은 정의된 대로 이름을 명시합니다 (Named)
-      ref.invalidate(
-        challengeCalendarPhotosProvider(
-          challengeId: widget.challengeId,
-          year: now.year,
-          month: now.month,
-        ),
-      );
-      ref.invalidate(
-        challengePostsProvider(
-          challengeId: widget.challengeId,
-          year: now.year,
-          month: now.month,
-        ),
-      );
+    //   // 💡 아래 프로바이더들은 정의된 대로 이름을 명시합니다 (Named)
+    //   ref.invalidate(
+    //     challengeCalendarPhotosProvider(
+    //       challengeId: widget.challengeId,
+    //       year: now.year,
+    //       month: now.month,
+    //     ),
+    //   );
+    //   ref.invalidate(
+    //     challengePostsProvider(
+    //       challengeId: widget.challengeId,
+    //       year: now.year,
+    //       month: now.month,
+    //     ),
+    //   );
 
-      ref.invalidate(challengeHomeNotifierProvider);
+    //   ref.invalidate(homeNotifierProvider);
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
+    //     ScaffoldMessenger.of(
+    //       context,
+    //     ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
 
-      Navigator.pop(context);
-    } else if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('인증에 실패했습니다. 다시 시도해주세요.')));
-    }
+    //     Navigator.pop(context);
+    //   } else if (mounted) {
+    //     ScaffoldMessenger.of(
+    //       context,
+    //     ).showSnackBar(const SnackBar(content: Text('인증에 실패했습니다. 다시 시도해주세요.')));
+    //   }
   }
 }
