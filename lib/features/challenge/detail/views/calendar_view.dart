@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../provider/post_provider.dart';
 import '../provider/stats_provider.dart';
 import '../widgets/calendar_grid.dart';
-import '../models/calendar_post.dart';
 import '../widgets/calendar_post_card.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
