@@ -16,14 +16,12 @@ import 'package:haenaem/features/challenge/models/challenge_model.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
   final int challengeId;
-  final String? challengeTitle;
   final int streakCount;
   final ScrollController scrollController;
 
   const CalendarView({
     super.key,
     required this.challengeId,
-    required this.challengeTitle,
     required this.streakCount,
     required this.scrollController,
   });

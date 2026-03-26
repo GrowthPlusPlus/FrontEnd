@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
-import 'package:haenaem/shared/models/post.dart';
+import '../models/calendar_post.dart';
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
 
 // 최초 작성자 : 강선욱
@@ -15,7 +15,7 @@ class CalendarGrid extends StatelessWidget {
   final DateTime focusedDay;
 
   /// 해당 월의 포스트 목록 (post_provider에서 전달)
-  final List<Post> posts;
+  final List<CalendarPost> posts;
 
   const CalendarGrid({
     super.key,
@@ -63,12 +63,12 @@ class CalendarGrid extends StatelessWidget {
             now.month == focusedDay.month &&
             now.day == day;
 
+        final String targetDateStr =
+            "${focusedDay.year}-${focusedDay.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+
         // 해당 날짜에 인증 포스트가 있는지 확인
-        final Post? post = posts.firstWhereOrNull(
-          (p) =>
-              p.date.year == focusedDay.year &&
-              p.date.month == focusedDay.month &&
-              p.date.day == day,
+        final CalendarPost? post = posts.firstWhereOrNull(
+          (p) => p.postDate == targetDateStr,
         );
         final bool isCertified = post != null;
 
@@ -76,13 +76,13 @@ class CalendarGrid extends StatelessWidget {
           day: day,
           isToday: isToday,
           isCertified: isCertified,
-          imageUrl: post?.pictureUrl,
+          imageUrl: post?.imageUrl,
           // 인증한 날짜만 탭 가능, 포스트 상세 화면으로 이동
           onTap: isCertified
               ? () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PostDetailScreen(postId: post.id),
+                    builder: (_) => PostDetailScreen(postId: post.postId),
                   ),
                 )
               : null,
