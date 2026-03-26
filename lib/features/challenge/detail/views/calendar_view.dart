@@ -4,15 +4,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import '../provider/post_provider.dart';
+import '../provider/stats_provider.dart';
 import '../widgets/calendar_grid.dart';
 import '../models/calendar_post.dart';
 import '../widgets/calendar_post_card.dart';
-import 'package:intl/intl.dart';
-
-import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
   final int challengeId;
@@ -49,83 +45,88 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
   @override
   Widget build(BuildContext context) {
     // 1. 데이터 구독
-    final calendarDataAsync = ref.watch(
-      challengeCalendarDataProvider(widget.challengeId),
+    final statsAsync = ref.watch(challengeStatsProvider(widget.challengeId));
+
+    final postsProvider = monthlyChallengePostsProvider(
+      challengeId: widget.challengeId,
+      year: _focusedDay.year,
+      month: _focusedDay.month,
     );
 
-    // final photosAsync = ref.watch(
-    //   challengeCalendarPhotosProvider(
-    //     challengeId: widget.challengeId,
-    //     year: _focusedDay.year,
-    //     month: _focusedDay.month,
-    //   ),
-    // );
+    final postsAsync = ref.watch(postsProvider);
 
-    final postsAsync = ref.watch(
-      monthlyChallengePostsProvider(
-        challengeId: widget.challengeId,
-        year: _focusedDay.year,
-        month: _focusedDay.month,
-      ),
-    );
-
-    // 2. UI 구성
-    return calendarDataAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('에러 발생: $err')),
-      data: (summaryData) => Scaffold(
+    // 2. 통합 로딩/에러/데이터 처리
+    return statsAsync.when(
+      loading: () => const Scaffold(
         backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-          controller: widget.scrollController,
-          // 하단 버튼 높이만큼 여유 공간을 주어 마지막 리스트가 가려지지 않게 합니다.
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
-          child: Column(
-            children: [
-              _buildStatCards(summaryData),
-              const SizedBox(height: 20),
-              _buildCalendarHeader(_focusedDay),
-              const SizedBox(height: 10),
-              _buildWeekdayHeader(),
-              const SizedBox(height: 10),
-              postsAsync.when(
-                data: (posts) =>
-                    CalendarGrid(focusedDay: _focusedDay, posts: posts),
-                loading: () => const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (e, s) => Text('달력을 불러오지 못했습니다. $e'),
-              ),
-              const SizedBox(height: 20),
-              _buildPostsHeader(postsAsync),
-              const SizedBox(height: 16),
-              postsAsync.when(
-                data: (posts) {
-                  if (posts.isEmpty) return _buildEmptyState();
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) =>
-                        CalendarPostCard(post: posts[index]),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => Text('인증글 로드 중 에러 $e'),
-              ),
-            ],
-          ),
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, s) => Scaffold(body: Center(child: Text('통계 로드 실패: $e'))),
+      data: (stats) => postsAsync.when(
+        loading: () => const Scaffold(
+          backgroundColor: Colors.white,
+          body: Center(child: CircularProgressIndicator()),
         ),
+        error: (e, s) => Scaffold(body: Center(child: Text('인증글 로드 실패: $e'))),
+        data: (posts) {
+          return Scaffold(
+            backgroundColor: Colors.white,
+            // [추가] 당겨서 새로고침 위젯
+            body: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(challengeStatsProvider(widget.challengeId));
+                ref.invalidate(postsProvider);
+
+                // 두 데이터가 로드될 때까지 대기
+                await Future.wait([
+                  ref.read(challengeStatsProvider(widget.challengeId).future),
+                  ref.read(postsProvider.future),
+                ]);
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                controller: widget.scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+                child: Column(
+                  children: [
+                    _buildStatCards(
+                      stats.totalSuccessDays,
+                      stats.currentStreakDays,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildCalendarHeader(_focusedDay),
+                    const SizedBox(height: 10),
+                    _buildWeekdayHeader(),
+                    const SizedBox(height: 10),
+                    CalendarGrid(focusedDay: _focusedDay, posts: posts),
+                    const SizedBox(height: 20),
+                    _buildPostsHeaderForData(posts.length),
+                    const SizedBox(height: 16),
+                    posts.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: posts.length,
+                            itemBuilder: (context, index) =>
+                                CalendarPostCard(post: posts[index]),
+                          ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStatCards(ChallengeCalendarModel data) {
+  Widget _buildStatCards(int totalSuccessDays, int currentStreakDays) {
     return Row(
       children: [
-        _buildStatCard(data.totalSuccessDays.toString(), '완료 일수'),
+        _buildStatCard(totalSuccessDays.toString(), '완료 일수'),
         const SizedBox(width: 12),
-        _buildStatCard(widget.streakCount.toString(), '연속 일수'),
+        _buildStatCard(currentStreakDays.toString(), '연속 일수'),
       ],
     );
   }
@@ -242,17 +243,14 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     );
   }
 
-  Widget _buildPostsHeader(AsyncValue<List<CalendarPost>> postsAsync) {
+  Widget _buildPostsHeaderForData(int count) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text('내 인증글', style: AppTypography.b1),
-        postsAsync.maybeWhen(
-          data: (posts) => Text(
-            '총 ${posts.length}개',
-            style: AppTypography.c1.copyWith(color: AppColors.gray2),
-          ),
-          orElse: () => const SizedBox(),
+        Text(
+          '총 $count개',
+          style: AppTypography.c1.copyWith(color: AppColors.gray2),
         ),
       ],
     );
