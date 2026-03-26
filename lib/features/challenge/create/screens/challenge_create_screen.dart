@@ -150,7 +150,9 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ChallengeMainScreen(challengeId: response.id),
+          builder: (context) =>
+              // 챌린지 생성 직후는 streakCount가 무조건 0이므로 하드코딩
+              ChallengeMainScreen(challengeId: response.id),
         ),
       );
     } else if (mounted) {

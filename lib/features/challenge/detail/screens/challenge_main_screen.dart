@@ -21,6 +21,7 @@ import 'package:haenaem/features/challenge/detail/views/member_view.dart';
 class ChallengeMainScreen extends ConsumerStatefulWidget {
   final int challengeId;
   final String? challengeTitle;
+  final int streakCount;
   final bool isJustCreated;
   final ChallengeCreateResponse? createdData;
 
@@ -28,6 +29,7 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
     super.key,
     required this.challengeId,
     this.challengeTitle,
+    this.streakCount = 0,
     this.isJustCreated = false,
     this.createdData,
   });
@@ -134,6 +136,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
           ),
           CalendarView(
             challengeId: widget.challengeId,
+            streakCount: widget.streakCount,
             scrollController: _calendarScrollController,
           ),
           MemberView(
