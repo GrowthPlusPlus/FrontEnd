@@ -116,7 +116,7 @@ class LoginScreen extends StatelessWidget {
                       if (authResult != null) {
                         await AuthService.sendTokenToBackend(
                           code: authResult['code']!,
-                          codeVerifier: authResult['code_verifier']!,
+                          codeVerifier: authResult['codeVerifier']!,
                           context: context,
                         );
                       }
@@ -209,8 +209,30 @@ class LoginScreen extends StatelessWidget {
       )
       ..setNavigationDelegate(
         NavigationDelegate(
+          onWebResourceError: (WebResourceError error) {
+            debugPrint('''
+    ⚠️ 웹뷰 로딩 에러 발생!
+    - 코드: ${error.errorCode}
+    - 설명: ${error.description}
+    - URL: ${error.url}
+  ''');
+          },
           onNavigationRequest: (NavigationRequest request) async {
             final url = request.url;
+
+            // 📍 [중요] 주소 감지 로그 추가
+            if (url.contains('/oauth/kakao/callback')) {
+              debugPrint('🎣 [감지 성공] 카카오 콜백 주소가 포착되었습니다!');
+              final uri = Uri.parse(url);
+              final code = uri.queryParameters['code'];
+
+              if (code != null) {
+                debugPrint('✅ 획득한 인가 코드: $code');
+                onCodeCaptured(code);
+                Navigator.pop(context); // 웹뷰 닫기
+                return NavigationDecision.prevent; // 페이지 이동 중단
+              }
+            }
 
             // 2️⃣ 카카오톡 앱 호출 주소 처리
             if (url.startsWith('kakaotalk://') || url.startsWith('intent://')) {
@@ -240,9 +262,10 @@ class LoginScreen extends StatelessWidget {
             return NavigationDecision.navigate;
           },
           onPageStarted: (url) {
-            // ✅ AuthService.kakaoRedirectUri(ngrok 주소)로 시작하는지 감시
+            debugPrint("🚀 웹뷰 로딩 시작됨: $url");
+            // ✅ AuthService.kakaoRedirectUri로 시작하는지 감시
             if (url.startsWith(AuthService.kakaoRedirectUri)) {
-              debugPrint('🎣 ngrok 리다이렉트 감지!');
+              debugPrint('🎣 리다이렉트 감지!');
               final uri = Uri.parse(url);
               final code = uri.queryParameters['code'];
               if (code != null) {
@@ -251,9 +274,15 @@ class LoginScreen extends StatelessWidget {
               }
             }
           },
+          onPageFinished: (url) {
+            debugPrint("✅ 웹뷰 로딩 완료됨: $url");
+          },
         ),
       )
       ..loadRequest(Uri.parse(authUrl));
+
+    // 📍 로드하기 직전에 실제 어떤 주소를 부르는지 확인!
+    debugPrint("🌍 웹뷰 로딩 시도 URL: $authUrl");
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,

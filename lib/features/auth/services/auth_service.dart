@@ -28,30 +28,31 @@ class AuthService {
   static const String kakaoNativeAppKey = '05a36f172ea2945260862834654385ea';
   // static const String kakaoRedirectUri =
   //     'https://hanaem.onrender.com/api/oauth/kakao/token';
-  // static const String kakaoRedirectUri =
-  //     'https://hanaem.onrender.com/oauth/kakao/callback';
+
+  static const String kakaoRedirectUri =
+      'https://hanaem.onrender.com/oauth/kakao/callback';
 
   //static const String kakaoRedirectUri =
   //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
 
   // ♥️ 로컬 서버로 테스트
-  static const String kakaoRedirectUri =
-      'https://ungenially-undebatable-sindy.ngrok-free.dev/oauth/kakao/callback';
+  // static const String kakaoRedirectUri =
+  //     'https://ungenially-undebatable-sindy.ngrok-free.dev/oauth/kakao/callback';
 
-  // static final Dio _dio = Dio(
-  //   BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
-  // );
+  static final Dio _dio = Dio(
+    BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
+  );
 
   // ♥️ 로컬 서버로 테스트
-  static final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-        'Content-Type': 'application/json',
-      },
-    ),
-  );
+  // static final Dio _dio = Dio(
+  //   BaseOptions(
+  //     baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
+  //     headers: {
+  //       'ngrok-skip-browser-warning': 'true',
+  //       'Content-Type': 'application/json',
+  //     },
+  //   ),
+  // );
 
   // 1. PKCE 쌍 생성 (RFC 7636 표준 방식)
   static Map<String, String> generatePkcePair() {
@@ -65,7 +66,7 @@ class AuthService {
       64,
       (_) => chars[random.nextInt(chars.length)],
     ).join();
-    debugPrint("verifier 생성: $verifier");
+    debugPrint("🔒 verifier 생성: $verifier");
 
     // 1-2. Challenge 생성: Verifier를 SHA256으로 해싱 후 Base64Url 인코딩
     final bytes = utf8.encode(verifier); // plain string을 바이트로 변환
@@ -314,10 +315,12 @@ class AuthService {
         debugPrint("🗑️ 회원 탈퇴 요청 시작");
         // 서버에 계정 삭제 요청 (DELETE)
         // 리프레시 토큰뿐만 아니라 유저의 개인정보 등을 삭제하도록 서버에 명령합니다.
-        await _dio.delete(
+        final response = await _dio.delete(
           '/api/me',
           options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
         );
+        // 📍 서버가 진짜 뭐라고 대답했는지 찍어보기
+        debugPrint("📥 탈퇴 응답 데이터: ${response.data}");
 
         // 탈퇴 성공 후 클라이언트 데이터 정리
         await _storage.deleteAll();
