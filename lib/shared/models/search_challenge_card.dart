@@ -6,7 +6,7 @@ import 'package:haenaem/shared/models/challenge_base.dart';
 class SearchChallengeCard {
   final ChallengeBase base; // 챌린지 기본 정보 (id, title, isLeader)
   final int participantCount; // 챌린지 참여자 수
-  final DateTime dDay; // 챌린지 종료 D-Day
+  final int dDay; // 챌린지 종료 D-Day
   final List<String> tags; // 챌린지 태그 리스트
 
   const SearchChallengeCard({
@@ -20,7 +20,7 @@ class SearchChallengeCard {
     return SearchChallengeCard(
       base: ChallengeBase.fromJson(json),
       participantCount: json['participant_count'] as int,
-      dDay: DateTime.parse(json['end_date'] as String),
+      dDay: json['end_date'] as int,
       tags: List<String>.from(json['tag'] as List),
     );
   }
@@ -28,7 +28,7 @@ class SearchChallengeCard {
   SearchChallengeCard copyWith({
     ChallengeBase? base,
     int? participantCount,
-    DateTime? dDay,
+    int? dDay,
     List<String>? tags,
   }) {
     return SearchChallengeCard(

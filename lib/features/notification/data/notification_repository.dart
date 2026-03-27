@@ -91,7 +91,13 @@ class NotificationRepository {
       final response = await dio.get('/api/challenges/invites');
       // 응답이 배열(List) 형태
       final List<dynamic> data = response.data;
-      return data.map((e) => InviteChallengecard.fromJson(e)).toList();
+      return data
+          .map(
+            (e) => InviteChallengecard.fromResponse(
+              InviteResponse.fromJson(e as Map<String, dynamic>),
+            ),
+          )
+          .toList();
     } on DioException catch (e) {
       print('❌ [초대 조회 에러]: ${e.response?.data}');
       throw Exception('초대 목록을 불러오는데 실패했습니다.');

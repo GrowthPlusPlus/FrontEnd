@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
-import '../model/ranking_model.dart';
+import '../models/ranking_model.dart';
 
 part 'ranking_repository.g.dart';
 
