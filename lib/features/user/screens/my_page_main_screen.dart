@@ -1,13 +1,9 @@
-/// 최초 작성자: 정승빈
-/// 작성일: 2026-01-18
-library;
+// 최초 작성자: 정승빈
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/user/screens/push_notification_settings_screen.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
@@ -15,22 +11,19 @@ import 'package:haenaem/features/user/provider/user_provider.dart';
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/shared/models/user_detail.dart';
 
-import 'withdrawal_screen.dart';
-import 'challenge_list_screen.dart';
-import 'profile_edit_screen.dart';
-import '../widgets/profile_header.dart';
-import '../widgets/my_page_menu_item.dart';
-import '../widgets/challenge_section.dart';
-import '../widgets/logout_dialog.dart';
+import 'profile/profile_edit_screen.dart';
+import '../views/profile_header_view.dart';
+import '../views/my_challenge_section_view.dart';
+import '../views/my_page_menu_view.dart';
 
-class MyPageScreen extends ConsumerStatefulWidget {
-  const MyPageScreen({super.key});
+class MyPageMainScreen extends ConsumerStatefulWidget {
+  const MyPageMainScreen({super.key});
 
   @override
-  ConsumerState<MyPageScreen> createState() => _MyPageScreenState();
+  ConsumerState<MyPageMainScreen> createState() => _MyPageMainScreenState();
 }
 
-class _MyPageScreenState extends ConsumerState<MyPageScreen> {
+class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
@@ -48,20 +41,21 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
               if (currentUser != null)
                 profileAsync.when(
-                  loading: () => ProfileHeader(
-                    nickname: currentUser.nickname, // ✅ 닉네임/이미지는 currentUser에서
-                    profileImageUrl: currentUser.profileUrl ?? '',
-                    introduction: '',
-                    tags: const [],
-                  ),
-                  error: (_, __) => ProfileHeader(
+                  loading: () => ProfileHeaderView(
                     nickname: currentUser.nickname,
                     profileImageUrl: currentUser.profileUrl ?? '',
                     introduction: '',
                     tags: const [],
                   ),
-                  data: (UserDetail detail) => ProfileHeader(
+                  error: (_, __) => ProfileHeaderView(
                     nickname: currentUser.nickname,
+                    profileImageUrl: currentUser.profileUrl ?? '',
+                    introduction: '',
+                    tags: const [],
+                  ),
+                  data: (UserDetail detail) => ProfileHeaderView(
+                    // ✅ UserDetail 사용
+                    nickname: currentUser.nickname, // ✅ currentUserProvider 우선
                     profileImageUrl: currentUser.profileUrl ?? '',
                     introduction: detail.introduction,
                     tags: detail.tags,
@@ -71,10 +65,15 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 const Center(child: CircularProgressIndicator()),
 
               const SizedBox(height: 40),
-              const ChallengeSection(), // 챌린지 섹션 위젯
+
+              // 2. 나의 챌린지 뷰
+              const MyChallengeSectionView(),
 
               const SizedBox(height: 24),
-              _buildMenuSection(context),
+
+              // 3. 하단 설정 메뉴 뷰
+              const MyPageMenuView(),
+
               const SizedBox(height: 30),
             ],
           ),
@@ -111,7 +110,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   ),
                 );
               } else {
-                // 데이터 로딩 중이거나 에러 시 알림 (선택 사항)
+                // 데이터 로딩 중이거나 에러 시 알림
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('프로필 정보를 불러오는 중입니다.')),
                 );
@@ -129,47 +128,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMenuSection(BuildContext context) {
-    return Column(
-      children: [
-        MyPageMenuItem(
-          title: '푸시 알림 설정',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const PushNotificationSettingsScreen(),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-        MyPageMenuItem(
-          title: '로그아웃',
-          onTap: () {
-            // 분리된 LogoutDialog 호출
-            showDialog(
-              context: context,
-              builder: (context) => const LogoutDialog(),
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-        MyPageMenuItem(
-          title: '회원 탈퇴',
-          textColor: AppColors.notification,
-          showArrow: true,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const WithdrawalScreen()),
-            );
-          },
-        ),
-      ],
     );
   }
 }

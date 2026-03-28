@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:haenaem/features/social/screens/social_main_screen.dart';
 import 'features/challenge/create/screens/challenge_create_screen.dart';
-import 'features/user/screens/my_page_screen.dart';
+import 'features/user/screens/my_page_main_screen.dart';
 import 'features/main/screens/main_screen.dart';
 
 class App extends StatelessWidget {
@@ -13,7 +13,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       // theme:,
-      home: MyPageScreen(),
+      home: MyPageMainScreen(),
       //home: MainScreen(),
       //home: SocialScreen(),
     );

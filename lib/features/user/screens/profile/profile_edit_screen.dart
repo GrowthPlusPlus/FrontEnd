@@ -1,4 +1,4 @@
-// 최초 작성자 : 김채영
+// 최초 작성자 : 김채영, 리팩토링: 정승빈
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,19 +6,22 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-
 import 'package:haenaem/shared/models/tag_model.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_typography.dart';
+import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:haenaem/shared/widgets/image_source_sheet.dart';
-import '../../../../shared/widgets/bottom_action_button.dart';
+import '../../../../../shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/features/auth/signup/screens/profile_image_edit_screen.dart';
-import '../widgets/profile_image_menu.dart';
-import '../data/user_repository.dart';
-import '../provider/tag_provider.dart';
 // import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/shared/models/user_detail.dart';
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
+
+import '../../widgets/profile_image_menu.dart';
+import '../../provider/tag_provider.dart';
+import '../../provider/user_profile_provider.dart';
 
 // 프로필 편집 화면
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -39,7 +42,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   late TextEditingController _introController;
   bool _showImageMenu = false; // 이미지 관리 메뉴 노출 상태
   File? _selectedImageFile;
-  bool _isImageDeleted = false; // 이미지 삭제 여부를 추적하는 상태 추가
+  bool _isImageDeleted = false; // 이미지 삭제 여부를 추적하는 상태
   final ImagePicker _picker = ImagePicker();
   bool _isDuplicate = false;
   bool _isInvalidFormat = false;
@@ -53,7 +56,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     _nicknameController.addListener(_validateNickname);
     _introController.addListener(() => setState(() {}));
 
-    // 2. 💡 추가: 화면 진입 시 tagProvider 초기화 호출
+    // 화면 진입 시 tagProvider 초기화 호출
     Future.microtask(() => ref.read(tagProvider.notifier).initialize());
   }
 
@@ -64,7 +67,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     super.dispose();
   }
 
-  // --- 💡 이미지 소스 선택 (카메라/갤러리) ---
+  // --- 이미지 소스 선택 (카메라/갤러리) ---
   void _showImageSourceSheet() {
     setState(() => _showImageMenu = false); // 팝업 메뉴 닫기
     showModalBottomSheet(
@@ -76,7 +79,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
 
-  // --- 💡 이미지 가져오기 및 편집 화면 이동 ---
+  // --- 이미지 가져오기 및 편집 화면 이동 ---
   Future<void> _getImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
 
@@ -101,23 +104,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     }
   }
 
-  // --- 💡 이미지 삭제 API 연동 ---
+  // --- 💡 이미지 삭제: 로직을 Provider로 위임 ---
   Future<void> _handleDeleteImage() async {
     try {
-      await ref.read(userRepositoryProvider).deleteProfileImage();
+      await ref.read(userProfileProvider.notifier).deleteProfileImage();
       setState(() {
         _selectedImageFile = null;
         _isImageDeleted = true;
         _showImageMenu = false;
       });
-      // API 재호출 없이 전역 상태만 업데이트
-      ref.read(currentUserProvider.notifier).updateProfileImage(null);
     } catch (e) {
       debugPrint('삭제 실패: $e');
     }
   }
 
-  // 💡 닉네임 실시간 유효성 검사 (회원가입 로직 이식)
+  // 닉네임 실시간 유효성 검사
   void _validateNickname() {
     final text = _nicknameController.text;
     setState(() {
@@ -132,41 +133,22 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     });
   }
 
-  // --- 💡 최종 저장 로직 (POST 이미지 포함) ---
+  // --- 💡 최종 저장: 복잡한 API 호출을 모두 Provider로 위임 ---
   Future<void> _handleSave() async {
     try {
-      final userRepo = ref.read(userRepositoryProvider);
-
-      // 로딩바 등을 보여줄 수 있는 로직 추가 가능 (예: 다이얼로그)
-
-      // 1. 닉네임 변경 체크 및 실행
-      if (_nicknameController.text != widget.user.nickname) {
-        await userRepo.updateNickname(_nicknameController.text);
-        ref
-            .read(currentUserProvider.notifier)
-            .updateNickname(_nicknameController.text);
-      }
-
-      // 3. 이미지 변경 체크 및 실행
-      if (_selectedImageFile != null) {
-        await userRepo.uploadProfileImage(_selectedImageFile!);
-      }
-
-      // 2. UserDetail 정보 업데이트 (소개, 태그)
-      await userRepo.updateIntroduction(_introController.text);
-      await ref.read(tagProvider.notifier).updateInterestTags();
-
-      // 로컬 전역 상태 업데이트 (UserDetail용)
-      ref
-          .read(myProfileProvider.notifier)
-          .updateLocalDetail(
-            introduction: _introController.text,
-            tags: ref.read(tagProvider).tags,
+      await ref
+          .read(userProfileProvider.notifier)
+          .updateProfile(
+            currentNickname:
+                widget.user.nickname, // ✅ widget.profile → widget.user
+            newNickname: _nicknameController.text,
+            currentIntro:
+                widget.detail.introduction, // ✅ widget.profile → widget.detail
+            newIntro: _introController.text,
+            newImageFile: _selectedImageFile,
           );
 
-      // 4. 모든 작업 성공 시 처리
       if (mounted) {
-        // ref.invalidate(myProfileProvider); // 마이페이지 정보 갱신
         Navigator.pop(context);
         ScaffoldMessenger.of(
           context,
@@ -174,7 +156,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       }
     } catch (e) {
       final errorMsg = e.toString();
-      // 닉네임 중복 등의 에러는 기존처럼 setState로 에러 메시지 노출
       if (errorMsg.contains('DUPLICATE')) {
         setState(() => _isDuplicate = true);
       } else {
@@ -190,14 +171,19 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   Widget build(BuildContext context) {
     final tagState = ref.watch(tagProvider);
+    final profileEditState = ref.watch(userProfileProvider); // 💡 프로필 저장 상태 구독
+
     final selectedTagsFromProvider = tagState.tags;
     final bool isNicknameValid =
         _nicknameController.text.isNotEmpty && !_isInvalidFormat;
+
+    // 💡 Provider가 작업 중(loading)일 때는 저장 버튼을 비활성화하여 중복 터치 방지
     final bool isEnabled =
         isNicknameValid &&
         selectedTagsFromProvider.length >= 2 &&
         selectedTagsFromProvider.length <= 6 &&
-        !tagState.isLoading;
+        !tagState.isLoading &&
+        !profileEditState.isLoading;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -233,7 +219,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         ),
                       ),
 
-                      // 💡 닫기 레이어와 팝업 메뉴를 본문(Layer 1) 안의 Stack으로 옮겼습니다.
                       if (_showImageMenu) ...[
                         Positioned.fill(
                           child: GestureDetector(
@@ -274,7 +259,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
 
-  // --- 프로필 이미지 섹션 (Positioned 포함) ---
   Widget _buildProfileImageSection() {
     return Center(
       child: SizedBox(
@@ -299,9 +283,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         _selectedImageFile!,
                         fit: BoxFit.cover,
                       ) // 2순위: 새로 고름
-                    : (widget.user.profileUrl ?? '').isNotEmpty
+                    : (widget.user.profileUrl ?? '')
+                          .isNotEmpty // ✅ widget.profile → widget.user
                     ? Image.network(
-                        widget.user.profileUrl!,
+                        widget
+                            .user
+                            .profileUrl!, // ✅ widget.profile → widget.user
                         fit: BoxFit.cover,
                       ) // 3순위: 기존 이미지
                     : SvgPicture.asset(
@@ -329,9 +316,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
 
-  // --- 입력 필드 및 태그 섹션 로직 ---
-
-  // --- 💡 닉네임 입력 필드 (에러 메시지 포함하도록 수정) ---
   Widget _buildNicknameSection() {
     String? errorMessage;
     if (_isInvalidFormat) {
