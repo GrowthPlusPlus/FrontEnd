@@ -9,10 +9,12 @@ import 'package:haenaem/features/user/screens/push_notification_settings_screen.
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
-import 'package:haenaem/shared/models/tag_model.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
+import 'package:haenaem/shared/models/user.dart';
+import 'package:haenaem/shared/models/user_detail.dart';
+
 import 'withdrawal_screen.dart';
 import 'challenge_list_screen.dart';
 import 'profile_edit_screen.dart';
@@ -31,11 +33,12 @@ class MyPageScreen extends ConsumerStatefulWidget {
 class _MyPageScreenState extends ConsumerState<MyPageScreen> {
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentUserProvider);
     final profileAsync = ref.watch(myProfileProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(currentUser),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -43,16 +46,29 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             children: [
               const SizedBox(height: 20),
 
-              profileAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => const Center(child: Text('데이터 로드 실패')),
-                data: (profile) => ProfileHeader(
-                  nickname: profile.nickname,
-                  introduction: profile.introduction,
-                  profileImageUrl: profile.profileImageUrl,
-                  tags: profile.tags,
-                ),
-              ),
+              if (currentUser != null)
+                profileAsync.when(
+                  loading: () => ProfileHeader(
+                    nickname: currentUser.nickname, // ✅ 닉네임/이미지는 currentUser에서
+                    profileImageUrl: currentUser.profileUrl ?? '',
+                    introduction: '',
+                    tags: const [],
+                  ),
+                  error: (_, __) => ProfileHeader(
+                    nickname: currentUser.nickname,
+                    profileImageUrl: currentUser.profileUrl ?? '',
+                    introduction: '',
+                    tags: const [],
+                  ),
+                  data: (UserDetail detail) => ProfileHeader(
+                    nickname: currentUser.nickname,
+                    profileImageUrl: currentUser.profileUrl ?? '',
+                    introduction: detail.introduction,
+                    tags: detail.tags,
+                  ),
+                )
+              else
+                const Center(child: CircularProgressIndicator()),
 
               const SizedBox(height: 40),
               const ChallengeSection(), // 챌린지 섹션 위젯
@@ -67,7 +83,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(User? currentUser) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -84,14 +100,14 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             onTap: () {
               // 1. 현재 로드된 프로필 데이터를 가져옵니다.
               final profileData = ref.read(myProfileProvider).value;
-
-              // 2. 데이터가 있을 때만 화면 이동 (null 체크)
-              if (profileData != null) {
+              if (currentUser != null && profileData != null) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ProfileEditScreen(profile: profileData),
+                    builder: (context) => ProfileEditScreen(
+                      user: currentUser,
+                      detail: profileData,
+                    ),
                   ),
                 );
               } else {

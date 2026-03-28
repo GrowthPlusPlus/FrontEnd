@@ -5,6 +5,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../provider/challenge_provider.dart';
+import 'package:haenaem/features/home/provider/home_provider.dart';
 
 // 방장용 : 챌린지 삭제 다이얼로그
 class DeleteChallengeDialog extends ConsumerWidget {
@@ -81,6 +82,9 @@ class DeleteChallengeDialog extends ConsumerWidget {
 
                       if (success && context.mounted) {
                         // 성공 시 모든 창을 닫고 홈으로 이동
+                        ref.read(homeNotifierProvider.notifier).refresh();
+                        // 내 페이지 진행중인 챌린지 상태 업데이트
+                        ref.invalidate(myInProgressChallengesProvider);
                         Navigator.of(
                           context,
                         ).popUntil((route) => route.isFirst);

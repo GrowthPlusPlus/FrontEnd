@@ -6,8 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'package:haenaem/features/user/models/user_model.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+
 import 'package:haenaem/shared/models/tag_model.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:haenaem/shared/widgets/image_source_sheet.dart';
@@ -16,11 +15,20 @@ import 'package:haenaem/features/auth/signup/screens/profile_image_edit_screen.d
 import '../widgets/profile_image_menu.dart';
 import '../data/user_repository.dart';
 import '../provider/tag_provider.dart';
+// import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/shared/models/user_detail.dart';
+import 'package:haenaem/shared/models/user.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
 
 // 프로필 편집 화면
 class ProfileEditScreen extends ConsumerStatefulWidget {
-  final UserProfileModel profile;
-  const ProfileEditScreen({super.key, required this.profile});
+  final User user; // 닉네임, 프로필 이미지
+  final UserDetail detail; // 한줄소개, 태그
+  const ProfileEditScreen({
+    super.key,
+    required this.user,
+    required this.detail,
+  });
 
   @override
   ConsumerState<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -39,8 +47,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   void initState() {
     super.initState();
-    _nicknameController = TextEditingController(text: widget.profile.nickname);
-    _introController = TextEditingController(text: widget.profile.introduction);
+    _nicknameController = TextEditingController(text: widget.user.nickname);
+    _introController = TextEditingController(text: widget.detail.introduction);
 
     _nicknameController.addListener(_validateNickname);
     _introController.addListener(() => setState(() {}));
@@ -102,7 +110,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _isImageDeleted = true;
         _showImageMenu = false;
       });
-      ref.invalidate(myProfileProvider);
+      // API 재호출 없이 전역 상태만 업데이트
+      ref.read(currentUserProvider.notifier).updateProfileImage(null);
     } catch (e) {
       debugPrint('삭제 실패: $e');
     }
@@ -127,18 +136,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Future<void> _handleSave() async {
     try {
       final userRepo = ref.read(userRepositoryProvider);
-      final tagNotifier = ref.read(tagProvider.notifier);
 
       // 로딩바 등을 보여줄 수 있는 로직 추가 가능 (예: 다이얼로그)
 
       // 1. 닉네임 변경 체크 및 실행
-      if (_nicknameController.text != widget.profile.nickname) {
+      if (_nicknameController.text != widget.user.nickname) {
         await userRepo.updateNickname(_nicknameController.text);
-      }
-
-      // 2. 💡 한 줄 소개 변경 체크 및 실행
-      if (_introController.text != widget.profile.introduction) {
-        await userRepo.updateIntroduction(_introController.text);
+        ref
+            .read(currentUserProvider.notifier)
+            .updateNickname(_nicknameController.text);
       }
 
       // 3. 이미지 변경 체크 및 실행
@@ -146,15 +152,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         await userRepo.uploadProfileImage(_selectedImageFile!);
       }
 
-      final tagSuccess = await tagNotifier.updateInterestTags();
+      // 2. UserDetail 정보 업데이트 (소개, 태그)
+      await userRepo.updateIntroduction(_introController.text);
+      await ref.read(tagProvider.notifier).updateInterestTags();
 
-      if (!tagSuccess) {
-        throw Exception('태그 수정 중 오류가 발생했습니다.');
-      }
+      // 로컬 전역 상태 업데이트 (UserDetail용)
+      ref
+          .read(myProfileProvider.notifier)
+          .updateLocalDetail(
+            introduction: _introController.text,
+            tags: ref.read(tagProvider).tags,
+          );
 
       // 4. 모든 작업 성공 시 처리
       if (mounted) {
-        ref.invalidate(myProfileProvider); // 마이페이지 정보 갱신
+        // ref.invalidate(myProfileProvider); // 마이페이지 정보 갱신
         Navigator.pop(context);
         ScaffoldMessenger.of(
           context,
@@ -287,9 +299,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         _selectedImageFile!,
                         fit: BoxFit.cover,
                       ) // 2순위: 새로 고름
-                    : widget.profile.profileImageUrl.isNotEmpty
+                    : (widget.user.profileUrl ?? '').isNotEmpty
                     ? Image.network(
-                        widget.profile.profileImageUrl,
+                        widget.user.profileUrl!,
                         fit: BoxFit.cover,
                       ) // 3순위: 기존 이미지
                     : SvgPicture.asset(
