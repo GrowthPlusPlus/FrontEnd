@@ -108,7 +108,7 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
 
           return FeedPostCard(
             key: ValueKey(
-              '${feedState.posts[index].postId}_${feedState.posts[index].liked}_${feedState.posts[index].likeNumber}_${feedState.posts[index].commentNumber}',
+              '${feedState.posts[index].id}_${feedState.posts[index].isLiked}_${feedState.posts[index].likeCount}_${feedState.posts[index].commentCount}',
             ),
             post: feedState.posts[index],
             provider: widget.provider,
