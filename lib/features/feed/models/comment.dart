@@ -4,7 +4,7 @@ import 'package:haenaem/shared/models/user.dart';
 // 댓글 모델 클래스
 // User에 정의된 필드(id, profileUrl, nickname)를 작성자 정보로 재사용
 class Comment {
-  final String id; // 댓글 id
+  final int id; // 댓글 id
   final String content; // 댓글 내용
   final DateTime date; // 초기 댓글 작성 날짜
   final bool isEdited; // 댓글 수정 여부
@@ -20,7 +20,7 @@ class Comment {
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
-      id: json['id'] as String,
+      id: json['id'] as int,
       content: json['content'] as String,
       date: DateTime.parse(json['date'] as String),
       isEdited: json['is_edited'] as bool,
@@ -29,7 +29,7 @@ class Comment {
   }
 
   Comment copyWith({
-    String? id,
+    int? id,
     String? content,
     DateTime? date,
     bool? isEdited,
