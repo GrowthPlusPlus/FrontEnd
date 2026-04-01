@@ -19,7 +19,7 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 1. 현재 로그인한 내 프로필 정보를 가져옵니다.
-    final myProfileAsync = ref.watch(myProfileProvider);
+    //final myProfileAsync = ref.watch(myProfileProvider);
 
     // 2. 내 닉네임과 게시글 작성자 닉네임을 비교하여 '내 글' 여부 판단
     final bool isMine = post.author;

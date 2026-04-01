@@ -5,6 +5,7 @@ import '../data/challenge_repository.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import '../models/challenge_model.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/shared/models/user.dart';
 import 'dart:io';
 
 part 'challenge_provider.g.dart';
@@ -457,11 +458,12 @@ class ChallengeDeleteNotifier extends _$ChallengeDeleteNotifier {
 }
 
 // 내페이지 사용자 프로필 정보
-@riverpod
-Future<UserProfileModel> myProfile(MyProfileRef ref) async {
-  final repository = ref.watch(userRepositoryProvider);
-  return repository.getMyProfile();
-}
+// ♥️user_provider의 myprofile로 대체♥️
+// @riverpod
+// Future<User> myProfile(MyProfileRef ref) async {
+//   final repository = ref.watch(userRepositoryProvider);
+//   return repository.getMyProfile();
+// }
 
 // 내 페이지 - 나의 챌린지 - 진행중인 챌린지
 @riverpod

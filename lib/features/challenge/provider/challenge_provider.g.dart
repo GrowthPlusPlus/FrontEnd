@@ -913,23 +913,6 @@ class _ArticleCommentsProviderElement
   int get page => (origin as ArticleCommentsProvider).page;
 }
 
-String _$myProfileHash() => r'0536f34717b179e7bf7ba33d770c66e3781de904';
-
-/// See also [myProfile].
-@ProviderFor(myProfile)
-final myProfileProvider = AutoDisposeFutureProvider<UserProfileModel>.internal(
-  myProfile,
-  name: r'myProfileProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$myProfileHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef MyProfileRef = AutoDisposeFutureProviderRef<UserProfileModel>;
 String _$myInProgressChallengesHash() =>
     r'4f53f796e087c3f28343d446396e079ac6ab81dc';
 

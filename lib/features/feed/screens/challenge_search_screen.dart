@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/shared/models/user.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
 
 class ChallengeSearchScreen extends ConsumerStatefulWidget {
   const ChallengeSearchScreen({super.key});
@@ -23,7 +25,7 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
   @override
   Widget build(BuildContext context) {
     // 사용자 프로필 정보 가져오기 (헤더 이름용)
-    final profileAsync = ref.watch(myProfileProvider);
+    final currentUser = ref.watch(currentUserProvider);
 
     // 검색어가 있을 때만 api 호출
     final searchResults = ref.watch(
@@ -107,7 +109,7 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
           // 챌린지 카드 리스트
           Expanded(
             child: _currentKeyword.isEmpty
-                ? _buildRecommendationSection(profileAsync) // 검색어 없을 때
+                ? _buildRecommendationSection(currentUser) // 검색어 없을 때
                 : searchResults.when(
                     data: (list) => list.isEmpty
                         ? const Center(child: Text("검색 결과가 없습니다."))
@@ -135,14 +137,8 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
   }
 
   // 추천 섹션 (기존 코드의 그라데이션 박스 부분 분리)
-  Widget _buildRecommendationSection(
-    AsyncValue<UserProfileModel> profileAsync,
-  ) {
-    final userName = profileAsync.when(
-      data: (user) => user.nickname,
-      loading: () => "해냄",
-      error: (_, __) => "해냄",
-    );
+  Widget _buildRecommendationSection(User? currentUser) {
+    final userName = currentUser?.nickname ?? "해냄";
 
     return SingleChildScrollView(
       child: Column(

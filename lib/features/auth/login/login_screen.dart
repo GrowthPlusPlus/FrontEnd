@@ -1,5 +1,10 @@
 // 최초 작성자 : 김채영
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:crypto/crypto.dart'; // PKCE 해싱용
+import 'package:webview_flutter/webview_flutter.dart'; // 웹뷰용
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
@@ -60,14 +65,38 @@ class LoginScreen extends StatelessWidget {
                   textColor: Colors.black,
                   iconPath: 'assets/images/icons/kakao_logo.svg',
                   onTap: () async {
-                    // 1. 인가 코드와 Verifier 가져오기
-                    final authResult = await AuthService.signInWithKakao();
+                    // 1. PKCE 데이터 및 URL 준비 (AuthService 이용)
+                    final pkce = AuthService.generatePkcePair();
+                    final authUrl = AuthService.getKakaoAuthUrl(
+                      pkce['challenge']!,
+                    );
+                    String? kakaoAuthCode;
 
-                    if (authResult != null && context.mounted) {
-                      // 2. 백엔드가 정의한 @RequestBody 형식으로 쏘기
+                    if (!context.mounted) return;
+
+                    // 2. 웹뷰 실행 (UI 부분이라 Screen에 두는 게 적절합니다)
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (ctx) => Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                        ),
+                        child: _buildKakaoWebView(
+                          context: ctx,
+                          authUrl: authUrl,
+                          onCodeCaptured: (code) => kakaoAuthCode = code,
+                        ),
+                      ),
+                    );
+
+                    // 3. 획득한 코드가 있다면 백엔드로 전송
+                    if (kakaoAuthCode != null && context.mounted) {
                       await AuthService.sendKakaoAuthToBackend(
-                        code: authResult['code']!,
-                        codeVerifier: authResult['codeVerifier']!,
+                        code: kakaoAuthCode!,
+                        codeVerifier: pkce['codeVerifier']!, // 원본 열쇠 전송
                         context: context,
                       );
                     }
@@ -163,6 +192,105 @@ class LoginScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildKakaoWebView({
+    required BuildContext context,
+    required String authUrl,
+    required Function(String) onCodeCaptured,
+  }) {
+    late final WebViewController controller;
+
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent(
+        "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+      )
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onWebResourceError: (WebResourceError error) {
+            debugPrint('''
+    ⚠️ 웹뷰 로딩 에러 발생!
+    - 코드: ${error.errorCode}
+    - 설명: ${error.description}
+    - URL: ${error.url}
+  ''');
+          },
+          onNavigationRequest: (NavigationRequest request) async {
+            final url = request.url;
+
+            // 📍 [중요] 주소 감지 로그 추가
+            if (url.contains('/oauth/kakao/callback')) {
+              debugPrint('🎣 [감지 성공] 카카오 콜백 주소가 포착되었습니다!');
+              final uri = Uri.parse(url);
+              final code = uri.queryParameters['code'];
+
+              if (code != null) {
+                debugPrint('✅ 획득한 인가 코드: $code');
+                onCodeCaptured(code);
+                Navigator.pop(context); // 웹뷰 닫기
+                return NavigationDecision.prevent; // 페이지 이동 중단
+              }
+            }
+
+            // 2️⃣ 카카오톡 앱 호출 주소 처리
+            if (url.startsWith('kakaotalk://') || url.startsWith('intent://')) {
+              try {
+                debugPrint('📱 카카오톡 앱 실행 시도: $url');
+
+                // intent:// 스킴인 경우 안드로이드용 특수 처리가 필요할 수 있지만,
+                // url_launcher가 대부분 해결해줍니다.
+                final canLaunch = await canLaunchUrl(Uri.parse(url));
+                if (canLaunch) {
+                  await launchUrl(
+                    Uri.parse(url),
+                    mode: LaunchMode.externalApplication,
+                  );
+                  return NavigationDecision.prevent;
+                }
+              } catch (e) {
+                debugPrint('🚨 앱 실행 실패: $e');
+                // 앱 실행 실패 시 웹에서 로그인하도록 유지 (prevent 하지 않음)
+              }
+            }
+
+            // 리다이렉트 및 기타 주소 처리
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+          onPageStarted: (url) {
+            debugPrint("🚀 웹뷰 로딩 시작됨: $url");
+            // ✅ AuthService.kakaoRedirectUri로 시작하는지 감시
+            if (url.startsWith(AuthService.kakaoRedirectUri)) {
+              debugPrint('🎣 리다이렉트 감지!');
+              final uri = Uri.parse(url);
+              final code = uri.queryParameters['code'];
+              if (code != null) {
+                onCodeCaptured(code);
+                Navigator.pop(context);
+              }
+            }
+          },
+          onPageFinished: (url) {
+            debugPrint("✅ 웹뷰 로딩 완료됨: $url");
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(authUrl));
+
+    // 📍 로드하기 직전에 실제 어떤 주소를 부르는지 확인!
+    debugPrint("🌍 웹뷰 로딩 시도 URL: $authUrl");
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: WebViewWidget(controller: controller),
     );
   }
 }
