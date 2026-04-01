@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+//import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/features/feed/models/post.dart';
 
 class FeedRepository {
   final Dio _dio;
@@ -18,10 +19,10 @@ class FeedRepository {
 
       if (response.statusCode == 200) {
         final List<dynamic> content = response.data['content'] ?? [];
-        final List<CertificationPostModel> posts = [];
+        final List<Post> posts = [];
         for (var item in content) {
           try {
-            posts.add(CertificationPostModel.fromJson(item));
+            posts.add(Post.fromJson(item));
           } catch (e) {
             print("⚠️ 특정 포스트 파싱 실패 (ID: ${item['postId']}): $e");
             // 에러가 난 포스트는 건너뜁니다.

@@ -1,9 +1,10 @@
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+//import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/features/feed/models/post.dart';
 
 // 피드 상태를 관리하는 클래스
 // 로딩 상태, 에러 상태 관리
 class FeedState {
-  final List<CertificationPostModel> posts;
+  final List<Post> posts;
   final bool isLoading;
   final String? errorMessage;
   final int currentPage; // 현재 페이지 번호
@@ -18,7 +19,7 @@ class FeedState {
   });
 
   FeedState copyWith({
-    List<CertificationPostModel>? posts,
+    List<Post>? posts,
     bool? isLoading,
     String? errorMessage,
     int? currentPage,

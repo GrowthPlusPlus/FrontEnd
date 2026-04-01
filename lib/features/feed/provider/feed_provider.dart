@@ -117,8 +117,8 @@ class FeedNotifier extends StateNotifier<FeedState> {
   // 좋아요 상태 변경 메서드
   Future<void> toggleLike(int postId) async {
     // 1. 상태 변경 전, 현재 해당 포스트의 좋아요 여부를 확인합니다.
-    final post = state.posts.firstWhere((p) => p.postId == postId);
-    final wasLiked = post.liked;
+    final post = state.posts.firstWhere((p) => p.id == postId);
+    final wasLiked = post.isLiked;
 
     // 2. 로컬 UI 즉시 변경 (Optimistic Update)
     toggleLikeLocally(postId);
@@ -136,11 +136,11 @@ class FeedNotifier extends StateNotifier<FeedState> {
   void toggleLikeLocally(int postId) {
     state = state.copyWith(
       posts: state.posts.map((post) {
-        if (post.postId == postId) {
-          final isLiked = post.liked;
+        if (post.id == postId) {
+          final isLiked = post.isLiked;
           return post.copyWith(
-            liked: !isLiked,
-            likeNumber: isLiked ? post.likeNumber - 1 : post.likeNumber + 1,
+            isLiked: !isLiked,
+            likeCount: isLiked ? post.likeCount - 1 : post.likeCount + 1,
           );
         }
         return post;
@@ -151,9 +151,9 @@ class FeedNotifier extends StateNotifier<FeedState> {
   void incrementCommentCountLocally(int postId) {
     state = state.copyWith(
       posts: state.posts.map((post) {
-        if (post.postId == postId) {
+        if (post.id == postId) {
           // 기존 post를 복사하면서 commentNumber만 1 증가시킴
-          return post.copyWith(commentNumber: post.commentNumber + 1);
+          return post.copyWith(commentCount: post.commentCount + 1);
         }
         return post;
       }).toList(),
@@ -163,10 +163,10 @@ class FeedNotifier extends StateNotifier<FeedState> {
   void decrementCommentCountLocally(int postId) {
     state = state.copyWith(
       posts: state.posts.map((post) {
-        if (post.postId == postId) {
+        if (post.id == postId) {
           return post.copyWith(
             // 💡 0보다 작아지지 않도록 처리하면서 -1
-            commentNumber: post.commentNumber > 0 ? post.commentNumber - 1 : 0,
+            commentCount: post.commentCount > 0 ? post.commentCount - 1 : 0,
           );
         }
         return post;
