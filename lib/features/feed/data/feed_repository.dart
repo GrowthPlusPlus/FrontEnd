@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 //import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/feed/models/post.dart';
+import 'package:haenaem/features/feed/models/comment.dart';
 
 class FeedRepository {
   final Dio _dio;
@@ -60,6 +62,173 @@ class FeedRepository {
     } catch (e) {
       print("❌ [API] 좋아요 토글 에러: $e");
       rethrow;
+    }
+  }
+
+  // 인증글 상세 정보 가져오기
+  Future<Post> getArticleDetail(int postId) async {
+    try {
+      debugPrint('🚀 [GET Request] /api/articles/$postId');
+      final response = await _dio.get('/api/articles/$postId');
+
+      if (response.statusCode == 200) {
+        debugPrint('📥 상세조회 서버 응답 원본: ${response.data}');
+        return Post.fromJson(response.data);
+      } else {
+        throw Exception('인증글 상세 조회 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 상세 조회 에러: ${e.response?.data}');
+      throw Exception('정보를 불러오지 못했습니다.');
+    }
+  }
+
+  // 인증글 생성
+  Future<Post> createArticle({
+    required int challengeId,
+    required String content,
+    required List<int> tempImageIds,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/articles',
+        data: {
+          "content": content,
+          "challengeId": challengeId,
+          "tempImageIds": tempImageIds,
+        },
+      );
+
+      if (response.statusCode == 201) {
+        return Post.fromJson(response.data);
+      } else {
+        throw Exception('인증글 생성 실패: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 인증글 생성 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '게시글 업로드 실패');
+    }
+  }
+
+  // 인증글 수정
+  Future<Post> updateArticle({
+    required int postId,
+    required String content,
+    required List<int> deleteImageIds,
+    required List<int> tempImageIds,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/api/articles/$postId',
+        data: {
+          "content": content,
+          "deleteImageIds": deleteImageIds,
+          "tempImageIds": tempImageIds,
+        },
+      );
+      if (response.statusCode == 200) {
+        debugPrint('✅ 인증글 수정 성공: ${response.data}');
+        return Post.fromJson(response.data);
+      } else {
+        throw Exception('수정 실패: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 수정 에러 상세: ${e.response?.data}');
+      throw Exception(e.response?.data?['message'] ?? '수정 중 오류 발생');
+    }
+  }
+
+  // 인증글 삭제
+  Future<void> deleteArticle(int postId) async {
+    try {
+      debugPrint('🚀 [DELETE Request] /api/articles/$postId');
+      final response = await _dio.delete('/api/articles/$postId');
+
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('삭제 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 인증글 삭제 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 인증글 삭제 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '삭제 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 댓글 목록 조회
+  Future<List<Comment>> getComments({required int postId, int page = 0}) async {
+    try {
+      final response = await _dio.get(
+        '/api/articles/$postId/comments',
+        queryParameters: {'page': page},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> content = response.data['content'] ?? [];
+        return content.map((json) => Comment.fromJson(json)).toList();
+      } else {
+        throw Exception('댓글 목록 조회 실패');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 조회 에러: ${e.response?.data}');
+      throw Exception('댓글을 불러오는 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 댓글 생성
+  Future<void> createComment({
+    required int postId,
+    required String contents,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/articles/$postId/comments',
+        data: {"contents": contents},
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception('댓글 생성 실패 (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 생성 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '댓글 작성 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 댓글 수정
+  Future<void> updateComment({
+    required int commentId,
+    required String contents,
+  }) async {
+    try {
+      debugPrint('🚀 [PATCH Request] /api/comments/$commentId');
+      final response = await _dio.patch(
+        '/api/comments/$commentId',
+        data: {"contents": contents},
+      );
+
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('댓글 수정 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 댓글 수정 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 수정 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '댓글 수정 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 댓글 삭제
+  Future<void> deleteComment(int commentId) async {
+    try {
+      debugPrint('🚀 [DELETE Request] /api/comments/$commentId');
+      final response = await _dio.delete('/api/comments/$commentId');
+
+      if (response.statusCode != 204 && response.statusCode != 200) {
+        throw Exception('댓글 삭제 실패 (Status: ${response.statusCode})');
+      }
+      debugPrint('✅ 댓글 삭제 성공');
+    } on DioException catch (e) {
+      debugPrint('❌ 댓글 삭제 에러: ${e.response?.data}');
+      throw Exception(e.response?.data['message'] ?? '댓글 삭제 중 오류가 발생했습니다.');
     }
   }
 }
