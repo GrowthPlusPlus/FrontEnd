@@ -196,7 +196,7 @@ final postDeleteNotifierProvider =
     );
 
 typedef _$PostDeleteNotifier = AutoDisposeNotifier<AsyncValue<void>>;
-String _$postLikeNotifierHash() => r'b90962918ddbd98fc1443e79ed66c99348906e93';
+String _$postLikeNotifierHash() => r'babbf64cb6d1c62edec7a8ee5635fa76b29bf63c';
 
 /// See also [PostLikeNotifier].
 @ProviderFor(PostLikeNotifier)

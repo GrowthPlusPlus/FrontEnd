@@ -6,15 +6,17 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/widgets/DeleteConfirmDialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/features/feed/models/post.dart';
+//import 'package:haenaem/features/challenge/models/challenge_model.dart';
+// 리스트 갱신용으로 유지
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'edit_article_dialog.dart';
+//import '../../challenge/widgets/edit_article_dialog.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 
 // 인증글 다이얼로그 (내 인증글일 경우와 타인의 인증글일 경우)
-class ChallengeFeedPopupMenu extends ConsumerWidget {
-  final CertificationPostModel post; // 인증글 데이터
-  const ChallengeFeedPopupMenu({super.key, required this.post});
+class PostPopupMenu extends ConsumerWidget {
+  final Post post; // 인증글 데이터
+  const PostPopupMenu({super.key, required this.post});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,16 +24,18 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
     //final myProfileAsync = ref.watch(myProfileProvider);
 
     // 2. 내 닉네임과 게시글 작성자 닉네임을 비교하여 '내 글' 여부 판단
-    final bool isMine = post.author;
+    final bool isMine = post.isAuthor;
 
     // 2. [날짜 체크] 오늘 날짜 문자열(yyyy-MM-dd) 생성
     final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     // 3. 게시글의 postDate와 오늘 날짜 비교
-    final bool isToday = post.postDate.trim().startsWith(todayStr);
+    // 💡 날짜 타입이 DateTime으로 바뀌었으므로 String으로 포맷 변환 후 비교
+    final String postDateStr = DateFormat('yyyy-MM-dd').format(post.date);
+    final bool isToday = postDateStr.startsWith(todayStr);
 
     // 💡 디버깅을 위해 로그를 한 번 찍어보세요. (문제 확인용)
-    debugPrint('🔍 비교 날짜 - 서버 데이터: "${post.postDate}", 오늘 날짜: "$todayStr"');
+    debugPrint('🔍 비교 날짜 - 서버 데이터: "$postDateStr", 오늘 날짜: "$todayStr"');
     debugPrint('🔍 판정 결과 - isMine: $isMine, isToday: $isToday');
 
     return PopupMenuButton<String>(
@@ -182,7 +186,7 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
             // 💡 삭제 시도
             final success = await ref
                 .read(articleDeleteNotifierProvider.notifier)
-                .removeArticle(post.postId);
+                .removeArticle(post.id);
 
             if (success && context.mounted) {
               ScaffoldMessenger.of(

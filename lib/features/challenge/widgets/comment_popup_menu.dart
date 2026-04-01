@@ -4,15 +4,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+//import 'package:haenaem/features/challenge/models/challenge_model.dart';
+//import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/features/feed/models/comment.dart';
+import 'package:haenaem/features/feed/provider/comment_provider.dart';
 import 'package:haenaem/features/challenge/widgets/DeleteConfirmDialog.dart';
 import 'edit_article_dialog.dart';
 
 // 내 댓글이면 삭제/수정 + 다른 사람 댓글이면 신고 다이얼로그
 class CommentPopupMenu extends ConsumerWidget {
   final int postId;
-  final ChallengeComment comment;
+  final Comment comment;
   final dynamic feedProvider;
 
   const CommentPopupMenu({
@@ -38,7 +40,7 @@ class CommentPopupMenu extends ConsumerWidget {
       color: Colors.white,
       itemBuilder: (context) {
         // 내 댓글인 경우 : 수정/삭제
-        if (comment.mine) {
+        if (comment.isMine) {
           return [
             _buildPopupItem(
               '수정하기',
@@ -107,17 +109,17 @@ class CommentPopupMenu extends ConsumerWidget {
         final String? newContents = await showDialog<String>(
           context: context,
           builder: (context) =>
-              EditArticleDialog(initialContent: comment.contents),
+              EditArticleDialog(initialContent: comment.content),
         );
 
         // 수정을 완료하고 텍스트를 입력했을 경우 API 호출
         if (newContents != null && newContents.trim().isNotEmpty) {
           //FocusManager.instance.primaryFocus?.unfocus(); // 키보드 닫기!
           final success = await ref
-              .read(articleCommentUpdateNotifierProvider.notifier)
+              .read(commentUpdateNotifierProvider.notifier)
               .editComment(
                 postId: postId,
-                commentId: comment.commentId,
+                commentId: comment.id,
                 contents: newContents,
               );
 
@@ -142,8 +144,8 @@ class CommentPopupMenu extends ConsumerWidget {
         if (confirmed == true) {
           // 댓글 삭제 API 호출
           final success = await ref
-              .read(articleCommentDeleteNotifierProvider.notifier)
-              .removeComment(postId: postId, commentId: comment.commentId);
+              .read(commentDeleteNotifierProvider.notifier)
+              .removeComment(postId: postId, commentId: comment.id);
 
           if (success && context.mounted) {
             // 피드 화면 댓글 수 감소를 위해 필요한 코드

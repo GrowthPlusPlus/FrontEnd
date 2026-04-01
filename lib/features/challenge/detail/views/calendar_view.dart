@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
 import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/features/feed/models/post.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
   final int challengeId;
@@ -242,7 +243,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
   Widget _buildCalendarGrid(
     DateTime date,
     List<ChallengeCalendarPhoto> photos,
-    List<CertificationPostModel> allPosts,
+    List<Post> allPosts,
   ) {
     final int skipDays = DateTime(date.year, date.month, 1).weekday % 7;
     final int lastDayOfMonth = DateTime(date.year, date.month + 1, 0).day;
@@ -271,9 +272,13 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
         );
         bool isCertified = photoData != null && photoData.postId != -1;
 
-        final CertificationPostModel? fullPost = isCertified
-            ? allPosts.firstWhereOrNull((p) => p.postId == photoData.postId) ??
-                  allPosts.firstWhereOrNull((p) => p.postDate == targetDateStr)
+        final Post? fullPost = isCertified
+            ? allPosts.firstWhereOrNull((p) => p.id == photoData.postId) ??
+                  allPosts.firstWhereOrNull(
+                    (p) =>
+                        DateFormat('yyyy-MM-dd').format(p.date) ==
+                        targetDateStr,
+                  )
             : null;
 
         return GestureDetector(
@@ -281,10 +286,8 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
               ? () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PostDetailScreen(
-                      postId: fullPost.postId,
-                      post: fullPost,
-                    ),
+                    builder: (_) =>
+                        PostDetailScreen(postId: fullPost.id, post: fullPost),
                   ),
                 )
               : null,
@@ -320,9 +323,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     );
   }
 
-  Widget _buildPostsHeader(
-    AsyncValue<List<CertificationPostModel>> postsAsync,
-  ) {
+  Widget _buildPostsHeader(AsyncValue<List<Post>> postsAsync) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -343,18 +344,15 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     child: Text('이번 달 인증글이 없습니다.', style: TextStyle(color: AppColors.gray2)),
   );
 
-  Widget _buildCertCard(
-    BuildContext context, {
-    required CertificationPostModel post,
-  }) {
-    final String formattedDate = (post.postDate.isNotEmpty)
-        ? DateFormat('M월 d일').format(DateTime.parse(post.postDate))
-        : "";
+  Widget _buildCertCard(BuildContext context, {required Post post}) {
+    // 날짜 포맷팅: "M월 d일" 형태로 변환
+    final String formattedDate = DateFormat('M월 d일').format(post.date);
+
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => PostDetailScreen(post: post, postId: post.postId),
+          builder: (_) => PostDetailScreen(post: post, postId: post.id),
         ),
       ),
       child: Container(

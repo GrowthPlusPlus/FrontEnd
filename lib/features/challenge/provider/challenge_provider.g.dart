@@ -313,15 +313,14 @@ class _ChallengeCalendarDataProviderElement
   int get challengeId => (origin as ChallengeCalendarDataProvider).challengeId;
 }
 
-String _$challengePostsHash() => r'08fedb7bb5a647c8fc3744997c2179902fb31fcd';
+String _$challengePostsHash() => r'ab79af0eb7249924a57b379a02a986c1a8e97bab';
 
 /// See also [challengePosts].
 @ProviderFor(challengePosts)
 const challengePostsProvider = ChallengePostsFamily();
 
 /// See also [challengePosts].
-class ChallengePostsFamily
-    extends Family<AsyncValue<List<CertificationPostModel>>> {
+class ChallengePostsFamily extends Family<AsyncValue<List<Post>>> {
   /// See also [challengePosts].
   const ChallengePostsFamily();
 
@@ -365,8 +364,7 @@ class ChallengePostsFamily
 }
 
 /// See also [challengePosts].
-class ChallengePostsProvider
-    extends AutoDisposeFutureProvider<List<CertificationPostModel>> {
+class ChallengePostsProvider extends AutoDisposeFutureProvider<List<Post>> {
   /// See also [challengePosts].
   ChallengePostsProvider({
     required int challengeId,
@@ -410,8 +408,7 @@ class ChallengePostsProvider
 
   @override
   Override overrideWith(
-    FutureOr<List<CertificationPostModel>> Function(ChallengePostsRef provider)
-    create,
+    FutureOr<List<Post>> Function(ChallengePostsRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -430,8 +427,7 @@ class ChallengePostsProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<CertificationPostModel>>
-  createElement() {
+  AutoDisposeFutureProviderElement<List<Post>> createElement() {
     return _ChallengePostsProviderElement(this);
   }
 
@@ -456,8 +452,7 @@ class ChallengePostsProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ChallengePostsRef
-    on AutoDisposeFutureProviderRef<List<CertificationPostModel>> {
+mixin ChallengePostsRef on AutoDisposeFutureProviderRef<List<Post>> {
   /// The parameter `challengeId` of this provider.
   int get challengeId;
 
@@ -469,7 +464,7 @@ mixin ChallengePostsRef
 }
 
 class _ChallengePostsProviderElement
-    extends AutoDisposeFutureProviderElement<List<CertificationPostModel>>
+    extends AutoDisposeFutureProviderElement<List<Post>>
     with ChallengePostsRef {
   _ChallengePostsProviderElement(super.provider);
 

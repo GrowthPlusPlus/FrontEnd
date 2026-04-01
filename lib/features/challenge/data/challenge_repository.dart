@@ -12,6 +12,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/features/feed/models/post.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 part 'challenge_repository.g.dart';
 
@@ -101,7 +102,7 @@ class ChallengeRepository {
   }
 
   //연도(year)와 월(month)을 파라미터로 받아 인증글 목록을 가져오는 함수
-  Future<List<CertificationPostModel>> getChallengePosts({
+  Future<List<Post>> getChallengePosts({
     required int challengeId,
     required int year,
     required int month,
@@ -119,9 +120,7 @@ class ChallengeRepository {
       if (response.statusCode == 200) {
         // Page 객체의 'content' 리스트를 추출
         final List<dynamic> content = response.data['content'] ?? [];
-        return content
-            .map((json) => CertificationPostModel.fromJson(json))
-            .toList();
+        return content.map((json) => Post.fromJson(json)).toList();
       } else {
         throw Exception('인증글 목록 조회 실패');
       }

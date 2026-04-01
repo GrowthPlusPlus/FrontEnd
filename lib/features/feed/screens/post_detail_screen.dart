@@ -4,16 +4,21 @@ import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// 💡 기존 challenge_provider 대신 분리된 프로바이더들을 임포트합니다.
+import 'package:haenaem/features/feed/provider/post_detail_provider.dart';
+import 'package:haenaem/features/feed/provider/comment_provider.dart';
+//import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+//import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/comment_popup_menu.dart';
 import 'package:haenaem/features/feed/widgets/feed_post_card.dart'; // FeedPostCard 임포트
+import 'package:haenaem/features/feed/models/post.dart';
+import 'package:haenaem/features/feed/models/comment.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final int postId;
-  final CertificationPostModel? post;
+  final Post? post;
   final dynamic feedProvider;
 
   const PostDetailScreen({
@@ -50,9 +55,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // 상세 정보 및 댓글 데이터 구독
-    final detailAsync = ref.watch(articleDetailProvider(postId: widget.postId));
+    final detailAsync = ref.watch(postDetailProvider(postId: widget.postId));
     final commentsAsync = ref.watch(
-      articleCommentsProvider(postId: widget.postId),
+      postCommentsProvider(postId: widget.postId),
     );
 
     return Scaffold(
@@ -184,7 +189,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // 💡 댓글 작성 API 호출
                     final contents = _commentController.text.trim();
                     final success = await ref
-                        .read(articleCommentCreateNotifierProvider.notifier)
+                        .read(commentCreateNotifierProvider.notifier)
                         .addComment(postId: widget.postId, contents: contents);
 
                     if (success && mounted) {
@@ -224,7 +229,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Future<void> _handleCommentSubmit() async {
     final contents = _commentController.text.trim();
     final success = await ref
-        .read(articleCommentCreateNotifierProvider.notifier)
+        .read(commentCreateNotifierProvider.notifier)
         .addComment(postId: widget.postId, contents: contents);
 
     if (success && mounted) {
@@ -238,12 +243,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  Widget _buildCommentItem(ChallengeComment comment) {
-    final DateTime? displayDate = comment.updatedAt ?? comment.createdAt;
-    String commentDate = "";
-    if (displayDate != null) {
-      commentDate = DateFormat('yyyy.MM.dd HH:mm').format(displayDate);
-    }
+  Widget _buildCommentItem(Comment comment) {
+    //날짜 처리는 comment.date로 통합되었음
+    String commentDate = DateFormat('yyyy.MM.dd HH:mm').format(comment.date);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -252,11 +254,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         children: [
           CircleAvatar(
             radius: 18,
+            // 타입 안정성을 위해 as ImageProvider 추가
             backgroundImage:
-                (comment.userPicture != null && comment.userPicture!.isNotEmpty)
-                ? NetworkImage(comment.userPicture!)
+                (comment.writer.profileUrl != null &&
+                    comment.writer.profileUrl!.isNotEmpty)
+                ? NetworkImage(comment.writer.profileUrl!) as ImageProvider
                 : null,
-            child: (comment.userPicture == null || comment.userPicture!.isEmpty)
+            child:
+                (comment.writer.profileUrl == null ||
+                    comment.writer.profileUrl!.isEmpty)
                 ? SvgPicture.asset(
                     'assets/images/icons/default_profile_icon.svg',
                   )
@@ -270,7 +276,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(comment.userNickname, style: AppTypography.b1),
+                    Text(comment.writer.nickname, style: AppTypography.b1),
+
                     CommentPopupMenu(
                       postId: widget.postId,
                       comment: comment,
@@ -279,7 +286,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(comment.contents, style: AppTypography.b2),
+                Text(comment.content, style: AppTypography.b2),
                 const SizedBox(height: 4),
                 Text(
                   commentDate,
