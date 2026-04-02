@@ -1,5 +1,4 @@
 import 'package:haenaem/shared/models/user.dart';
-import 'package:haenaem/features/challenge/models/image_model.dart';
 
 // 최초 작성자: 강선욱
 // 인증글 모델 클래스
@@ -36,15 +35,19 @@ class Post {
         .toList();
 
     return Post(
-      id: json['id'] as int,
+      id: json['postId'] as int,
       title: json['title'] as String,
       content: json['content'] as String,
       images: parsedImages,
-      likeCount: json['like_count'] as int,
-      isLiked: json['is_liked'] as bool,
-      commentCount: json['comment_count'] as int,
-      date: DateTime.parse(json['date'] as String),
-      writer: User.fromJson(json['writer'] as Map<String, dynamic>),
+      likeCount: json['likeNumber'] as int,
+      isLiked: json['liked'] as bool,
+      commentCount: json['commentNumber'] as int,
+      date: DateTime.parse(json['updatedAt'] as String),
+      writer: User(
+        id: json['userId'] as int,
+        nickname: json['userNickname'] as String? ?? '이름 없음',
+        profileUrl: json['userImageUrl'] as String?,
+      ),
     );
   }
 
