@@ -98,13 +98,10 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
     super.dispose();
   }
 
-  // 챌린지 생성 데이터 제출 준비 로직
-  void _submitChallenge() async {
-    // 1. 데이터 가공 (Swagger 형식에 맞춤)
+  Map<String, dynamic> _buildRequestData() {
     final int duration =
         int.tryParse(_selectedDuration?.replaceAll('일', '') ?? '0') ?? 0;
 
-    // 인증 빈도 매핑 (예: "매일" -> 7, "주 3회" -> 3)
     int frequency = 7;
     if (_selectedFrequency != "매일") {
       frequency =
@@ -114,50 +111,43 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
           7;
     }
 
-    // 서버 전송용 태그 데이터 가공
-    final tagIds = _selectedTagModels.map((t) => t.id).toList();
-
-    final requestData = {
+    return {
       "title": _nameController.text.trim(),
       "startDate": _selectedDay != null
           ? "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}"
           : "",
       "duration": duration,
       "frequency": frequency,
-      "tags": tagIds,
+      "tags": _selectedTagModels.map((t) => t.id).toList(),
       "description": _descriptionController.text.trim(),
-      "photoRequired": selectedType == 1, // 사진 필수 여부 (bool)
+      "photoRequired": selectedType == 1,
       "challengeVisibility": selectedVisibility == 1
           ? "PRIVATE"
           : (selectedVisibility == 2 ? "PUBLIC" : "FRIENDS_ONLY"),
       "maxParticipantNumber": 50,
     };
+  }
 
+  // 챌린지 생성 데이터 제출 준비 로직
+  void _submitChallenge() async {
+    final requestData = _buildRequestData(); // ✅ 데이터 가공 분리
     debugPrint('🚀 서버 전송 데이터: ${jsonEncode(requestData)}');
 
-    // 2. API 호출
     final notifier = ref.read(challengeCreateNotifierProvider.notifier);
     final response = await notifier.create(requestData);
 
-    // 3. 결과 처리
     if (response != null && mounted) {
-      // 현황 페이지로 이동하며 데이터 전달
-      debugPrint('✅ 5초 대기 후 이동 시도 - challengeId: ${response.id}');
-
       debugPrint('✅ 생성된 실제 ID: ${response.id}');
-
-      if (!mounted) return;
       ref.read(homeNotifierProvider.notifier).refresh();
       ref.invalidate(myInProgressChallengesProvider);
 
-      await Navigator.pushReplacement(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => ChallengeMainScreen(challengeId: response.id),
         ),
       );
     } else if (mounted) {
-      // 에러 발생 시 처리 (notifier 내부에서 에러가 관리되지만 간단히 추가 가능)
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('챌린지 생성 중 오류가 발생했습니다.')));

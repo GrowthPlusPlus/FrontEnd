@@ -6,11 +6,12 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_popup_menu.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
+//import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog_.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/challenge/detail/screens/member_ranking_screen.dart';
+import 'package:haenaem/features/challenge/create/widgets/challenge_create_success_dialog.dart';
+import 'package:haenaem/shared/models/challenge_base.dart';
 
 // 분리된 뷰 파일들 (아래 2번 단계에서 생성/수정할 파일들)
 import 'package:haenaem/features/challenge/detail/views/calendar_view.dart';
@@ -21,7 +22,7 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
   final int challengeId;
   final String? challengeTitle;
   final bool isJustCreated;
-  final ChallengeCreateResponse? createdData;
+  final ChallengeBase? createdData;
 
   const ChallengeMainScreen({
     super.key,
@@ -59,22 +60,13 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
 
     // 챌린지 생성 직후라면 생성 성공 다이얼로그 실행
     if (widget.isJustCreated && widget.createdData != null) {
-      // 프레임이 그려진 직후에 다이얼로그를 띄우기 위해 postFrameCallback 사용
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showDialog(
           context: context,
           barrierColor: const Color(0x7F1A1D1B),
           builder: (context) => ChallengeCreateSuccessDialog(
-            // [수정 1] friends 파라미터 삭제 (이제 필요 없음)
-            // friends: widget.createdData!.friends,
-
-            // [수정 2] challengeId 추가 (필수)
-            // 주의: createdData 객체 안에 있는 ID 변수명을 정확히 적어주세요. (예: .id 또는 .challengeId)
-            // challengeId: widget.createdData!.id,
-
-            // // 기존 유지
-            // challengeLink: widget.createdData!.challengeLink,
-            createdData: widget.createdData!,
+            challengeId: widget.createdData!.id, // ✅ ChallengeBase.id 사용
+            //challengeLink: '', // ✅ ChallengeBase에 link 없으므로 빈 값
           ),
         );
       });
@@ -90,7 +82,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
     super.dispose();
   }
 
-  void _scrollToTop(ScrollController controller) {
+  void scrollToTop(ScrollController controller) {
     if (controller.hasClients) {
       controller.animateTo(
         0,
@@ -176,11 +168,11 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomButton(),
+      bottomNavigationBar: buildBottomButton(),
     );
   }
 
-  Widget _buildBottomButton() {
+  Widget buildBottomButton() {
     // 0: 소개, 1: 내 현황 -> '인증하기'
     // 2: 멤버 현황 -> '내 순위 확인하기'
     final bool isMemberTab = _tabController.index == 2;
@@ -222,7 +214,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen>
     );
   }
 
-  void _scrollToMyRank() {
+  void scrollToMyRank() {
     // MemberView에서 내 순위를 찾는 로직을 구현하거나
     // scrollController를 통해 하단으로 이동시키는 로직 등을 수행합니다.
     _memberScrollController.animateTo(

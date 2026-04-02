@@ -5,7 +5,7 @@ import '../data/challenge_repository.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import '../models/challenge_model.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
-import 'package:haenaem/shared/models/user.dart';
+import 'package:haenaem/shared/models/challenge_base.dart';
 import 'dart:io';
 
 part 'challenge_provider.g.dart';
@@ -110,18 +110,13 @@ Future<List<ChallengeTagModel>> allTags(AllTagsRef ref) {
 @riverpod
 class ChallengeCreateNotifier extends _$ChallengeCreateNotifier {
   @override
-  AsyncValue<ChallengeCreateResponse?> build() => const AsyncValue.data(null);
+  AsyncValue<ChallengeBase?> build() => const AsyncValue.data(null); // ✅ ChallengeBase로 교체
 
-  // Future<ChallengeCreateResponse?>를 반환하도록 수정
-  Future<ChallengeCreateResponse?> create(Map<String, dynamic> data) async {
+  Future<ChallengeBase?> create(Map<String, dynamic> data) async {
     state = const AsyncValue.loading();
-
-    // AsyncValue.guard의 결과를 변수에 담습니다.
     state = await AsyncValue.guard(
       () => ref.read(challengeRepositoryProvider).createChallenge(data),
     );
-
-    // 💡 UI에서 결과를 기다릴 수 있게 value(성공 시 데이터)를 반환합니다.
     return state.valueOrNull;
   }
 }
