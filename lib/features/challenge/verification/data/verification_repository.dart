@@ -61,6 +61,8 @@ class VerificationRepository {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
+        debugPrint('📦 서버 응답 데이터: ${response.data}');
+
         // [변경] CertificationPostModel -> Post
         return Post.fromJson(response.data);
       } else {
