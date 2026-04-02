@@ -12,7 +12,7 @@ class AiNoticeBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -30,10 +30,10 @@ class AiNoticeBox extends StatelessWidget {
               BlendMode.srcIn,
             ),
           ),
-          const SizedBox(width: 7),
+          const SizedBox(width: 5),
           Expanded(
             child: Text(
-              '정확한 인증을 위해 AI 검증 단계를 거치게 됩니다. \n환경에 따라 인식이 지연되거나 재촬영이 필요할 수 있습니다.',
+              '정확한 인증을 위해 AI 검증 단계를 거치게 됩니다.\n환경에 따라 인식이 지연되거나 재촬영이 필요할 수 있습니다.',
               style: AppTypography.c1.copyWith(color: AppColors.gray1),
             ),
           ),

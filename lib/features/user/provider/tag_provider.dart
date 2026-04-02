@@ -1,9 +1,8 @@
 // 최초 작성자 : 김채영
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../challenge/data/challenge_repository.dart';
 import '../../challenge/models/challenge_model.dart';
-import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/shared/models/user_detail.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../../auth/signup/models/signup_state.dart';
@@ -30,11 +29,11 @@ class TagNotifier extends Notifier<SignupState> {
       // 전체 태그와 내 프로필 동시 로드
       final results = await Future.wait([
         repository.getAllTags(),
-        repository.getMyProfile(), // GET /api/users/me/profile
+        repository.getMyProfileDetail(),
       ]);
 
       _allServerTags = results[0] as List<ChallengeTagModel>;
-      final profile = results[1] as UserProfileModel; // 프로필 모델 가정
+      final profile = results[1] as UserDetail; // 프로필 모델 가정
 
       _initialTagNames = List<String>.from(profile.tags);
 

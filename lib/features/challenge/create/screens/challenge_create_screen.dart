@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'dart:convert';
@@ -141,13 +142,15 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
     // 3. 결과 처리
     if (response != null && mounted) {
       // 현황 페이지로 이동하며 데이터 전달
-      // pushReplacement를 쓰면 '만들기' 화면이 스택에서 제거되어 뒤로가기를 눌러도 다시 나오지 않습니다.
-      await Future.delayed(const Duration(seconds: 5));
       debugPrint('✅ 5초 대기 후 이동 시도 - challengeId: ${response.id}');
 
       debugPrint('✅ 생성된 실제 ID: ${response.id}');
+
       if (!mounted) return;
-      Navigator.pushReplacement(
+      ref.read(homeNotifierProvider.notifier).refresh();
+      ref.invalidate(myInProgressChallengesProvider);
+
+      await Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) =>

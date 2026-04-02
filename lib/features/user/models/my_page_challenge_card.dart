@@ -6,8 +6,8 @@ import 'package:haenaem/shared/models/home_challenge_card.dart';
 
 enum ChallengeStatus {
   inProgress, // 진행중
-  completed, // 완료
-  failed, // 실패
+  success, // 완료
+  fail, // 실패
 }
 
 class MyPageChallengeCard {

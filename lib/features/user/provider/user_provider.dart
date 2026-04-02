@@ -1,26 +1,57 @@
 // 최초 작성자 : 김채영
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../models/user_model.dart';
 import 'package:haenaem/shared/models/user.dart';
+import 'package:haenaem/shared/models/user_detail.dart';
+import 'package:haenaem/features/user/data/user_repository.dart';
 
 part 'user_provider.g.dart';
-
 // 앱 전체에서 현재 로그인한 사용자의 정보를 관리하는 전역 상태 클래스
 
 @Riverpod(keepAlive: true) // 앱이 켜져 있는 동안 데이터를 계속 유지
 class CurrentUser extends _$CurrentUser {
   @override
-  UserProfileModel? build() {
-    return null; // 초기값은 로그인 전이므로 null
+  User? build() {
+    return null;
   }
 
-  // 사용자 정보 업데이트 (로그인 시 호출)
-  void setUser(UserProfileModel user) {
+  // 로그인 시 호출
+  void setUser(User user) {
     state = user;
   }
 
   // 로그아웃 시 호출
   void clearUser() {
     state = null;
+  }
+
+  // 닉네임만 업데이트
+  void updateNickname(String nickname) {
+    state = state?.copyWith(nickname: nickname);
+  }
+
+  // 프로필 이미지만 업데이트
+  void updateProfileImage(String? profileUrl) {
+    state = state?.copyWith(profileUrl: profileUrl);
+  }
+}
+
+@riverpod
+class MyProfile extends _$MyProfile {
+  @override
+  FutureOr<UserDetail> build() async {
+    final userRepo = ref.read(userRepositoryProvider);
+    return userRepo.getMyProfileDetail(); // ✅ 새 메서드 호출
+  }
+
+  // API 호출 없이 로컬 상세 정보만 업데이트
+  void updateLocalDetail({String? introduction, List<String>? tags}) {
+    state.whenData((current) {
+      state = AsyncData(
+        UserDetail(
+          introduction: introduction ?? current.introduction,
+          tags: tags ?? current.tags,
+        ),
+      );
+    });
   }
 }

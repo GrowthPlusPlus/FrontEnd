@@ -5,15 +5,16 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/models/tag_model.dart';
 import '../../../shared/widgets/tag_badge.dart';
+import 'package:haenaem/shared/widgets/user_profile_circle.dart';
 
 // 이미지, 닉네임, 소개글, 그리고 복잡했던 태그 정렬 로직
-class ProfileHeader extends StatelessWidget {
+class ProfileHeaderView extends StatelessWidget {
   final String nickname;
   final String introduction;
   final String profileImageUrl;
   final List<String> tags;
 
-  const ProfileHeader({
+  const ProfileHeaderView({
     super.key,
     required this.nickname,
     required this.introduction,
@@ -40,20 +41,10 @@ class ProfileHeader extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    return Container(
-      width: 150,
-      height: 150,
-      decoration: const BoxDecoration(
-        color: Color(0xFFDFE1DC),
-        shape: BoxShape.circle,
-      ),
-      child: ClipOval(
-        child: profileImageUrl.isNotEmpty
-            ? Image.network(profileImageUrl, fit: BoxFit.cover)
-            : SvgPicture.asset(
-                'assets/images/placeholders/default_profile.svg',
-              ),
-      ),
+    return UserProfileCircle(
+      // URL이 비어있으면 null을 넘겨 UserProfileCircle이 기본 아이콘을 그리게 함.
+      imageUrl: profileImageUrl.isNotEmpty ? profileImageUrl : null,
+      size: 150,
     );
   }
 
