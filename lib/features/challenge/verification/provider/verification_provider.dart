@@ -1,11 +1,33 @@
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/verification_repository.dart';
 import 'package:haenaem/shared/models/post.dart';
 import 'package:haenaem/shared/provider/post_provider.dart';
 import 'package:haenaem/shared/provider/home_provider.dart';
+import 'package:haenaem/features/challenge/detail/provider/stats_provider.dart';
 
 part 'verification_provider.g.dart';
+
+// 인증글 생성, 수정 시 관련된 캐시를 한번에 갱신하는 함수
+void _refreshRelatedProviders(Ref ref, int challengeId) {
+  final now = DateTime.now();
+
+  // 1. 해당 챌린지의 월간 포스트 리스트 갱신
+  ref.invalidate(
+    monthlyChallengePostsProvider(
+      challengeId: challengeId,
+      year: now.year,
+      month: now.month,
+    ),
+  );
+
+  // 2. 챌린지 상세 통계(총 인증 횟수, 연속 인증 횟수) 갱신
+  ref.invalidate(challengeStatsProvider(challengeId));
+
+  // 3. 홈 화면(진행 중인 챌린지 현황 등) 갱신
+  ref.invalidate(homeNotifierProvider);
+}
 
 // 인증 이미지 검증
 @riverpod
@@ -51,6 +73,10 @@ class ArticleCreateNotifier extends _$ArticleCreateNotifier {
           ),
     );
 
+    if (!result.hasError && result.value != null) {
+      _refreshRelatedProviders(ref, challengeId);
+    }
+
     state = result;
     return !result.hasError;
   }
@@ -82,18 +108,8 @@ class ArticleUpdateNotifier extends _$ArticleUpdateNotifier {
           ),
     );
 
-    if (!result.hasError) {
-      final now = DateTime.now();
-
-      // 수정 성공 시 관련 데이터 캐시 갱신
-      ref.invalidate(
-        monthlyChallengePostsProvider(
-          challengeId: challengeId,
-          year: now.year,
-          month: now.month,
-        ),
-      );
-      ref.invalidate(homeNotifierProvider);
+    if (!result.hasError && result.value != null) {
+      _refreshRelatedProviders(ref, challengeId);
     }
 
     state = result;
