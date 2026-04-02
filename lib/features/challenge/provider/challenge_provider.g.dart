@@ -1485,14 +1485,14 @@ final challengeLeaveNotifierProvider =
 
 typedef _$ChallengeLeaveNotifier = AutoDisposeNotifier<AsyncValue<void>>;
 String _$challengeCreateNotifierHash() =>
-    r'cbc4cd944ef88513ff25539f16dbe448af4446e6';
+    r'28b4eb6e6f9216f97eaa4ed5691eec105674bbea';
 
 /// See also [ChallengeCreateNotifier].
 @ProviderFor(ChallengeCreateNotifier)
 final challengeCreateNotifierProvider =
     AutoDisposeNotifierProvider<
       ChallengeCreateNotifier,
-      AsyncValue<ChallengeCreateResponse?>
+      AsyncValue<ChallengeBase?>
     >.internal(
       ChallengeCreateNotifier.new,
       name: r'challengeCreateNotifierProvider',
@@ -1504,7 +1504,7 @@ final challengeCreateNotifierProvider =
     );
 
 typedef _$ChallengeCreateNotifier =
-    AutoDisposeNotifier<AsyncValue<ChallengeCreateResponse?>>;
+    AutoDisposeNotifier<AsyncValue<ChallengeBase?>>;
 String _$articleCreateNotifierHash() =>
     r'558fb00ff45dc4f321919d42368c1a94c415f602';
 

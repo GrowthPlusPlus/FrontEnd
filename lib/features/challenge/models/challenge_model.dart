@@ -149,47 +149,47 @@ class ChallengeDetailModel {
 }
 
 // 챌린지 생성 데이터 관리 클래스
-@Deprecated('사용 X')
-class ChallengeCreateResponse {
-  final int id;
-  final String challengeLink;
-  final List<FriendModel> friends;
+// @Deprecated('사용 X')
+// class ChallengeCreateResponse {
+//   final int id;
+//   final String challengeLink;
+//   final List<FriendModel> friends;
 
-  ChallengeCreateResponse({
-    required this.id,
-    required this.challengeLink,
-    required this.friends,
-  });
+//   ChallengeCreateResponse({
+//     required this.id,
+//     required this.challengeLink,
+//     required this.friends,
+//   });
 
-  factory ChallengeCreateResponse.fromJson(Map<String, dynamic> json) {
-    final String link = json['challengeLink'] ?? '';
-    int finalId = 0;
+//   factory ChallengeCreateResponse.fromJson(Map<String, dynamic> json) {
+//     final String link = json['challengeLink'] ?? '';
+//     int finalId = 0;
 
-    // 💡 서버가 'id'를 주면 그걸 쓰고, 없거나 null이면 링크에서 숫자를 추출합니다.
-    if (json['id'] != null && json['id'] != 0) {
-      finalId = json['id'];
-    } else if (link.isNotEmpty) {
-      // 링크 예시: http://localhost:3000/challenges/14
-      try {
-        finalId = int.parse(Uri.parse(link).pathSegments.last);
-        print(
-          '🎯 링크에서 ID 추출 성공: $finalId',
-        ); // TODO: 링크에서 id 추출하지 않고 백엔드한테 받아야 함.
-      } catch (e) {
-        // Uri 파싱이 안 될 경우를 대비한 split 백업 로직
-        finalId = int.tryParse(link.split('/').last) ?? 0;
-      }
-    }
+//     // 💡 서버가 'id'를 주면 그걸 쓰고, 없거나 null이면 링크에서 숫자를 추출합니다.
+//     if (json['id'] != null && json['id'] != 0) {
+//       finalId = json['id'];
+//     } else if (link.isNotEmpty) {
+//       // 링크 예시: http://localhost:3000/challenges/14
+//       try {
+//         finalId = int.parse(Uri.parse(link).pathSegments.last);
+//         print(
+//           '🎯 링크에서 ID 추출 성공: $finalId',
+//         ); // TODO: 링크에서 id 추출하지 않고 백엔드한테 받아야 함.
+//       } catch (e) {
+//         // Uri 파싱이 안 될 경우를 대비한 split 백업 로직
+//         finalId = int.tryParse(link.split('/').last) ?? 0;
+//       }
+//     }
 
-    return ChallengeCreateResponse(
-      id: finalId,
-      challengeLink: link,
-      friends: (json['friends'] as List? ?? [])
-          .map((f) => FriendModel.fromJson(f))
-          .toList(),
-    );
-  }
-}
+//     return ChallengeCreateResponse(
+//       id: finalId,
+//       challengeLink: link,
+//       friends: (json['friends'] as List? ?? [])
+//           .map((f) => FriendModel.fromJson(f))
+//           .toList(),
+//     );
+//   }
+// }
 
 // 챌린지 내 현황 탭 데이터 관리 클래스
 @Deprecated('사용 X')
