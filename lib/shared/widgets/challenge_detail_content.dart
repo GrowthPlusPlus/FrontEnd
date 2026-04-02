@@ -11,14 +11,12 @@ import 'package:haenaem/shared/widgets/tag_badge.dart';
 
 class ChallengeDetailContent extends StatelessWidget {
   final ChallengeDetail challenge;
-  final String? title;
   final ScrollController scrollController;
   final bool showTitle;
 
   const ChallengeDetailContent({
     super.key,
     required this.challenge,
-    required this.title,
     required this.scrollController,
     this.showTitle = true,
   });
@@ -73,15 +71,6 @@ class ChallengeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 챌린지 제목
-          if (showTitle) ...[
-            Text(
-              title ?? '챌린지 소개',
-              style: AppTypography.h3.copyWith(color: AppColors.black),
-            ),
-            const SizedBox(height: 24),
-          ],
-
           _buildInfoSection('챌린지 시작일', formattedStart),
           _buildInfoSection('챌린지 마감일', '$formattedEnd $dDayString'),
           _buildInfoSection('인증 빈도', frequencyText),
