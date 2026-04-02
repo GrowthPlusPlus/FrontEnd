@@ -15,7 +15,7 @@ class User {
           ? json['id']
           : int.tryParse(json['id'].toString()) ?? 0,
       profileUrl: json['profileImageUrl'] as String?,
-      nickname: json['nickname'] as String,
+      nickname: (json['nickname'] ?? json['name']) as String,
     );
   }
 
