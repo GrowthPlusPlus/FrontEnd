@@ -57,11 +57,11 @@ class FeedPostCard extends ConsumerWidget {
         children: [
           // 1. 헤더
           Padding(
-            padding: const EdgeInsets.fromLTRB(15, 12, 5, 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
                 CircleAvatar(
-                  radius: 18,
+                  radius: 20, // 반지름
                   backgroundImage:
                       (post.writer.profileUrl != null &&
                           post.writer.profileUrl!.isNotEmpty)
@@ -90,7 +90,10 @@ class FeedPostCard extends ConsumerWidget {
           ),
           // 2. 텍스트 본문
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
