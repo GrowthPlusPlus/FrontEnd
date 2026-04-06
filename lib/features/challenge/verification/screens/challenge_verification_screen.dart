@@ -26,6 +26,8 @@ import 'package:haenaem/features/challenge/verification/widgets/reverification_g
 import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/features/challenge/widgets/verification_cancel_dialog.dart';
 import 'package:haenaem/features/feed/models/feed_model.dart';
+import 'package:haenaem/features/home/provider/home_provider.dart';
+import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {
@@ -649,14 +651,33 @@ class _ChallengeVerificationScreenState
         ),
       );
 
-      ref.invalidate(challengeHomeNotifierProvider);
+      // ♥️ 임시 코드 여기서부터
+      // ✅ 서버 재조회 없이 로컬 상태 즉시 반영
+      if (!isEditMode) {
+        ref
+            .read(homeNotifierProvider.notifier)
+            .markChallengeAsDone(widget.challengeId);
+      }
+      ref.invalidate(myInProgressChallengesProvider);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
-
       Navigator.pop(context);
-    } else if (mounted) {
+    }
+    //  ♥️여기까지
+    // 복원할 코드
+    // // ✅ await로 fetch 완료 후 pop
+    // await ref.read(homeNotifierProvider.notifier).refresh();
+    // ref.invalidate(myInProgressChallengesProvider);
+    // if (!mounted) return;
+    // ScaffoldMessenger.of(
+    //   context,
+    // ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
+    // Navigator.pop(context);
+    //}
+    else if (mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('인증에 실패했습니다. 다시 시도해주세요.')));

@@ -21,7 +21,7 @@ final currentUserProvider = NotifierProvider<CurrentUser, User?>.internal(
 );
 
 typedef _$CurrentUser = Notifier<User?>;
-String _$myProfileHash() => r'4b209ac932e27d9c0deca6af80d9b5115cf82b65';
+String _$myProfileHash() => r'a2ae41d2429d95cb9cbdecd38b5825067b6b9ebc';
 
 /// See also [MyProfile].
 @ProviderFor(MyProfile)

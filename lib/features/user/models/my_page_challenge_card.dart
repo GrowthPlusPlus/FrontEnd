@@ -29,15 +29,30 @@ class MyPageChallengeCard {
 
   factory MyPageChallengeCard.fromJson(Map<String, dynamic> json) {
     return MyPageChallengeCard(
+      // 홈탭 모델의 팩토리 메서드를 그대로 호출
       challengeInfo: HomeChallengeCard.fromJson(json),
-      rate: (json['rate'] as num).toDouble(),
-      status: ChallengeStatus.values.byName(json['status'] as String),
-      failedDate: json['failed_date'] != null
-          ? DateTime.parse(json['failed_date'] as String)
+
+      // 마이페이지 전용 필드들만 추가로 매핑
+      rate: (json['achievementRate'] as num? ?? 0).toDouble(),
+      status: _mapStatus(json['status'] as String? ?? ''),
+      failedDate: json['endDate'] != null
+          ? DateTime.tryParse(json['endDate'])
           : null,
-      maxStreakCount: json['max_streak_count'] as int,
-      isParticipated: json['is_participated'] as bool,
+      maxStreakCount: json['currentStreak'] as int? ?? 0, // max를 현재 스트리크로 우선 매핑
+      isParticipated: true,
     );
+  }
+
+  // 상태 값(SUCCESS, FAIL 등)을 Enum으로 안전하게 변환하는 헬퍼
+  static ChallengeStatus _mapStatus(String raw) {
+    switch (raw.toUpperCase()) {
+      case 'SUCCESS':
+        return ChallengeStatus.success;
+      case 'FAIL':
+        return ChallengeStatus.fail;
+      default:
+        return ChallengeStatus.inProgress;
+    }
   }
 
   MyPageChallengeCard copyWith({

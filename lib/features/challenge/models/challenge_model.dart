@@ -149,47 +149,47 @@ class ChallengeDetailModel {
 }
 
 // 챌린지 생성 데이터 관리 클래스
-@Deprecated('사용 X')
-class ChallengeCreateResponse {
-  final int id;
-  final String challengeLink;
-  final List<FriendModel> friends;
+// @Deprecated('사용 X')
+// class ChallengeCreateResponse {
+//   final int id;
+//   final String challengeLink;
+//   final List<FriendModel> friends;
 
-  ChallengeCreateResponse({
-    required this.id,
-    required this.challengeLink,
-    required this.friends,
-  });
+//   ChallengeCreateResponse({
+//     required this.id,
+//     required this.challengeLink,
+//     required this.friends,
+//   });
 
-  factory ChallengeCreateResponse.fromJson(Map<String, dynamic> json) {
-    final String link = json['challengeLink'] ?? '';
-    int finalId = 0;
+//   factory ChallengeCreateResponse.fromJson(Map<String, dynamic> json) {
+//     final String link = json['challengeLink'] ?? '';
+//     int finalId = 0;
 
-    // 💡 서버가 'id'를 주면 그걸 쓰고, 없거나 null이면 링크에서 숫자를 추출합니다.
-    if (json['id'] != null && json['id'] != 0) {
-      finalId = json['id'];
-    } else if (link.isNotEmpty) {
-      // 링크 예시: http://localhost:3000/challenges/14
-      try {
-        finalId = int.parse(Uri.parse(link).pathSegments.last);
-        print(
-          '🎯 링크에서 ID 추출 성공: $finalId',
-        ); // TODO: 링크에서 id 추출하지 않고 백엔드한테 받아야 함.
-      } catch (e) {
-        // Uri 파싱이 안 될 경우를 대비한 split 백업 로직
-        finalId = int.tryParse(link.split('/').last) ?? 0;
-      }
-    }
+//     // 💡 서버가 'id'를 주면 그걸 쓰고, 없거나 null이면 링크에서 숫자를 추출합니다.
+//     if (json['id'] != null && json['id'] != 0) {
+//       finalId = json['id'];
+//     } else if (link.isNotEmpty) {
+//       // 링크 예시: http://localhost:3000/challenges/14
+//       try {
+//         finalId = int.parse(Uri.parse(link).pathSegments.last);
+//         print(
+//           '🎯 링크에서 ID 추출 성공: $finalId',
+//         ); // TODO: 링크에서 id 추출하지 않고 백엔드한테 받아야 함.
+//       } catch (e) {
+//         // Uri 파싱이 안 될 경우를 대비한 split 백업 로직
+//         finalId = int.tryParse(link.split('/').last) ?? 0;
+//       }
+//     }
 
-    return ChallengeCreateResponse(
-      id: finalId,
-      challengeLink: link,
-      friends: (json['friends'] as List? ?? [])
-          .map((f) => FriendModel.fromJson(f))
-          .toList(),
-    );
-  }
-}
+//     return ChallengeCreateResponse(
+//       id: finalId,
+//       challengeLink: link,
+//       friends: (json['friends'] as List? ?? [])
+//           .map((f) => FriendModel.fromJson(f))
+//           .toList(),
+//     );
+//   }
+// }
 
 // 챌린지 내 현황 탭 데이터 관리 클래스
 @Deprecated('사용 X')
@@ -434,76 +434,77 @@ class CertificationPostModel {
 }
 
 // 마이페이지 탭 구분을 위한 전용 이름
-enum MyPageTab { inProgress, success, fail }
+// enum MyPageTab { inProgress, success, fail }
 
 // 내 페이지 - 나의 챌린지 - 진행중인 챌린지
-@Deprecated(
-  'user/models/my_page_challenge_card.dart내에 MyPageChallengeCard 모델 대신 사용',
-)
-class ChallengeInProgressModel {
-  final int challengeId;
-  final String title;
-  final int requiredWeeklyCount; // 필수는 유지하되
-  final int todaySuccessCount;
-  final int participantNumber;
-  final int duringDate;
-  final String endDate;
-  final double achievementRate;
-  final String status;
+// // 리팩토링 완료
+// @Deprecated(
+//   'user/models/my_page_challenge_card.dart내에 MyPageChallengeCard 모델 대신 사용',
+// )
+// class ChallengeInProgressModel {
+//   final int challengeId;
+//   final String title;
+//   final int requiredWeeklyCount; // 필수는 유지하되
+//   final int todaySuccessCount;
+//   final int participantNumber;
+//   final int duringDate;
+//   final String endDate;
+//   final double achievementRate;
+//   final String status;
 
-  ChallengeInProgressModel({
-    required this.challengeId,
-    required this.title,
-    required this.requiredWeeklyCount,
-    required this.todaySuccessCount,
-    required this.participantNumber,
-    required this.duringDate,
-    required this.endDate,
-    required this.achievementRate,
-    required this.status,
-  });
+//   ChallengeInProgressModel({
+//     required this.challengeId,
+//     required this.title,
+//     required this.requiredWeeklyCount,
+//     required this.todaySuccessCount,
+//     required this.participantNumber,
+//     required this.duringDate,
+//     required this.endDate,
+//     required this.achievementRate,
+//     required this.status,
+//   });
 
-  factory ChallengeInProgressModel.fromJson(Map<String, dynamic> json) {
-    double rate = (json['achievementRate'] ?? 0).toDouble();
+//   factory ChallengeInProgressModel.fromJson(Map<String, dynamic> json) {
+//     double rate = (json['achievementRate'] ?? 0).toDouble();
 
-    // 💡 방어 로직: 0%일 때 직접 계산하는 로직에서도 null 체크 강화
-    final int today = json['todaySuccessCount'] ?? 0;
-    final int weekly = json['requiredWeeklyCount'] ?? 0;
+//     // 💡 방어 로직: 0%일 때 직접 계산하는 로직에서도 null 체크 강화
+//     final int today = json['todaySuccessCount'] ?? 0;
+//     final int weekly = json['requiredWeeklyCount'] ?? 0;
 
-    if (rate == 0 && weekly > 0) {
-      rate = today / weekly;
-    } else if (rate > 1.0) {
-      rate = rate / 100.0;
-    }
+//     if (rate == 0 && weekly > 0) {
+//       rate = today / weekly;
+//     } else if (rate > 1.0) {
+//       rate = rate / 100.0;
+//     }
 
-    return ChallengeInProgressModel(
-      challengeId: json['challengeId'] ?? 0,
-      title: json['title'] ?? '',
-      requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
-      todaySuccessCount: json['todaySuccessCount'] ?? 0,
-      participantNumber: json['participantNumber'] ?? 0,
-      duringDate: json['duringDate'] ?? 0,
-      endDate: json['endDate'] ?? '',
-      achievementRate: rate,
-      status: json['status'] ?? 'IN_PROGRESS',
-    );
-  }
+//     return ChallengeInProgressModel(
+//       challengeId: json['challengeId'] ?? 0,
+//       title: json['title'] ?? '',
+//       requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
+//       todaySuccessCount: json['todaySuccessCount'] ?? 0,
+//       participantNumber: json['participantNumber'] ?? 0,
+//       duringDate: json['duringDate'] ?? 0,
+//       endDate: json['endDate'] ?? '',
+//       achievementRate: rate,
+//       status: json['status'] ?? 'IN_PROGRESS',
+//     );
+//   }
 
-  // 기존 UI 위젯 수정을 최소화하기 위한 Getter
-  String get dateInfo => "완료일까지 D-${_calculateDDay()}";
-  String get countInfo => "$todaySuccessCount/$participantNumber명";
-  double get progress => achievementRate;
+//   // 기존 UI 위젯 수정을 최소화하기 위한 Getter
+//   String get dateInfo => "완료일까지 D-${_calculateDDay()}";
+//   String get countInfo => "$todaySuccessCount/$participantNumber명";
+//   double get progress => achievementRate;
 
-  int _calculateDDay() {
-    try {
-      final end = DateTime.parse(endDate);
-      final dDay = end.difference(DateTime.now()).inDays;
-      return dDay < 0 ? 0 : dDay;
-    } catch (_) {
-      return 0;
-    }
-  }
-}
+//   int _calculateDDay() {
+//     try {
+//       final end = DateTime.parse(endDate);
+//       final dDay = end.difference(DateTime.now()).inDays;
+//       return dDay < 0 ? 0 : dDay;
+//     } catch (_) {
+//       return 0;
+//     }
+//   }
+// }
 
 // 챌린지 검색
 // TODO: 챌린지 아이디 부분 수정

@@ -29,7 +29,7 @@ class TagNotifier extends Notifier<SignupState> {
       // 전체 태그와 내 프로필 동시 로드
       final results = await Future.wait([
         repository.getAllTags(),
-        repository.getMyProfileDetail(),
+        repository.getMyProfile(),
       ]);
 
       _allServerTags = results[0] as List<ChallengeTagModel>;
