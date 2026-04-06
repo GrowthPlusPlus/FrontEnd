@@ -914,7 +914,7 @@ class _ArticleCommentsProviderElement
 }
 
 String _$myInProgressChallengesHash() =>
-    r'4f53f796e087c3f28343d446396e079ac6ab81dc';
+    r'566737730a407176974c16e5c3f17eb9edeb1526';
 
 /// See also [myInProgressChallenges].
 @ProviderFor(myInProgressChallenges)
@@ -922,7 +922,7 @@ const myInProgressChallengesProvider = MyInProgressChallengesFamily();
 
 /// See also [myInProgressChallenges].
 class MyInProgressChallengesFamily
-    extends Family<AsyncValue<List<ChallengeInProgressModel>>> {
+    extends Family<AsyncValue<List<MyPageChallengeCard>>> {
   /// See also [myInProgressChallenges].
   const MyInProgressChallengesFamily();
 
@@ -955,7 +955,7 @@ class MyInProgressChallengesFamily
 
 /// See also [myInProgressChallenges].
 class MyInProgressChallengesProvider
-    extends AutoDisposeFutureProvider<List<ChallengeInProgressModel>> {
+    extends AutoDisposeFutureProvider<List<MyPageChallengeCard>> {
   /// See also [myInProgressChallenges].
   MyInProgressChallengesProvider({bool onlyTwo = false})
     : this._internal(
@@ -988,7 +988,7 @@ class MyInProgressChallengesProvider
 
   @override
   Override overrideWith(
-    FutureOr<List<ChallengeInProgressModel>> Function(
+    FutureOr<List<MyPageChallengeCard>> Function(
       MyInProgressChallengesRef provider,
     )
     create,
@@ -1008,8 +1008,7 @@ class MyInProgressChallengesProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<ChallengeInProgressModel>>
-  createElement() {
+  AutoDisposeFutureProviderElement<List<MyPageChallengeCard>> createElement() {
     return _MyInProgressChallengesProviderElement(this);
   }
 
@@ -1030,13 +1029,13 @@ class MyInProgressChallengesProvider
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin MyInProgressChallengesRef
-    on AutoDisposeFutureProviderRef<List<ChallengeInProgressModel>> {
+    on AutoDisposeFutureProviderRef<List<MyPageChallengeCard>> {
   /// The parameter `onlyTwo` of this provider.
   bool get onlyTwo;
 }
 
 class _MyInProgressChallengesProviderElement
-    extends AutoDisposeFutureProviderElement<List<ChallengeInProgressModel>>
+    extends AutoDisposeFutureProviderElement<List<MyPageChallengeCard>>
     with MyInProgressChallengesRef {
   _MyInProgressChallengesProviderElement(super.provider);
 
@@ -1045,7 +1044,7 @@ class _MyInProgressChallengesProviderElement
 }
 
 String _$mySuccessChallengesHash() =>
-    r'95d005eec80994a28c20765d27b9a28ab78d01cf';
+    r'0a13385a3d9c28538e51e5cacef629199fba64b6';
 
 /// See also [mySuccessChallenges].
 @ProviderFor(mySuccessChallenges)
@@ -1053,7 +1052,7 @@ const mySuccessChallengesProvider = MySuccessChallengesFamily();
 
 /// See also [mySuccessChallenges].
 class MySuccessChallengesFamily
-    extends Family<AsyncValue<List<ChallengeInProgressModel>>> {
+    extends Family<AsyncValue<List<MyPageChallengeCard>>> {
   /// See also [mySuccessChallenges].
   const MySuccessChallengesFamily();
 
@@ -1086,7 +1085,7 @@ class MySuccessChallengesFamily
 
 /// See also [mySuccessChallenges].
 class MySuccessChallengesProvider
-    extends AutoDisposeFutureProvider<List<ChallengeInProgressModel>> {
+    extends AutoDisposeFutureProvider<List<MyPageChallengeCard>> {
   /// See also [mySuccessChallenges].
   MySuccessChallengesProvider({bool onlyTwo = false})
     : this._internal(
@@ -1119,7 +1118,7 @@ class MySuccessChallengesProvider
 
   @override
   Override overrideWith(
-    FutureOr<List<ChallengeInProgressModel>> Function(
+    FutureOr<List<MyPageChallengeCard>> Function(
       MySuccessChallengesRef provider,
     )
     create,
@@ -1139,8 +1138,7 @@ class MySuccessChallengesProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<ChallengeInProgressModel>>
-  createElement() {
+  AutoDisposeFutureProviderElement<List<MyPageChallengeCard>> createElement() {
     return _MySuccessChallengesProviderElement(this);
   }
 
@@ -1161,13 +1159,13 @@ class MySuccessChallengesProvider
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin MySuccessChallengesRef
-    on AutoDisposeFutureProviderRef<List<ChallengeInProgressModel>> {
+    on AutoDisposeFutureProviderRef<List<MyPageChallengeCard>> {
   /// The parameter `onlyTwo` of this provider.
   bool get onlyTwo;
 }
 
 class _MySuccessChallengesProviderElement
-    extends AutoDisposeFutureProviderElement<List<ChallengeInProgressModel>>
+    extends AutoDisposeFutureProviderElement<List<MyPageChallengeCard>>
     with MySuccessChallengesRef {
   _MySuccessChallengesProviderElement(super.provider);
 
@@ -1176,7 +1174,7 @@ class _MySuccessChallengesProviderElement
 }
 
 String _$myFailedChallengesHash() =>
-    r'332d3fb3a12b34ae0912d92300578649335a35e8';
+    r'284d1ed842f2abd2a862672dc15d6434094118e1';
 
 /// See also [myFailedChallenges].
 @ProviderFor(myFailedChallenges)
@@ -1184,7 +1182,7 @@ const myFailedChallengesProvider = MyFailedChallengesFamily();
 
 /// See also [myFailedChallenges].
 class MyFailedChallengesFamily
-    extends Family<AsyncValue<List<ChallengeInProgressModel>>> {
+    extends Family<AsyncValue<List<MyPageChallengeCard>>> {
   /// See also [myFailedChallenges].
   const MyFailedChallengesFamily();
 
@@ -1217,7 +1215,7 @@ class MyFailedChallengesFamily
 
 /// See also [myFailedChallenges].
 class MyFailedChallengesProvider
-    extends AutoDisposeFutureProvider<List<ChallengeInProgressModel>> {
+    extends AutoDisposeFutureProvider<List<MyPageChallengeCard>> {
   /// See also [myFailedChallenges].
   MyFailedChallengesProvider({bool onlyTwo = false})
     : this._internal(
@@ -1248,9 +1246,7 @@ class MyFailedChallengesProvider
 
   @override
   Override overrideWith(
-    FutureOr<List<ChallengeInProgressModel>> Function(
-      MyFailedChallengesRef provider,
-    )
+    FutureOr<List<MyPageChallengeCard>> Function(MyFailedChallengesRef provider)
     create,
   ) {
     return ProviderOverride(
@@ -1268,8 +1264,7 @@ class MyFailedChallengesProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<ChallengeInProgressModel>>
-  createElement() {
+  AutoDisposeFutureProviderElement<List<MyPageChallengeCard>> createElement() {
     return _MyFailedChallengesProviderElement(this);
   }
 
@@ -1290,13 +1285,13 @@ class MyFailedChallengesProvider
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin MyFailedChallengesRef
-    on AutoDisposeFutureProviderRef<List<ChallengeInProgressModel>> {
+    on AutoDisposeFutureProviderRef<List<MyPageChallengeCard>> {
   /// The parameter `onlyTwo` of this provider.
   bool get onlyTwo;
 }
 
 class _MyFailedChallengesProviderElement
-    extends AutoDisposeFutureProviderElement<List<ChallengeInProgressModel>>
+    extends AutoDisposeFutureProviderElement<List<MyPageChallengeCard>>
     with MyFailedChallengesRef {
   _MyFailedChallengesProviderElement(super.provider);
 

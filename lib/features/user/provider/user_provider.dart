@@ -40,14 +40,32 @@ class MyProfile extends _$MyProfile {
   @override
   FutureOr<UserDetail> build() async {
     final userRepo = ref.read(userRepositoryProvider);
-    return userRepo.getMyProfileDetail(); // ✅ 새 메서드 호출
+    final detail = await userRepo.getMyProfile();
+
+    // ✨ [1. 초기 로드 시 자동 업데이트]
+    // 프로필 상세를 가져오자마자 기본 정보(User)를 전역 상태에 꽂아줍니다.
+    ref.read(currentUserProvider.notifier).setUser(detail.user);
+
+    return detail;
   }
 
   // API 호출 없이 로컬 상세 정보만 업데이트
-  void updateLocalDetail({String? introduction, List<String>? tags}) {
+  void updateLocalDetail({
+    String? introduction,
+    List<String>? tags,
+    String? nickname,
+    String? profileUrl,
+  }) {
     state.whenData((current) {
+      // 새로운 유저 객체 생성
+      final updatedUser = current.user.copyWith(
+        nickname: nickname ?? current.user.nickname,
+        profileUrl: profileUrl ?? current.user.profileUrl,
+      );
+      // 2. 업데이트된 User를 포함하여 UserDetail 전체 상태를 갱신합니다.
       state = AsyncData(
-        UserDetail(
+        current.copyWith(
+          user: updatedUser,
           introduction: introduction ?? current.introduction,
           tags: tags ?? current.tags,
         ),

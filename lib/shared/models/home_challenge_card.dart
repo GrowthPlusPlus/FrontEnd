@@ -27,13 +27,13 @@ class HomeChallengeCard {
   factory HomeChallengeCard.fromJson(Map<String, dynamic> json) {
     return HomeChallengeCard(
       challengeBase: ChallengeBase.fromJson(json),
-      streakCount: json['currentStreak'] as int,
-      participantCount: json['participantNumber'] as int,
-      successParticipantCount: json['todaySuccessCount'] as int,
-      warning: json['warning'] as bool,
-      isDone: json['doIt'] as bool,
-      dDay: json['dueToDate'] as int,
-      weeklyFrequency: json['requiredWeeklyCount'] as int,
+      streakCount: json['currentStreak'] as int? ?? 0,
+      participantCount: json['participantNumber'] as int? ?? 0,
+      successParticipantCount: json['todaySuccessCount'] as int? ?? 0,
+      warning: json['warning'] as bool? ?? false,
+      isDone: json['doIt'] as bool? ?? false,
+      dDay: json['dueToDate'] as int? ?? 0,
+      weeklyFrequency: json['requiredWeeklyCount'] as int? ?? 0,
     );
   }
 

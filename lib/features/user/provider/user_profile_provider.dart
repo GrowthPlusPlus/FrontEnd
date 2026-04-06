@@ -24,7 +24,10 @@ class UserProfile extends _$UserProfile {
       ref
           .read(currentUserProvider.notifier)
           .updateProfileImage(null); // 전역 상태 업데이트
-      ref.invalidate(myProfileProvider); // 마이페이지 프로필 상태 갱신
+      ref
+          .read(myProfileProvider.notifier)
+          .updateLocalDetail(profileUrl: null); // 로컬 업데이트
+
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -59,14 +62,16 @@ class UserProfile extends _$UserProfile {
       }
 
       // 3) 프로필 이미지 변경
+      String? finalProfileUrl;
       if (newImageFile != null) {
         await userRepo.uploadProfileImage(newImageFile);
 
         // 업로드 후 새 URL 가져와서 전역 상태 업데이트
-        final updatedUser = await userRepo.getMyProfile();
+        final updatedUserDetail = await userRepo.getMyProfile();
+        finalProfileUrl = updatedUserDetail.user.profileUrl;
         ref
             .read(currentUserProvider.notifier)
-            .updateProfileImage(updatedUser.profileUrl);
+            .updateProfileImage(updatedUserDetail.user.profileUrl);
       }
 
       // 4) 태그 업데이트
@@ -75,8 +80,15 @@ class UserProfile extends _$UserProfile {
         throw Exception('태그 수정 중 오류가 발생했습니다.');
       }
 
-      // 5) 성공 시 마이페이지 갱신
-      ref.invalidate(myProfileProvider);
+      // 내페이지 전역 상태 로컬 업데이트
+      ref
+          .read(myProfileProvider.notifier)
+          .updateLocalDetail(
+            nickname: newNickname,
+            introduction: newIntro,
+            tags: ref.read(tagProvider).tags,
+            profileUrl: finalProfileUrl, // 이미지가 바뀌었다면 새 URL, 아니면 기존 유지
+          );
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);

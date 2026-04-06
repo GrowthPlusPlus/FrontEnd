@@ -10,7 +10,7 @@ import 'package:haenaem/features/challenge/widgets/challenge_popup_menu.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/challenge/detail/screens/member_ranking_screen.dart';
-import 'package:haenaem/features/challenge/create/widgets/challenge_create_success_dialog.dart';
+import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/shared/models/challenge_base.dart';
 
 // 분리된 뷰 파일들 (아래 2번 단계에서 생성/수정할 파일들)
