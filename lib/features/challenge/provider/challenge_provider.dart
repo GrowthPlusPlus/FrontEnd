@@ -5,7 +5,11 @@ import '../data/challenge_repository.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import '../models/challenge_model.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/features/user/models/my_page_challenge_card.dart'
+    hide ChallengeStatus;
 import 'package:haenaem/shared/models/challenge_base.dart';
+import 'package:haenaem/features/home/provider/home_provider.dart';
+
 import 'dart:io';
 
 part 'challenge_provider.g.dart';
@@ -452,42 +456,37 @@ class ChallengeDeleteNotifier extends _$ChallengeDeleteNotifier {
   }
 }
 
-// 내페이지 사용자 프로필 정보
-// ♥️user_provider의 myprofile로 대체♥️
-// @riverpod
-// Future<User> myProfile(MyProfileRef ref) async {
-//   final repository = ref.watch(userRepositoryProvider);
-//   return repository.getMyProfile();
-// }
-
-// 내 페이지 - 나의 챌린지 - 진행중인 챌린지
+// 1. 내 페이지 - 나의 챌린지 - 진행중인 챌린지
 @riverpod
-Future<List<ChallengeInProgressModel>> myInProgressChallenges(
+Future<List<MyPageChallengeCard>> myInProgressChallenges(
   MyInProgressChallengesRef ref, {
   bool onlyTwo = false,
 }) {
+  // ✅ 리턴 타입을 List<MyPageChallengeCard>로 변경
   return ref
       .watch(challengeRepositoryProvider)
       .getInProgressChallenges(onlyTwo: onlyTwo);
 }
 
-// 내 페이지 - 나의 챌린지 - 완료한 챌린지
+// 2. 내 페이지 - 나의 챌린지 - 완료한 챌린지
 @riverpod
-Future<List<ChallengeInProgressModel>> mySuccessChallenges(
+Future<List<MyPageChallengeCard>> mySuccessChallenges(
   MySuccessChallengesRef ref, {
   bool onlyTwo = false,
 }) {
+  // ✅ 리턴 타입을 List<MyPageChallengeCard>로 변경
   return ref
       .watch(challengeRepositoryProvider)
       .getSuccessChallenges(onlyTwo: onlyTwo);
 }
 
-// 내 페이지 - 나의 챌린지 - 실패한 챌린지
+// 3. 내 페이지 - 나의 챌린지 - 실패한 챌린지
 @riverpod
-Future<List<ChallengeInProgressModel>> myFailedChallenges(
+Future<List<MyPageChallengeCard>> myFailedChallenges(
   MyFailedChallengesRef ref, {
   bool onlyTwo = false,
 }) {
+  // ✅ 리턴 타입을 List<MyPageChallengeCard>로 변경
   return ref
       .watch(challengeRepositoryProvider)
       .getFailedChallenges(onlyTwo: onlyTwo);

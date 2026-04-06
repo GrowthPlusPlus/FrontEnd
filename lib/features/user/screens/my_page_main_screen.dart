@@ -8,7 +8,6 @@ import '../../../../core/theme/app_typography.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
 import 'package:haenaem/features/user/provider/user_provider.dart';
-import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/shared/models/user_detail.dart';
 
 import 'profile/profile_edit_screen.dart';
@@ -26,12 +25,14 @@ class MyPageMainScreen extends ConsumerStatefulWidget {
 class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
   @override
   Widget build(BuildContext context) {
+    // myProfileProvider가 로딩중일 때
+    // 전역 관리하는 currentUserProvider가 닉네임/이미지라도 먼저 가져옴
     final currentUser = ref.watch(currentUserProvider);
     final profileAsync = ref.watch(myProfileProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar(currentUser),
+      appBar: _buildAppBar(profileAsync.value),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -55,8 +56,8 @@ class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
                   ),
                   data: (UserDetail detail) => ProfileHeaderView(
                     // ✅ UserDetail 사용
-                    nickname: currentUser.nickname, // ✅ currentUserProvider 우선
-                    profileImageUrl: currentUser.profileUrl ?? '',
+                    nickname: detail.user.nickname,
+                    profileImageUrl: detail.user.profileUrl ?? '',
                     introduction: detail.introduction,
                     tags: detail.tags,
                   ),
@@ -82,7 +83,7 @@ class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(User? currentUser) {
+  PreferredSizeWidget _buildAppBar(UserDetail? detail) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -98,14 +99,14 @@ class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
           InkWell(
             onTap: () {
               // 1. 현재 로드된 프로필 데이터를 가져옵니다.
-              final profileData = ref.read(myProfileProvider).value;
-              if (currentUser != null && profileData != null) {
+              //final profileData = ref.read(myProfileProvider).value;
+              if (detail != null) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProfileEditScreen(
-                      user: currentUser,
-                      detail: profileData,
+                      //user: currentUser,
+                      detail: detail,
                     ),
                   ),
                 );

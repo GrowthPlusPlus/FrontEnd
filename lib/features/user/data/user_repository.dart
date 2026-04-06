@@ -16,25 +16,11 @@ class UserRepository {
   UserRepository(this._dio);
 
   // 내 프로필 정보 조회
-  Future<User> getMyProfile() async {
+  Future<UserDetail> getMyProfile() async {
     try {
       final response = await _dio.get('/api/users/me/profile');
       if (response.statusCode == 200) {
-        return User.fromJson(response.data);
-      } else {
-        throw Exception('프로필 정보를 불러오지 못했습니다.');
-      }
-    } on DioException catch (e) {
-      throw Exception('네트워크 에러: ${e.message}');
-    }
-  }
-
-  // 마이페이지용 상세 프로필 조회
-  Future<UserDetail> getMyProfileDetail() async {
-    try {
-      final response = await _dio.get('/api/users/me/profile');
-      if (response.statusCode == 200) {
-        return UserDetail.fromJson(response.data); // ✅ UserDetail로 파싱
+        return UserDetail.fromJson(response.data);
       } else {
         throw Exception('프로필 정보를 불러오지 못했습니다.');
       }

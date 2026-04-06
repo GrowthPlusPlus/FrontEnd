@@ -434,76 +434,77 @@ class CertificationPostModel {
 }
 
 // 마이페이지 탭 구분을 위한 전용 이름
-enum MyPageTab { inProgress, success, fail }
+// enum MyPageTab { inProgress, success, fail }
 
 // 내 페이지 - 나의 챌린지 - 진행중인 챌린지
-@Deprecated(
-  'user/models/my_page_challenge_card.dart내에 MyPageChallengeCard 모델 대신 사용',
-)
-class ChallengeInProgressModel {
-  final int challengeId;
-  final String title;
-  final int requiredWeeklyCount; // 필수는 유지하되
-  final int todaySuccessCount;
-  final int participantNumber;
-  final int duringDate;
-  final String endDate;
-  final double achievementRate;
-  final String status;
+// // 리팩토링 완료
+// @Deprecated(
+//   'user/models/my_page_challenge_card.dart내에 MyPageChallengeCard 모델 대신 사용',
+// )
+// class ChallengeInProgressModel {
+//   final int challengeId;
+//   final String title;
+//   final int requiredWeeklyCount; // 필수는 유지하되
+//   final int todaySuccessCount;
+//   final int participantNumber;
+//   final int duringDate;
+//   final String endDate;
+//   final double achievementRate;
+//   final String status;
 
-  ChallengeInProgressModel({
-    required this.challengeId,
-    required this.title,
-    required this.requiredWeeklyCount,
-    required this.todaySuccessCount,
-    required this.participantNumber,
-    required this.duringDate,
-    required this.endDate,
-    required this.achievementRate,
-    required this.status,
-  });
+//   ChallengeInProgressModel({
+//     required this.challengeId,
+//     required this.title,
+//     required this.requiredWeeklyCount,
+//     required this.todaySuccessCount,
+//     required this.participantNumber,
+//     required this.duringDate,
+//     required this.endDate,
+//     required this.achievementRate,
+//     required this.status,
+//   });
 
-  factory ChallengeInProgressModel.fromJson(Map<String, dynamic> json) {
-    double rate = (json['achievementRate'] ?? 0).toDouble();
+//   factory ChallengeInProgressModel.fromJson(Map<String, dynamic> json) {
+//     double rate = (json['achievementRate'] ?? 0).toDouble();
 
-    // 💡 방어 로직: 0%일 때 직접 계산하는 로직에서도 null 체크 강화
-    final int today = json['todaySuccessCount'] ?? 0;
-    final int weekly = json['requiredWeeklyCount'] ?? 0;
+//     // 💡 방어 로직: 0%일 때 직접 계산하는 로직에서도 null 체크 강화
+//     final int today = json['todaySuccessCount'] ?? 0;
+//     final int weekly = json['requiredWeeklyCount'] ?? 0;
 
-    if (rate == 0 && weekly > 0) {
-      rate = today / weekly;
-    } else if (rate > 1.0) {
-      rate = rate / 100.0;
-    }
+//     if (rate == 0 && weekly > 0) {
+//       rate = today / weekly;
+//     } else if (rate > 1.0) {
+//       rate = rate / 100.0;
+//     }
 
-    return ChallengeInProgressModel(
-      challengeId: json['challengeId'] ?? 0,
-      title: json['title'] ?? '',
-      requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
-      todaySuccessCount: json['todaySuccessCount'] ?? 0,
-      participantNumber: json['participantNumber'] ?? 0,
-      duringDate: json['duringDate'] ?? 0,
-      endDate: json['endDate'] ?? '',
-      achievementRate: rate,
-      status: json['status'] ?? 'IN_PROGRESS',
-    );
-  }
+//     return ChallengeInProgressModel(
+//       challengeId: json['challengeId'] ?? 0,
+//       title: json['title'] ?? '',
+//       requiredWeeklyCount: json['requiredWeeklyCount'] ?? 0,
+//       todaySuccessCount: json['todaySuccessCount'] ?? 0,
+//       participantNumber: json['participantNumber'] ?? 0,
+//       duringDate: json['duringDate'] ?? 0,
+//       endDate: json['endDate'] ?? '',
+//       achievementRate: rate,
+//       status: json['status'] ?? 'IN_PROGRESS',
+//     );
+//   }
 
-  // 기존 UI 위젯 수정을 최소화하기 위한 Getter
-  String get dateInfo => "완료일까지 D-${_calculateDDay()}";
-  String get countInfo => "$todaySuccessCount/$participantNumber명";
-  double get progress => achievementRate;
+//   // 기존 UI 위젯 수정을 최소화하기 위한 Getter
+//   String get dateInfo => "완료일까지 D-${_calculateDDay()}";
+//   String get countInfo => "$todaySuccessCount/$participantNumber명";
+//   double get progress => achievementRate;
 
-  int _calculateDDay() {
-    try {
-      final end = DateTime.parse(endDate);
-      final dDay = end.difference(DateTime.now()).inDays;
-      return dDay < 0 ? 0 : dDay;
-    } catch (_) {
-      return 0;
-    }
-  }
-}
+//   int _calculateDDay() {
+//     try {
+//       final end = DateTime.parse(endDate);
+//       final dDay = end.difference(DateTime.now()).inDays;
+//       return dDay < 0 ? 0 : dDay;
+//     } catch (_) {
+//       return 0;
+//     }
+//   }
+// }
 
 // 챌린지 검색
 // TODO: 챌린지 아이디 부분 수정

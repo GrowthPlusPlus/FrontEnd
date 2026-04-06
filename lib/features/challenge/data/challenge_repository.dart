@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/shared/models/challenge_base.dart';
+import 'package:haenaem/features/user/models/my_page_challenge_card.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 part 'challenge_repository.g.dart';
 
@@ -432,7 +433,7 @@ class ChallengeRepository {
   }
 
   // 내 페이지 - 나의 챌린지 - 진행 중인 챌린지
-  Future<List<ChallengeInProgressModel>> getInProgressChallenges({
+  Future<List<MyPageChallengeCard>> getInProgressChallenges({
     required bool onlyTwo,
   }) async {
     try {
@@ -442,7 +443,7 @@ class ChallengeRepository {
       );
       if (response.statusCode == 200) {
         return (response.data as List)
-            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .map((e) => MyPageChallengeCard.fromJson(e))
             .toList();
       }
       throw Exception('챌린지 로드 실패');
@@ -452,7 +453,7 @@ class ChallengeRepository {
   }
 
   // 내 페이지 - 나의 챌린지 - 완료한 챌린지
-  Future<List<ChallengeInProgressModel>> getSuccessChallenges({
+  Future<List<MyPageChallengeCard>> getSuccessChallenges({
     required bool onlyTwo,
   }) async {
     try {
@@ -462,7 +463,7 @@ class ChallengeRepository {
       );
       if (response.statusCode == 200) {
         return (response.data as List)
-            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .map((e) => MyPageChallengeCard.fromJson(e))
             .toList();
       }
       throw Exception('완료된 챌린지 로드 실패');
@@ -472,7 +473,7 @@ class ChallengeRepository {
   }
 
   // 내페이지 - 나의 챌린지 - 실패한 챌린지
-  Future<List<ChallengeInProgressModel>> getFailedChallenges({
+  Future<List<MyPageChallengeCard>> getFailedChallenges({
     required bool onlyTwo,
   }) async {
     try {
@@ -482,7 +483,7 @@ class ChallengeRepository {
       );
       if (response.statusCode == 200) {
         return (response.data as List)
-            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .map((e) => MyPageChallengeCard.fromJson(e))
             .toList();
       }
       throw Exception('실패한 챌린지 로드 실패');

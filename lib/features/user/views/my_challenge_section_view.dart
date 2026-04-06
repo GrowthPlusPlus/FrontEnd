@@ -4,11 +4,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../challenge/models/challenge_model.dart';
+//import '../../challenge/models/challenge_model.dart';
 import '../../challenge/provider/challenge_provider.dart';
 import '../screens/challenge/challenge_list_screen.dart';
 import '../widgets/my_challenge_card.dart'; // 💡 공통 카드 위젯 추가 (위치가 widgets 내부일 경우 경로 주의)
+import 'package:haenaem/features/user/models/my_page_challenge_card.dart';
 
+// 내페이지 나의 챌린지 영역
 class MyChallengeSectionView extends ConsumerStatefulWidget {
   const MyChallengeSectionView({super.key});
 
@@ -16,6 +18,8 @@ class MyChallengeSectionView extends ConsumerStatefulWidget {
   ConsumerState<MyChallengeSectionView> createState() =>
       _MyChallengeSectionViewState();
 }
+
+enum MyPageTab { inProgress, success, fail }
 
 class _MyChallengeSectionViewState
     extends ConsumerState<MyChallengeSectionView> {
@@ -189,9 +193,10 @@ class _MyChallengeSectionViewState
         return Column(
           children: list.asMap().entries.map((entry) {
             final isLast = entry.key == (list.length - 1);
+            final challenge = entry.value;
             return Column(
               children: [
-                MyChallengeCard(item: entry.value),
+                MyChallengeCard(item: challenge),
                 if (!isLast) const Divider(height: 1, color: AppColors.gray5),
               ],
             );
@@ -201,9 +206,11 @@ class _MyChallengeSectionViewState
     );
   }
 
-  AsyncValue<List<ChallengeInProgressModel>> _getChallengesProvider() {
+  AsyncValue<List<MyPageChallengeCard>> _getChallengesProvider() {
     switch (selectedTab) {
       case MyPageTab.inProgress:
+        // 💡 주의: 프로바이더 자체의 정의(challenge_provider.dart)도
+        // MyPageChallengeCard를 반환하도록 수정되어 있어야 합니다.
         return ref.watch(myInProgressChallengesProvider(onlyTwo: true));
       case MyPageTab.success:
         return ref.watch(mySuccessChallengesProvider(onlyTwo: true));
