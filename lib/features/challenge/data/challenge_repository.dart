@@ -12,6 +12,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/shared/models/challenge_base.dart';
+import 'package:haenaem/features/user/models/my_page_challenge_card.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 part 'challenge_repository.g.dart';
 
@@ -61,14 +63,17 @@ class ChallengeRepository {
   }
 
   // 챌린지 생성 post 요청 보내기
-  Future<ChallengeCreateResponse> createChallenge(
-    Map<String, dynamic> data,
-  ) async {
+  Future<ChallengeBase> createChallenge(Map<String, dynamic> data) async {
     try {
       final response = await _dio.post('/api/challenges/create', data: data);
       debugPrint('📥 서버 생성 응답 원본: ${response.data}');
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return ChallengeCreateResponse.fromJson(response.data);
+        // ✅ 서버가 'id'로 주므로 'challengeId'로 변환
+        final responseData = {
+          'challengeId': response.data['id'],
+          'title': response.data['title'] ?? '',
+        };
+        return ChallengeBase.fromJson(responseData);
       } else {
         throw Exception('챌린지 생성 실패');
       }
@@ -428,7 +433,7 @@ class ChallengeRepository {
   }
 
   // 내 페이지 - 나의 챌린지 - 진행 중인 챌린지
-  Future<List<ChallengeInProgressModel>> getInProgressChallenges({
+  Future<List<MyPageChallengeCard>> getInProgressChallenges({
     required bool onlyTwo,
   }) async {
     try {
@@ -438,7 +443,7 @@ class ChallengeRepository {
       );
       if (response.statusCode == 200) {
         return (response.data as List)
-            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .map((e) => MyPageChallengeCard.fromJson(e))
             .toList();
       }
       throw Exception('챌린지 로드 실패');
@@ -448,7 +453,7 @@ class ChallengeRepository {
   }
 
   // 내 페이지 - 나의 챌린지 - 완료한 챌린지
-  Future<List<ChallengeInProgressModel>> getSuccessChallenges({
+  Future<List<MyPageChallengeCard>> getSuccessChallenges({
     required bool onlyTwo,
   }) async {
     try {
@@ -458,7 +463,7 @@ class ChallengeRepository {
       );
       if (response.statusCode == 200) {
         return (response.data as List)
-            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .map((e) => MyPageChallengeCard.fromJson(e))
             .toList();
       }
       throw Exception('완료된 챌린지 로드 실패');
@@ -468,7 +473,7 @@ class ChallengeRepository {
   }
 
   // 내페이지 - 나의 챌린지 - 실패한 챌린지
-  Future<List<ChallengeInProgressModel>> getFailedChallenges({
+  Future<List<MyPageChallengeCard>> getFailedChallenges({
     required bool onlyTwo,
   }) async {
     try {
@@ -478,7 +483,7 @@ class ChallengeRepository {
       );
       if (response.statusCode == 200) {
         return (response.data as List)
-            .map((e) => ChallengeInProgressModel.fromJson(e))
+            .map((e) => MyPageChallengeCard.fromJson(e))
             .toList();
       }
       throw Exception('실패한 챌린지 로드 실패');
