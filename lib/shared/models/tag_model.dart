@@ -1,4 +1,27 @@
 // 최초 작성자 : 김채영
+
+class ChallengeTagModel {
+  final int id;
+  final String tag;
+  final String tagCategory;
+
+  int get tagId => id;
+
+  ChallengeTagModel({
+    required this.id,
+    required this.tag,
+    required this.tagCategory,
+  });
+
+  factory ChallengeTagModel.fromJson(Map<String, dynamic> json) {
+    return ChallengeTagModel(
+      id: json['tagId'] ?? 0,
+      tag: json['tag'] ?? '',
+      tagCategory: json['tagCategory'] ?? 'AGE',
+    );
+  }
+}
+
 // 서버의 영문 카테고리를 앱 내 한글 명칭으로 변환
 class TagMapper {
   // 카테고리 배치 순서
