@@ -4,14 +4,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_popup_menu.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/challenge/detail/screens/member_ranking_screen.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 
 // 분리된 뷰 파일들 (아래 2번 단계에서 생성/수정할 파일들)
 import 'package:haenaem/features/challenge/detail/views/calendar_view.dart';
@@ -23,7 +25,7 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
   final String? challengeTitle;
   final int streakCount;
   final bool isJustCreated;
-  final ChallengeCreateResponse? createdData;
+  // final ChallengeCreateResponse? createdData;
 
   const ChallengeMainScreen({
     super.key,
@@ -32,7 +34,7 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
     // 새로 가입, 생성한 챌린지는 streakCount가 0
     this.streakCount = 0,
     this.isJustCreated = false,
-    this.createdData,
+    // this.createdData,
   });
 
   @override
@@ -53,17 +55,17 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
     super.initState();
 
     // 챌린지 생성 직후라면 생성 성공 다이얼로그 실행
-    if (widget.isJustCreated && widget.createdData != null) {
-      // 프레임이 그려진 직후에 다이얼로그를 띄우기 위해 postFrameCallback 사용
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-          context: context,
-          barrierColor: const Color(0x7F1A1D1B),
-          builder: (context) =>
-              ChallengeCreateSuccessDialog(createdData: widget.createdData!),
-        );
-      });
-    }
+    // if (widget.isJustCreated && widget.createdData != null) {
+    //   // 프레임이 그려진 직후에 다이얼로그를 띄우기 위해 postFrameCallback 사용
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     showDialog(
+    //       context: context,
+    //       barrierColor: const Color(0x7F1A1D1B),
+    //       builder: (context) =>
+    //           ChallengeCreateSuccessDialog(createdData: widget.createdData!),
+    //     );
+    //   });
+    // }
   }
 
   @override
@@ -76,9 +78,8 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 공통 데이터 로드 (방장 여부 등 확인용)
-    final summaryAsync = ref.watch(
-      challengeCalendarDataProvider(widget.challengeId),
+    final detailAsync = ref.watch(
+      challengeDetailProvider(challengeId: widget.challengeId),
     );
 
     return Scaffold(
@@ -94,26 +95,19 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
             width: 24,
           ),
         ),
-        title: summaryAsync.when(
-          // 1. 데이터가 로드되었을 때 (이미 widget에 있는 타이틀 사용)
-          data: (data) =>
-              Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
-
-          // 2. 로딩 중일 때
-          loading: () =>
-              Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
-
-          // 3. 에러가 발생했을 때
-          error: (_, __) =>
-              Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
-        ),
+        title: Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
         centerTitle: true,
         actions: [
-          summaryAsync.when(
-            data: (data) => ChallengePopupMenu(
-              isHost: data.challengeOwner,
-              challengeId: widget.challengeId,
-            ),
+          detailAsync.when(
+            data: (detail) {
+              final myInfo = ref.watch(currentUserProvider);
+              final bool isHost = detail.leader.id == myInfo?.id;
+
+              return ChallengePopupMenu(
+                isHost: isHost,
+                challengeId: widget.challengeId,
+              );
+            },
             loading: () => const SizedBox(),
             error: (_, __) => const SizedBox(),
           ),
@@ -151,26 +145,40 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
   }
 
   Widget _buildBottomButton() {
-    // 0: 소개, 1: 내 현황 -> '인증하기'
-    // 2: 멤버 현황 -> '내 순위 확인하기'
+    final myInfo = ref.watch(currentUserProvider);
+    final detailAsync = ref.watch(
+      challengeDetailProvider(challengeId: widget.challengeId),
+    );
+
+    // .value 대신 AsyncValue 상태를 직접 확인
+    final detail = detailAsync.value;
+
     final bool isMemberTab = _currentTabIndex == 2;
 
+    // 디버깅용 로그 (콘솔에서 확인해 보세요)
+    if (detail != null) {
+      debugPrint('내 ID: ${myInfo?.id}');
+      debugPrint(
+        '오늘 성공 유저 ID들: ${detail.todaySuccessUsers.map((e) => e.id).toList()}',
+      );
+    }
+
+    // 데이터가 로딩 중이면 detail이 null이므로 hasDoneToday는 false가 됨
+    final bool hasDoneToday =
+        detail?.todaySuccessUsers.any((user) {
+          // 타입 이슈 방지를 위해 toString()으로 비교하거나 정확한 필드 확인
+          return user.id.toString() == myInfo?.id.toString();
+        }) ??
+        false;
+
     return BottomActionButton(
-      // 1. 텍스트 분기
       text: isMemberTab ? '내 순위 확인하기' : '인증하기',
-
-      // 2. 배경색: 멤버 탭이면 흰색, 아니면 기본색(초록)
       backgroundColor: isMemberTab ? Colors.white : AppColors.primaryAble,
-
-      // 3. 글자색: 멤버 탭이면 초록색, 아니면 흰색
       textColor: isMemberTab ? AppColors.primaryAble : Colors.white,
-
-      // 4. 테두리색: 멤버 탭일 때만 초록색 테두리 추가
       borderColor: isMemberTab ? AppColors.primaryAble : null,
-
       onPressed: () {
         if (isMemberTab) {
-          // 랭킹 페이지 이동 로직
+          // 멤버 탭: 랭킹 페이지 이동
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -179,16 +187,66 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
             ),
           );
         } else {
-          // 인증 페이지 이동 로직
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  ChallengeVerificationScreen(challengeId: widget.challengeId),
-            ),
-          );
+          // 소개/내 현황 탭: 오늘 이미 인증했는지 확인
+          if (hasDoneToday) {
+            // 💡 이미 인증한 경우 안내 문구 노출
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('이미 오늘 인증글을 작성했습니다.'),
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            // 아직 인증 전이면 인증 페이지로 이동
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChallengeVerificationScreen(
+                  challengeId: widget.challengeId,
+                ),
+              ),
+            );
+          }
         }
       },
     );
   }
+
+  // return BottomActionButton(
+  //   // 1. 텍스트 분기
+  //   text: isMemberTab ? '내 순위 확인하기' : '인증하기',
+
+  //   // 2. 배경색: 멤버 탭이면 흰색, 아니면 기본색(초록)
+  //   backgroundColor: isMemberTab ? Colors.white : AppColors.primaryAble,
+
+  //   // 3. 글자색: 멤버 탭이면 초록색, 아니면 흰색
+  //   textColor: isMemberTab ? AppColors.primaryAble : Colors.white,
+
+  //   // 4. 테두리색: 멤버 탭일 때만 초록색 테두리 추가
+  //   borderColor: isMemberTab ? AppColors.primaryAble : null,
+
+  //   onPressed: () {
+  //     if (isMemberTab) {
+  //       // 랭킹 페이지 이동 로직
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (context) =>
+  //               MemberRankingScreen(challengeId: widget.challengeId),
+  //         ),
+  //       );
+  //     } else {
+  //       // 인증 페이지 이동 로직
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (context) =>
+  //               ChallengeVerificationScreen(challengeId: widget.challengeId),
+  //         ),
+  //       );
+  //     }
+  //   },
+  // );
+  // }
 }
