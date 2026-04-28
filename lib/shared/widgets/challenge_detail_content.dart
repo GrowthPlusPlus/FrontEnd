@@ -38,7 +38,7 @@ class ChallengeDetailContent extends StatelessWidget {
     );
     final DateTime today = DateTime.now();
     final DateTime currentDay = DateTime(today.year, today.month, today.day);
-    final int difference = targetDay.difference(currentDay).inDays;
+    final int difference = targetDay.difference(currentDay).inDays + 1;
 
     if (difference == 0) {
       dDayString = "(D-Day)";
