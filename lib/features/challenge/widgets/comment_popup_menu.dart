@@ -8,6 +8,7 @@ import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/widgets/DeleteConfirmDialog.dart';
 import 'edit_article_dialog.dart';
+import 'package:haenaem/features/report/screens/report_screen.dart';
 
 // 내 댓글이면 삭제/수정 + 다른 사람 댓글이면 신고 다이얼로그
 class CommentPopupMenu extends ConsumerWidget {
@@ -60,7 +61,7 @@ class CommentPopupMenu extends ConsumerWidget {
             _buildPopupItem(
               '신고하기',
               'assets/images/icons/complaint.svg',
-              'complain',
+              'report',
               isDanger: true,
             ),
           ];
@@ -161,40 +162,43 @@ class CommentPopupMenu extends ConsumerWidget {
           }
         }
         break;
-      case 'complain':
-        _showComplainDialog(context);
+      case 'report':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ReportScreen()),
+        );
         break;
     }
   }
 
-  // TODO: 나중에 따로 뺄까여
-  // 신고 확인 다이얼로그
-  void _showComplainDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('신고하기'),
-        content: const Text('이 댓글을 신고하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소', style: TextStyle(color: AppColors.gray2)),
-          ),
-          TextButton(
-            onPressed: () {
-              // TODO: 신고 API 연결 (현재는 스낵바만 표시)
-              Navigator.pop(context);
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('신고가 접수되었습니다.')));
-            },
-            child: const Text(
-              '신고',
-              style: TextStyle(color: AppColors.notification),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   // TODO: 나중에 따로 뺄까여
+  //   // 신고 확인 다이얼로그
+  //   void _showComplainDialog(BuildContext context) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //         title: const Text('신고하기'),
+  //         content: const Text('이 댓글을 신고하시겠습니까?'),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context),
+  //             child: const Text('취소', style: TextStyle(color: AppColors.gray2)),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               // TODO: 신고 API 연결 (현재는 스낵바만 표시)
+  //               Navigator.pop(context);
+  //               ScaffoldMessenger.of(
+  //                 context,
+  //               ).showSnackBar(const SnackBar(content: Text('신고가 접수되었습니다.')));
+  //             },
+  //             child: const Text(
+  //               '신고',
+  //               style: TextStyle(color: AppColors.notification),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 }
