@@ -30,6 +30,11 @@
 				</array>
 			</dict>
 		</array>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+    		<key>NSAllowsArbitraryLoads</key>
+    		<true/>
+		</dict>
 		<key>NSCameraUsageDescription</key>
 		<string>프로필 사진 촬영을 위해 카메라 권한이 필요합니다.</string>
 		<key>NSPhotoLibraryUsageDescription</key>

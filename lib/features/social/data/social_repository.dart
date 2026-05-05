@@ -15,7 +15,7 @@ import '../../auth/services/auth_service.dart';
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://hanaem.onrender.com', // 서버 주소
+      baseUrl: 'http://158.247.216.11:8080', // 서버 주소
       //baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
       connectTimeout: const Duration(seconds: 5),
       //headers: {'ngrok-skip-browser-warning': 'true'},
