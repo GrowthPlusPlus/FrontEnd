@@ -13,9 +13,8 @@ part 'dio_provider.g.dart';
 Dio dio(DioRef ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://hanaem.onrender.com/',
-      connectTimeout: const Duration(seconds: 45),
-      receiveTimeout: const Duration(seconds: 45),
+      baseUrl: 'http://158.247.216.11:8080',
+      connectTimeout: const Duration(seconds: 5),
     ),
   );
 
@@ -24,6 +23,8 @@ Dio dio(DioRef ref) {
       onRequest: (options, handler) async {
         const storage = FlutterSecureStorage();
         final String? token = await storage.read(key: 'accessToken');
+        // 💡 [디버깅 로그] 저장소에서 꺼낸 생생한 토큰 상태를 확인합니다.
+        debugPrint('🕵️‍♂️ [Interceptor] Storage Read (accessToken): $token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -31,11 +32,23 @@ Dio dio(DioRef ref) {
       },
       onError: (DioException e, handler) async {
         if (e.response?.statusCode == 401) {
-          final newToken = await AuthService.refreshTokens();
-          if (newToken != null) {
-            e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-            final response = await dio.fetch(e.requestOptions);
-            return handler.resolve(response);
+          const storage = FlutterSecureStorage();
+          final refreshToken = await storage.read(key: 'refreshToken');
+          if (refreshToken != null) {
+            try {
+              // 🎯 토큰 갱신 전용 가벼운 Dio 생성 (인터셉터 없음)
+              final refreshDio = Dio(
+                BaseOptions(baseUrl: e.requestOptions.baseUrl),
+              );
+
+              final response = await refreshDio.post(
+                '/api/token',
+                data: {"refreshToken": refreshToken},
+              );
+            } catch (err) {
+              // 재발급 실패 시 로그아웃 처리
+              debugPrint("재발급 실패!");
+            }
           }
         }
         return handler.next(e);

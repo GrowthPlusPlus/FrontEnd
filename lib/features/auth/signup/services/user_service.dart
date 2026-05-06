@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // 유저 정보와 관련된 API 통신을 담당하는 서비스 클래스
 class UserService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://hanaem.onrender.com'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://158.247.216.11:8080'));
   // final Dio _dio = Dio(
   //   BaseOptions(
   //     // 1. 서버 주소를 팀원이 준 ngrok 주소로 변경
@@ -16,7 +16,7 @@ class UserService {
   //     // 2. ngrok 경고창 우회를 위한 헤더 필수 추가
   //     headers: {'ngrok-skip-browser-warning': 'true'},
   //   ),
-  //);
+  // );
 
   final _storage = const FlutterSecureStorage(); // 로컬 기기에 저장된 토큰을 읽기 위한 보안 저장소
 
