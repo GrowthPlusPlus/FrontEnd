@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/challenge_repository.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import '../models/challenge_model.dart';
+import 'package:flutter/foundation.dart'; // ✅ debugPrint를 쓰기 위해 필요합니다!
 import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/features/user/models/my_page_challenge_card.dart'
     hide ChallengeStatus;
@@ -189,6 +190,28 @@ class ArticleCreateNotifier extends _$ArticleCreateNotifier {
             tempImageIds: tempImageIds,
           ),
     );
+
+    // ♥️ 로그 찍어보기 여기부터
+    if (!result.hasError) {
+      debugPrint('🚀 인증 성공! 홈 데이터 새로고침 및 검증 시작...');
+
+      // 1. 홈 데이터 새로고침
+      await ref.read(homeNotifierProvider.notifier).refresh();
+
+      // 2. 새로고침된 최신 데이터 가져와서 확인
+      final latestHomeData = ref.read(homeNotifierProvider).value;
+      if (latestHomeData != null) {
+        for (var c in latestHomeData.myChallenges) {
+          debugPrint(
+            'challengeId=${c.challengeBase.id} | ' // ✅ challenge → c
+            'doIt=${c.isDone} | ' // ✅ challenge → c
+            'currentStreak=${c.streakCount} | ' // ✅ challenge → c
+            'warning=${c.warning}', // ✅ challenge → c
+          );
+        }
+      }
+    }
+    // ♥️ 여기까지
 
     state = result;
     return !result.hasError;

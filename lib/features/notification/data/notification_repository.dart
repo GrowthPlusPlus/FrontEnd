@@ -14,7 +14,7 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
 final notiDioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://hanaem.onrender.com', // 확인된 백엔드 주소
+      baseUrl: 'http://158.247.216.11:8080', // 확인된 백엔드 주소
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 3),
     ),
