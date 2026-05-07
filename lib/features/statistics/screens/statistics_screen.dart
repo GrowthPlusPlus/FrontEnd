@@ -1,18 +1,24 @@
 // 최초 작성자: 김채영
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import '../data/activity_repository.dart';
+import '../data/distribution_repository.dart';
+import '../data/monthly_weekly_repository.dart';
 import '../widgets/haenaem_grass.dart';
 import '../widgets/pie_graph.dart';
 import '../widgets/line_graph/line_graph.dart';
 
-class StatisticsScreen extends StatelessWidget {
+// 통계화면 프레임 (안에다 위젯을 넣는 구조)
+class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // 임시 데이터 (나중에 API 응답값으로 대체)
-    final List<int> mockActivity = List.generate(365, (index) => (index % 5));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activityAsync = ref.watch(activityRepositoryProvider);
+    final distributionAsync = ref.watch(distributionRepositoryProvider);
+    final monthlyWeeklyAsync = ref.watch(monthlyWeeklyRepositoryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.gray5,
@@ -30,27 +36,111 @@ class StatisticsScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            // 잔디 위젯 배치
-            HaenaemGrass(
-              successDays: 00,
-              currentStreak: 00,
-              activity: mockActivity,
+            // 해냄 잔디
+            activityAsync.when(
+              loading: () => const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SizedBox(
+                height: 200,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '데이터를 불러오지 못했어요',
+                        style: AppTypography.b2.copyWith(
+                          color: AppColors.gray4,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => ref
+                            .read(activityRepositoryProvider.notifier)
+                            .refresh(),
+                        child: const Text('다시 시도'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              data: (data) => HaenaemGrass(
+                successDays: data.successDays,
+                currentStreak: data.currentStreak,
+                activity: data.activity,
+              ),
             ),
-
             const SizedBox(height: 20),
-            const PieGraph(
-              totalCount: 48,
-              tagCounts: [
-                TagCount(tag: '자격증', count: 24, color: Color(0xFF8979FF)),
-                TagCount(tag: '다이어트', count: 15, color: Color(0xFFFF928A)),
-                TagCount(tag: '독서', count: 8, color: Color(0xff3cc3df)),
-                TagCount(tag: 'tag', count: 00, color: AppColors.gray4),
-                TagCount(tag: 'tag', count: 00, color: Color(0xFFFFD166)),
-                TagCount(tag: 'tag', count: 00, color: AppColors.primaryAble),
-              ],
+            // 나의 해냄 분포
+            distributionAsync.when(
+              loading: () => const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SizedBox(
+                height: 200,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '데이터를 불러오지 못했어요',
+                        style: AppTypography.b2.copyWith(
+                          color: AppColors.gray4,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => ref
+                            .read(distributionRepositoryProvider.notifier)
+                            .refresh(),
+                        child: const Text('다시 시도'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              data: (data) => PieGraph(
+                top3: data.top3,
+                rest: data.rest,
+                restCount: data.restCount,
+                totalCount: data.totalCount,
+              ),
             ),
             const SizedBox(height: 20),
-            const LineGraph(),
+            // 나의 해냄 추이
+            monthlyWeeklyAsync.when(
+              loading: () => const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SizedBox(
+                height: 200,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '데이터를 불러오지 못했어요',
+                        style: AppTypography.b2.copyWith(
+                          color: AppColors.gray4,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => ref
+                            .read(monthlyWeeklyRepositoryProvider.notifier)
+                            .refresh(),
+                        child: const Text('다시 시도'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              data: (data) =>
+                  LineGraph(monthlyData: data.monthly, weeklyData: data.weekly),
+            ),
             const SizedBox(height: 20),
           ],
         ),

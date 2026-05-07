@@ -36,10 +36,6 @@ class AuthService {
   //static const String kakaoRedirectUri =
   //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
 
-  // ♥️ 로컬 서버로 테스트
-  // static const String kakaoRedirectUri =
-  //     'https://ungenially-undebatable-sindy.ngrok-free.dev/oauth/kakao/callback';
-
   // ♥️ 기존 서버
   static final Dio _dio = Dio(
     BaseOptions(baseUrl: 'http://158.247.216.11:8080'),

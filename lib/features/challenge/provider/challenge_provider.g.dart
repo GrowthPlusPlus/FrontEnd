@@ -1501,7 +1501,7 @@ final challengeCreateNotifierProvider =
 typedef _$ChallengeCreateNotifier =
     AutoDisposeNotifier<AsyncValue<ChallengeBase?>>;
 String _$articleCreateNotifierHash() =>
-    r'558fb00ff45dc4f321919d42368c1a94c415f602';
+    r'f3e3030ff3ca5e030ff6e1797cf60cfa819b8bec';
 
 /// See also [ArticleCreateNotifier].
 @ProviderFor(ArticleCreateNotifier)

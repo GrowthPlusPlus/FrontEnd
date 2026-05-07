@@ -51,7 +51,7 @@ class ChallengeRepository {
   // 챌린지 상세정보 조회 수정
   Future<ChallengeDetailModel> getChallengeDetail(int challengeId) async {
     try {
-      final response = await _dio.get('api/challenge/$challengeId');
+      final response = await _dio.get('/api/challenge/$challengeId');
       print("서버 응답 데이터: ${response.data}"); // 데이터 확인 완료!
 
       // 상세 API는 content 없이 바로 객체가 오므로 response.data를 그대로 사용합니다.
