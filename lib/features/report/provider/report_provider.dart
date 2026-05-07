@@ -20,7 +20,7 @@ class ReportController extends _$ReportController {
     required String reportReason,
     required String detailReason,
   }) async {
-    state = const AsyncValue.loading();
+    // state = const AsyncValue.loading();
 
     try {
       if (targetType == ReportTargetType.article) {
@@ -41,9 +41,9 @@ class ReportController extends _$ReportController {
             );
       }
 
-      state = const AsyncValue.data(null);
+      // state = const AsyncValue.data(null);
       return true;
-    } catch (e, stack) {
+    } catch (e) {
       if (e is DioException) {
         debugPrint('---------- [신고 컨트롤러 오류] ----------');
         debugPrint('타입: $targetType, ID: $targetId');
@@ -53,7 +53,7 @@ class ReportController extends _$ReportController {
         debugPrint('신고 처리 중 알 수 없는 에러: $e');
       }
 
-      state = AsyncValue.error(e, stack);
+      // state = AsyncValue.error(e, stack);
       return false;
     }
   }
