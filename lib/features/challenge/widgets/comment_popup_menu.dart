@@ -9,6 +9,7 @@ import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/challenge/widgets/DeleteConfirmDialog.dart';
 import 'edit_article_dialog.dart';
 import 'package:haenaem/features/report/screens/report_screen.dart';
+import 'package:haenaem/features/report/provider/report_provider.dart';
 
 // 내 댓글이면 삭제/수정 + 다른 사람 댓글이면 신고 다이얼로그
 class CommentPopupMenu extends ConsumerWidget {
@@ -165,7 +166,12 @@ class CommentPopupMenu extends ConsumerWidget {
       case 'report':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ReportScreen()),
+          MaterialPageRoute(
+            builder: (context) => ReportScreen(
+              targetType: ReportTargetType.comment, // 댓글 타입
+              targetId: comment.commentId, // 댓글 ID
+            ),
+          ),
         );
         break;
     }

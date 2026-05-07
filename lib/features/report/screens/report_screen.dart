@@ -6,25 +6,46 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import '../widgets/report_reason_tile.dart';
 import 'report_success_screen.dart';
+import 'package:haenaem/features/report/provider/report_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+class ReportScreen extends ConsumerStatefulWidget {
+  final ReportTargetType targetType;
+  final int targetId;
 
+  const ReportScreen({
+    super.key,
+    required this.targetType,
+    required this.targetId,
+  });
   @override
-  State<ReportScreen> createState() => _ReportScreenState();
+  ConsumerState<ReportScreen> createState() => _ReportScreenState();
 }
 
-class _ReportScreenState extends State<ReportScreen> {
+class _ReportScreenState extends ConsumerState<ReportScreen> {
   int? _selectedReasonIndex;
   final TextEditingController _otherReasonController = TextEditingController();
 
+  // 백엔드 API 명세에 맞게 keys 값을 꼭 수정해주세요!
   final List<Map<String, String>> _reasons = [
-    {'title': '영리목적/홍보성', 'desc': '상업적 광고, 도배성 게시글, 링크 유도 등'},
-    {'title': '욕설/비하 발언', 'desc': '특정 개인이나 집단에 대한 혐오, 비하, 욕설 포함'},
-    {'title': '부적절한 콘텐츠', 'desc': '음란물, 폭력적 내용, 불법 정보 포함'},
-    {'title': '개인정보 노출', 'desc': '타인의 연락처, 주소 등 민감한 정보 공유'},
-    {'title': '명의 도용/사칭', 'desc': '타인을 사칭하거나 저작권을 침해하는 이미지 사용'},
-    {'title': '기타 (직접 입력)', 'desc': '위 항목에 해당하지 않는 구체적인 사유'},
+    {'key': 'SPAM', 'title': '영리목적/홍보성', 'desc': '상업적 광고, 도배성 게시글, 링크 유도 등'},
+    {
+      'key': 'ABUSE',
+      'title': '욕설/비하 발언',
+      'desc': '특정 개인이나 집단에 대한 혐오, 비하, 욕설 포함',
+    },
+    {
+      'key': 'INAPPROPRIATE',
+      'title': '부적절한 콘텐츠',
+      'desc': '음란물, 폭력적 내용, 불법 정보 포함',
+    },
+    {'key': 'PRIVACY', 'title': '개인정보 노출', 'desc': '타인의 연락처, 주소 등 민감한 정보 공유'},
+    {
+      'key': 'IMPERSONATION',
+      'title': '명의 도용/사칭',
+      'desc': '타인을 사칭하거나 저작권을 침해하는 이미지 사용',
+    },
+    {'key': 'OTHER', 'title': '기타 (직접 입력)', 'desc': '위 항목에 해당하지 않는 구체적인 사유'},
   ];
 
   @override
@@ -33,17 +54,34 @@ class _ReportScreenState extends State<ReportScreen> {
     super.dispose();
   }
 
-  void _submitReport() {
+  Future<void> _submitReport() async {
     if (_selectedReasonIndex == null) return;
+    FocusManager.instance.primaryFocus?.unfocus();
 
-    // TODO: 서버로 신고 내용 전송하는 로직 (API 연동 시 여기에 작성)
-    // _selectedReasonIndex == 5 인 경우 _otherReasonController.text를 함께 전송
+    final selectedKey = _reasons[_selectedReasonIndex!]['key']!;
+    final detailReason = _selectedReasonIndex == 5
+        ? _otherReasonController.text
+        : '';
 
-    // 현재 신고 화면을 종료(pop)하고 신고 완료 화면으로 대체(pushReplacement)합니다.
-    // 이렇게 하면 신고 완료 화면에서 '확인'을 눌렀을 때 원래 있던 피드나 댓글 창으로 깔끔하게 돌아갑니다.
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const ReportSuccessScreen()),
-    );
+    // 바뀐 부분: 모델 객체 생성 없이 파라미터로 바로 전달
+    final success = await ref
+        .read(reportControllerProvider.notifier)
+        .submitReport(
+          targetType: widget.targetType,
+          targetId: widget.targetId,
+          reportReason: selectedKey,
+          detailReason: detailReason,
+        );
+
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const ReportSuccessScreen()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('신고 접수에 실패했습니다. 다시 시도해주세요.')),
+      );
+    }
   }
 
   @override
