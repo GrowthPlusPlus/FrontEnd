@@ -45,7 +45,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       'title': '명의 도용/사칭',
       'desc': '타인을 사칭하거나 저작권을 침해하는 이미지 사용',
     },
-    {'key': 'ECT', 'title': '기타 (직접 입력)', 'desc': '위 항목에 해당하지 않는 구체적인 사유'},
+    {'key': 'ETC', 'title': '기타 (직접 입력)', 'desc': '위 항목에 해당하지 않는 구체적인 사유'},
   ];
 
   @override
