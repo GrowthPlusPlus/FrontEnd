@@ -16,138 +16,117 @@ class TagCount {
 
 // 나의 해냄 분포 원형 그래프
 class PieGraph extends StatelessWidget {
-  final List<TagCount> tagCounts; // 태그별 데이터
+  final List<TagCount> top3; // 1~3위: 각각 색상으로 표시
+  final List<TagCount> rest; // 4위~: 이름/횟수 각각 표시 (gray4 텍스트)
+  final int restCount; // 4위~ 합산 횟수 (파이 차트 gray4 조각용)
   final int totalCount; // 총 해냄 횟수
-
-  // 그래프 색상 팔레트
-  static const List<Color> defaultColors = [
-    Color(0xFF8979FF),
-    Color(0xFFFF928A),
-    Color(0xFF3BC3DE),
-    Color(0xFFFFD166),
-    Color(0xFF06D6A0),
-    Color(0xFFEF476F),
-  ];
 
   const PieGraph({
     super.key,
-    required this.tagCounts,
+    required this.top3,
+    required this.rest,
+    required this.restCount,
     required this.totalCount,
   });
+
   @override
   Widget build(BuildContext context) {
-    if (tagCounts.isEmpty) return const SizedBox.shrink();
+    if (top3.isEmpty) return const SizedBox.shrink();
 
-    // 상위 3개 + 나머지
-    final top3 = tagCounts.take(3).toList();
-    final rest = tagCounts.skip(3).toList();
+    // 파이 차트용: top3 각각 + 나머지 합산 gray4 하나
+    final pieData = [
+      ...top3,
+      if (restCount > 0)
+        TagCount(tag: '기타', count: restCount, color: AppColors.gray4),
+    ];
 
     return StatisticsCard(
       title: '나의 해냄 분포',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 12,
+        spacing: 10,
         children: [
-          // 2. 차트 + 태그 영역
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 10,
+          // 원형 파이 차트
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 60),
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: CustomPaint(
+                // ✅ 파이 차트는 pieData (top3 + 기타 합산) 사용
+                painter: _PieChartPainter(tagCounts: pieData),
+              ),
+            ),
+          ),
+
+          // 총 N번 해냄!
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 2,
             children: [
-              // 파이 차트 + 총 해냄 텍스트
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 10,
-                children: [
-                  // 원형 파이 차트 영역
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 60),
-                    child: AspectRatio(
-                      aspectRatio: 1, // 정사각형 유지 (원형 그래프용)
-                      child: CustomPaint(
-                        painter: _PieChartPainter(tagCounts: tagCounts),
-                      ),
-                    ),
-                  ),
-
-                  // 총 N번 해냄!
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    spacing: 2,
-                    children: [
-                      Text(
-                        '총',
-                        style: AppTypography.b3.copyWith(
-                          color: AppColors.black,
-                        ),
-                      ),
-                      Text(
-                        '$totalCount번',
-                        style: AppTypography.h3.copyWith(
-                          color: AppColors.primaryAble,
-                        ),
-                      ),
-                      Text(
-                        '해냄!',
-                        style: AppTypography.b3.copyWith(
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // 상위 3개 태그 (큰 폰트)
-                  if (top3.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 60),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: top3
-                            .map((tag) => _buildTopTagItem(tag))
-                            .toList(),
-                      ),
-                    ),
-
-                  // 나머지 태그 (작은 폰트)
-                  if (rest.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 50),
-                      child: Column(
-                        spacing: 1,
-                        children: rest
-                            .map((tag) => _buildRestTagRow(tag))
-                            .toList(),
-                      ),
-                    ),
-                ],
+              Text(
+                '총',
+                style: AppTypography.b3.copyWith(color: AppColors.black),
+              ),
+              Text(
+                '$totalCount번',
+                style: AppTypography.h3.copyWith(color: AppColors.primaryAble),
+              ),
+              Text(
+                '해냄!',
+                style: AppTypography.b3.copyWith(color: AppColors.black),
               ),
             ],
           ),
+
+          // 1~3위: 큰 폰트 + 각각의 색상
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 60),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // ✅ 텍스트는 top3 그대로 사용
+              children: top3.map((tag) => _buildTopTagItem(tag)).toList(),
+            ),
+          ),
+
+          // 4위~: 작은 회색 폰트 + 이름/횟수 각각 표시
+          if (rest.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 50),
+              child: Column(
+                spacing: 1,
+                // ✅ rest는 각각 따로 표시
+                children: rest.map((tag) => _buildRestTagRow(tag)).toList(),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  // 상위 3개 태그 아이템
+  // 1~3위 태그 아이템
   Widget _buildTopTagItem(TagCount tag) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center, // ✅ start → center
       spacing: 2,
       children: [
-        Text(tag.tag, style: AppTypography.b1.copyWith(color: AppColors.gray2)),
+        Text(
+          tag.tag,
+          style: AppTypography.b1.copyWith(color: AppColors.gray2),
+          textAlign: TextAlign.center, // ✅ 추가
+        ),
         Text(
           '${tag.count}번',
           style: AppTypography.h3.copyWith(color: tag.color),
+          textAlign: TextAlign.center, // ✅ 추가
         ),
       ],
     );
   }
 
-  // 나머지 태그 행
+  // 4위~ 태그 행
   Widget _buildRestTagRow(TagCount tag) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -176,14 +155,14 @@ class _PieChartPainter extends CustomPainter {
     if (total == 0) return;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = 85.33;
+    const radius = 85.33;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
     double startAngle = -pi / 2;
     final paint = Paint()..style = PaintingStyle.fill;
 
     for (final tag in tagCounts) {
-      final sweepAngle = (tag.count / total) * (2 * pi); // 원
+      final sweepAngle = (tag.count / total) * (2 * pi);
       paint.color = tag.color;
       canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
       startAngle += sweepAngle;

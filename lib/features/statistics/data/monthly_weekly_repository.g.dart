@@ -1,26 +1,30 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'home_provider.dart';
+part of 'monthly_weekly_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$homeNotifierHash() => r'8b37dfa057e9f5064aa299312acc9b381811c7a1';
+String _$monthlyWeeklyRepositoryHash() =>
+    r'a1b957980c63fa664de422f1081d12f2ffda867f';
 
-/// See also [HomeNotifier].
-@ProviderFor(HomeNotifier)
-final homeNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<HomeNotifier, HomeResponse>.internal(
-      HomeNotifier.new,
-      name: r'homeNotifierProvider',
+/// See also [MonthlyWeeklyRepository].
+@ProviderFor(MonthlyWeeklyRepository)
+final monthlyWeeklyRepositoryProvider =
+    AutoDisposeAsyncNotifierProvider<
+      MonthlyWeeklyRepository,
+      MonthlyWeeklyData
+    >.internal(
+      MonthlyWeeklyRepository.new,
+      name: r'monthlyWeeklyRepositoryProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$homeNotifierHash,
+          : _$monthlyWeeklyRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$HomeNotifier = AutoDisposeAsyncNotifier<HomeResponse>;
+typedef _$MonthlyWeeklyRepository = AutoDisposeAsyncNotifier<MonthlyWeeklyData>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
