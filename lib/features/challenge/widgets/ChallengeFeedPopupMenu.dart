@@ -10,6 +10,8 @@ import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'edit_article_dialog.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
+import 'package:haenaem/features/report/screens/report_screen.dart';
+import 'package:haenaem/features/report/provider/report_provider.dart';
 
 // 인증글 다이얼로그 (내 인증글일 경우와 타인의 인증글일 경우)
 class ChallengeFeedPopupMenu extends ConsumerWidget {
@@ -219,10 +221,21 @@ class ChallengeFeedPopupMenu extends ConsumerWidget {
         debugPrint('🚀 [Action] 챌린지 보기 클릭');
         // TODO: Navigator.push(...) 혹은 현재 탭 전환 로직 추가
         break;
-      case 'complain':
-        ScaffoldMessenger.of(
+      // case 'complain':
+      //   ScaffoldMessenger.of(
+      //     context,
+      //   ).showSnackBar(const SnackBar(content: Text("신고가 접수되었습니다.")));
+      //   break;
+      case 'report':
+        Navigator.push(
           context,
-        ).showSnackBar(const SnackBar(content: Text("신고가 접수되었습니다.")));
+          MaterialPageRoute(
+            builder: (context) => ReportScreen(
+              targetType: ReportTargetType.article, // 인증글 타입
+              targetId: post.postId, // 인증글 ID
+            ),
+          ),
+        );
         break;
     }
   }
