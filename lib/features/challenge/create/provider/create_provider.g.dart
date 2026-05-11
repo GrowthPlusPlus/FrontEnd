@@ -7,14 +7,14 @@ part of 'create_provider.dart';
 // **************************************************************************
 
 String _$challengeCreateNotifierHash() =>
-    r'b003af1426fa23673811d44e5f7ec81ed7075068';
+    r'84ecfb76760f94967f2158d015979ff74f508361';
 
 /// See also [ChallengeCreateNotifier].
 @ProviderFor(ChallengeCreateNotifier)
 final challengeCreateNotifierProvider =
     AutoDisposeNotifierProvider<
       ChallengeCreateNotifier,
-      AsyncValue<ChallengeBase?>
+      AsyncValue<CreatedResponse?>
     >.internal(
       ChallengeCreateNotifier.new,
       name: r'challengeCreateNotifierProvider',
@@ -26,6 +26,6 @@ final challengeCreateNotifierProvider =
     );
 
 typedef _$ChallengeCreateNotifier =
-    AutoDisposeNotifier<AsyncValue<ChallengeBase?>>;
+    AutoDisposeNotifier<AsyncValue<CreatedResponse?>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

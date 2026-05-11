@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
-import 'package:haenaem/features/feed/provider/feed_provider.dart';
+import '../provider/feed_provider.dart';
 import 'package:haenaem/features/feed/views/share_feed_view.dart';
 
 class FeedScreen extends StatefulWidget {

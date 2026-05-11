@@ -6,6 +6,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/shared/models/home_challenge_card.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
 
+// 홈탭의 챌린지 카드
 class ChallengeCard extends StatelessWidget {
   final HomeChallengeCard challenge;
 
@@ -80,7 +81,7 @@ class ChallengeCard extends StatelessWidget {
     final frequencyText = challenge.weeklyFrequency == 7
         ? '매일'
         : '주 ${challenge.weeklyFrequency}회';
-    final dDayText = challenge.dDay == 0 ? '오늘 종료' : 'D-${challenge.dDay}';
+    final dDayText = challenge.dDay == 0 ? '오늘 종료' : '완료까지 D-${challenge.dDay}';
     return Text(
       '$frequencyText, $dDayText',
       style: AppTypography.b2.copyWith(fontSize: 14),

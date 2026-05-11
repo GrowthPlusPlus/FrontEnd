@@ -40,7 +40,7 @@ class AuthService {
   //     'https://ungenially-undebatable-sindy.ngrok-free.dev/oauth/kakao/callback';
 
   static final Dio _dio = Dio(
-    BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
+    BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
   );
 
   // ♥️ 로컬 서버로 테스트

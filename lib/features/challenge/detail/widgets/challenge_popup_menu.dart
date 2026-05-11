@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/invite/challengeInviteScreen.dart';
-import 'package:haenaem/features/challenge/widgets/exit_confirm_dialog.dart';
+import 'package:haenaem/features/challenge/invite/screens/challenge_invite_screen.dart';
+import 'package:haenaem/features/challenge/detail/widgets/exit_confirm_dialog.dart';
 import 'package:haenaem/features/challenge/widgets/NotificationSettingsDialog.dart';
-import 'package:haenaem/features/challenge/settings/challenge_settings_screen.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart'; // 추가
+import 'package:haenaem/features/challenge/settings/screens/challenge_settings_screen.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart'; // 추가
+import '../provider/challenge_leave_provider.dart';
 
 // 챌린지방 팝업 (방장일 경우/멤버일 경우)
 class ChallengePopupMenu extends ConsumerWidget {

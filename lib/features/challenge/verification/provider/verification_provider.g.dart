@@ -24,7 +24,7 @@ final imageVerifyNotifierProvider =
 
 typedef _$ImageVerifyNotifier = AutoDisposeNotifier<AsyncValue<int?>>;
 String _$articleCreateNotifierHash() =>
-    r'62674cc4381f677055728b80c1f45660eb6582f6';
+    r'ea2a88bead8bf1b6b370bab02fb8ea49bcf1aff6';
 
 /// See also [ArticleCreateNotifier].
 @ProviderFor(ArticleCreateNotifier)
@@ -44,7 +44,7 @@ final articleCreateNotifierProvider =
 
 typedef _$ArticleCreateNotifier = AutoDisposeNotifier<AsyncValue<Post?>>;
 String _$articleUpdateNotifierHash() =>
-    r'2f43cae68e6da5d0acf33d13974ffef318f208c4';
+    r'8519a707005f6e3485d92788ee073278ba2149db';
 
 /// See also [ArticleUpdateNotifier].
 @ProviderFor(ArticleUpdateNotifier)

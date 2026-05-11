@@ -3,43 +3,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/notification_repository.dart';
 import '../models/notification_model.dart';
+import '../models/notification_state.dart';
 import 'package:haenaem/features/notification/models/invite_challenge_card.dart';
 
 // 홈 화면 새로고침이 필요한지 여부를 저장하는 스위치 (초기값: false)
 final needsHomeRefreshProvider = StateProvider<bool>((ref) => false);
-
-// 상태 클래스 정의
-class NotificationState {
-  final List<NotificationModel> notifications;
-  final bool isLoading;
-  final bool isFetchingMore; // 추가 페이징 로딩 중
-  final bool hasMore; // 다음 페이지 존재 여부
-  final int currentPage;
-
-  NotificationState({
-    required this.notifications,
-    this.isLoading = false,
-    this.isFetchingMore = false,
-    this.hasMore = true,
-    this.currentPage = 0,
-  });
-
-  NotificationState copyWith({
-    List<NotificationModel>? notifications,
-    bool? isLoading,
-    bool? isFetchingMore,
-    bool? hasMore,
-    int? currentPage,
-  }) {
-    return NotificationState(
-      notifications: notifications ?? this.notifications,
-      isLoading: isLoading ?? this.isLoading,
-      isFetchingMore: isFetchingMore ?? this.isFetchingMore,
-      hasMore: hasMore ?? this.hasMore,
-      currentPage: currentPage ?? this.currentPage,
-    );
-  }
-}
 
 final notificationProvider =
     StateNotifierProvider<NotificationNotifier, NotificationState>((ref) {

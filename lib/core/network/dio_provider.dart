@@ -13,7 +13,7 @@ part 'dio_provider.g.dart';
 Dio dio(DioRef ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://hanaem.onrender.com/',
+      baseUrl: 'http://158.247.216.11:8080',
       connectTimeout: const Duration(seconds: 45),
       receiveTimeout: const Duration(seconds: 45),
     ),

@@ -26,20 +26,36 @@ class CalendarView extends ConsumerStatefulWidget {
 }
 
 class _CalendarViewState extends ConsumerState<CalendarView> {
+  late PageController _pageController;
   DateTime _focusedDay = DateTime.now();
+
+  final DateTime _firstDay = DateTime(2000, 1);
 
   @override
   void initState() {
     super.initState();
+
+    int initialPage =
+        (_focusedDay.year - _firstDay.year) * 12 +
+        _focusedDay.month -
+        _firstDay.month;
+    _pageController = PageController(initialPage: initialPage);
   }
 
   // 달 이동 로직
-  void _onPrevMonth() => setState(
-    () => _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1),
-  );
-  void _onNextMonth() => setState(
-    () => _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1),
-  );
+  void _onPrevMonth() {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onNextMonth() {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +113,53 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                     const SizedBox(height: 10),
                     _buildWeekdayHeader(),
                     const SizedBox(height: 10),
-                    CalendarGrid(focusedDay: _focusedDay, posts: posts),
+
+                    SizedBox(
+                      height: 320, // 달력 높이에 맞춰 조정
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _focusedDay = DateTime(
+                              _firstDay.year,
+                              _firstDay.month + index,
+                            );
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final monthDate = DateTime(
+                            _firstDay.year,
+                            _firstDay.month + index,
+                          );
+
+                          // 개별 달의 데이터를 Provider로 구독
+                          return Consumer(
+                            builder: (context, ref, child) {
+                              final postsAsync = ref.watch(
+                                monthlyChallengePostsProvider(
+                                  challengeId: widget.challengeId,
+                                  year: monthDate.year,
+                                  month: monthDate.month,
+                                ),
+                              );
+
+                              return postsAsync.when(
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                error: (e, s) =>
+                                    const Center(child: Text('에러')),
+                                data: (posts) => CalendarGrid(
+                                  focusedDay: monthDate,
+                                  posts: posts,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
                     const SizedBox(height: 20),
                     _buildPostsHeaderForData(posts.length),
                     const SizedBox(height: 16),

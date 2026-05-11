@@ -4,8 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../provider/challenge_provider.dart';
+// import '../../provider/challenge_provider.dart';
+import '../provider/challenge_delete_provider.dart';
 import 'package:haenaem/shared/provider/home_provider.dart';
+import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
 
 // 방장용 : 챌린지 삭제 다이얼로그
 class DeleteChallengeDialog extends ConsumerWidget {

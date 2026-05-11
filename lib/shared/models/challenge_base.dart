@@ -13,7 +13,7 @@ class ChallengeBase {
 
   factory ChallengeBase.fromJson(Map<String, dynamic> json) {
     return ChallengeBase(
-      id: json['challengeId'] as int,
+      id: (json['challengeId']) as int,
       title: json['title'] as String,
       // isLeader: json['is_leader'] as bool,
     );

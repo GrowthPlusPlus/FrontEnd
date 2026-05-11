@@ -4,9 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
 import '../../widgets/my_challenge_card.dart'; // 💡 공통 카드 위젯 추가
+import 'package:haenaem/features/user/models/my_page_challenge_card.dart';
 
 // 클래스의 용도: 챌린지 목록을 진행중, 완료, 실패 탭으로 구분하여 보여주는 화면
 class ChallengeListScreen extends ConsumerWidget {
@@ -54,20 +56,19 @@ class ChallengeListScreen extends ConsumerWidget {
                 child: TabBarView(
                   children: [
                     inProgressAsync.when(
-                      data: (list) =>
-                          _buildFilteredListView(list, "IN_PROGRESS"),
+                      data: (list) => _buildFilteredListView(list),
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
                       error: (err, __) => Center(child: Text('로드 실패: $err')),
                     ),
                     successAsync.when(
-                      data: (list) => _buildFilteredListView(list, "SUCCESS"),
+                      data: (list) => _buildFilteredListView(list),
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
                       error: (err, __) => Center(child: Text('로드 실패: $err')),
                     ),
                     failedAsync.when(
-                      data: (list) => _buildFilteredListView(list, "FAIL"),
+                      data: (list) => _buildFilteredListView(list),
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
                       error: (err, __) => Center(child: Text('로드 실패: $err')),
@@ -101,25 +102,16 @@ class ChallengeListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFilteredListView(
-    List<ChallengeInProgressModel> list,
-    String tabStatus,
-  ) {
-    final filtered = list.where((item) {
-      final serverStatus = item.status.toUpperCase();
-      return serverStatus == tabStatus ||
-          (tabStatus == "FAIL" && serverStatus == "FAILED");
-    }).toList();
-
-    if (filtered.isEmpty) {
+  Widget _buildFilteredListView(List<MyPageChallengeCard> list) {
+    if (list.isEmpty) {
       return const Center(child: Text('해당하는 챌린지가 없습니다.'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      itemCount: filtered.length,
+      itemCount: list.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) => MyChallengeCard(item: filtered[index]),
+      itemBuilder: (context, index) => MyChallengeCard(item: list[index]),
     );
   }
 }

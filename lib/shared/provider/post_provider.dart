@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/challenge/detail/models/calendar_post.dart';
-import '../../features/challenge/detail/data/post_repository.dart';
+import '../data/post_repository.dart';
 
 part 'post_provider.g.dart';
 

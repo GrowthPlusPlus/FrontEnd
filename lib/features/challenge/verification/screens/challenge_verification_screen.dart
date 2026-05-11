@@ -54,7 +54,7 @@ class _ChallengeVerificationScreenState
 
   // 현재 "살아있는" 모든 사진의 총 합 (기존 사진 - 삭제할 것 + 새 사진)
   int get _currentTotalPhotoCount {
-    final int existingCount = widget.existingPost?.images.length ?? 0;
+    final int existingCount = widget.existingPost?.pictureUrl.length ?? 0;
     final int activeExisting = existingCount - _imageIdsToDelete.length;
     return activeExisting + _newImages.length;
   }
@@ -70,7 +70,7 @@ class _ChallengeVerificationScreenState
 
   // 현재 화면에 보이는 총 사진 수 (기존 유지분 + 새로 추가분)
   int get _totalActivePhotoCount {
-    final int initialCount = widget.existingPost?.images.length ?? 0;
+    final int initialCount = widget.existingPost?.pictureUrl.length ?? 0;
     final int remainingExisting = initialCount - _imageIdsToDelete.length;
     return remainingExisting + _newImages.length;
   }
@@ -115,7 +115,9 @@ class _ChallengeVerificationScreenState
       text: isEditMode ? widget.existingPost!.content : '',
     );
     // 기존 이미지 데이터 초기화
-    _existingImages = isEditMode ? List.from(widget.existingPost!.images) : [];
+    _existingImages = isEditMode
+        ? List.from(widget.existingPost!.pictureUrl)
+        : [];
 
     _scrollController.addListener(_onScroll);
     _contentController.addListener(() => setState(() {})); // 글자수 실시간 반영

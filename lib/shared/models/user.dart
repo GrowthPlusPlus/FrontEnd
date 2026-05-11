@@ -11,8 +11,8 @@ class User {
   // API 데이터와 모델 클래스 데이터 매핑
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] is int
-          ? json['id']
+      id: (json['id'] ?? json['userId']) is int
+          ? (json['id'] ?? json['userId'])
           : int.tryParse(json['id'].toString()) ?? 0,
       profileUrl: json['profileImageUrl'] as String?,
       nickname: (json['nickname'] ?? json['name']) as String,

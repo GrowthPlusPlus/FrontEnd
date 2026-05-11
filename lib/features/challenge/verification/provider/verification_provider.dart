@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/features/feed/provider/feed_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/verification_repository.dart';
 import 'package:haenaem/shared/models/post.dart';
@@ -27,6 +28,9 @@ void _refreshRelatedProviders(Ref ref, int challengeId) {
 
   // 3. 홈 화면(진행 중인 챌린지 현황 등) 갱신
   ref.invalidate(homeNotifierProvider);
+
+  // 4. 멤버 현황 갱신
+  ref.invalidate(feedNotifierProvider);
 }
 
 // 인증 이미지 검증

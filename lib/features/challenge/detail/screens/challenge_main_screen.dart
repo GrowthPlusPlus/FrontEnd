@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 // import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/widgets/challenge_popup_menu.dart';
+import 'package:haenaem/features/challenge/detail/widgets/challenge_popup_menu.dart';
 // import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/widgets/challenge_create_success_dialog.dart';
+import 'package:haenaem/features/challenge/detail/widgets/challenge_create_success_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
@@ -25,7 +25,7 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
   final String? challengeTitle;
   final int streakCount;
   final bool isJustCreated;
-  // final ChallengeCreateResponse? createdData;
+  final String challengeLink;
 
   const ChallengeMainScreen({
     super.key,
@@ -34,7 +34,7 @@ class ChallengeMainScreen extends ConsumerStatefulWidget {
     // 새로 가입, 생성한 챌린지는 streakCount가 0
     this.streakCount = 0,
     this.isJustCreated = false,
-    // this.createdData,
+    this.challengeLink = '',
   });
 
   @override
@@ -55,17 +55,19 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
     super.initState();
 
     // 챌린지 생성 직후라면 생성 성공 다이얼로그 실행
-    // if (widget.isJustCreated && widget.createdData != null) {
-    //   // 프레임이 그려진 직후에 다이얼로그를 띄우기 위해 postFrameCallback 사용
-    //   WidgetsBinding.instance.addPostFrameCallback((_) {
-    //     showDialog(
-    //       context: context,
-    //       barrierColor: const Color(0x7F1A1D1B),
-    //       builder: (context) =>
-    //           ChallengeCreateSuccessDialog(createdData: widget.createdData!),
-    //     );
-    //   });
-    // }
+    if (widget.isJustCreated) {
+      // 프레임이 그려진 직후에 다이얼로그를 띄우기 위해 postFrameCallback 사용
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+          context: context,
+          barrierColor: const Color(0x7F1A1D1B),
+          builder: (context) => ChallengeCreateSuccessDialog(
+            challengeId: widget.challengeId,
+            challengeLink: widget.challengeLink,
+          ),
+        );
+      });
+    }
   }
 
   @override

@@ -2,6 +2,7 @@
 // 유저 검색 상태 관리
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:image/image.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/social_repository.dart';
@@ -35,7 +36,7 @@ class UserSearch extends _$UserSearch {
       // 클라이언트에서 2차 필터링을 수행할 수 있도록 raw 데이터를 받습니다.
       final rawResults = await ref
           .read(socialRepositoryProvider)
-          .searchUsers("");
+          .searchUsers(trimmedQuery);
       // TODO: [성능 최적화 필요] 현재 서버 API가 초성 검색을 지원하지 않아,
       // 임시로 전체 유저 목록을 받아와 클라이언트에서 필터링하고 있습니다.
       // 유저 수가 늘어나면 앱 속도가 느려질 수 있으므로,

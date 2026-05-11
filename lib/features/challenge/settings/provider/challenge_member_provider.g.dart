@@ -6,7 +6,7 @@ part of 'challenge_member_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$challengeMembersHash() => r'64f129d20a062a2443e2fac5867db217ffcb1054';
+String _$challengeMembersHash() => r'8d51eb07d492fdeba9dc138d34a2984b483c2cbb';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -34,7 +34,7 @@ class _SystemHash {
 const challengeMembersProvider = ChallengeMembersFamily();
 
 /// See also [challengeMembers].
-class ChallengeMembersFamily extends Family<AsyncValue<List<ChallengeMember>>> {
+class ChallengeMembersFamily extends Family<AsyncValue<List<User>>> {
   /// See also [challengeMembers].
   const ChallengeMembersFamily();
 
@@ -66,8 +66,7 @@ class ChallengeMembersFamily extends Family<AsyncValue<List<ChallengeMember>>> {
 }
 
 /// See also [challengeMembers].
-class ChallengeMembersProvider
-    extends AutoDisposeFutureProvider<List<ChallengeMember>> {
+class ChallengeMembersProvider extends AutoDisposeFutureProvider<List<User>> {
   /// See also [challengeMembers].
   ChallengeMembersProvider(MemberFilter filter)
     : this._internal(
@@ -97,8 +96,7 @@ class ChallengeMembersProvider
 
   @override
   Override overrideWith(
-    FutureOr<List<ChallengeMember>> Function(ChallengeMembersRef provider)
-    create,
+    FutureOr<List<User>> Function(ChallengeMembersRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -115,7 +113,7 @@ class ChallengeMembersProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<ChallengeMember>> createElement() {
+  AutoDisposeFutureProviderElement<List<User>> createElement() {
     return _ChallengeMembersProviderElement(this);
   }
 
@@ -135,14 +133,13 @@ class ChallengeMembersProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ChallengeMembersRef
-    on AutoDisposeFutureProviderRef<List<ChallengeMember>> {
+mixin ChallengeMembersRef on AutoDisposeFutureProviderRef<List<User>> {
   /// The parameter `filter` of this provider.
   MemberFilter get filter;
 }
 
 class _ChallengeMembersProviderElement
-    extends AutoDisposeFutureProviderElement<List<ChallengeMember>>
+    extends AutoDisposeFutureProviderElement<List<User>>
     with ChallengeMembersRef {
   _ChallengeMembersProviderElement(super.provider);
 

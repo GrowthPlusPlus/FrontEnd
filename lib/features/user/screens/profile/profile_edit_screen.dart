@@ -7,31 +7,22 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'package:haenaem/shared/models/tag_model.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/theme/app_typography.dart';
-import 'package:haenaem/features/user/models/user_model.dart';
+
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:haenaem/shared/widgets/image_source_sheet.dart';
 import '../../../../../shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/features/auth/signup/screens/profile_image_edit_screen.dart';
-// import 'package:haenaem/features/user/models/user_model.dart';
 import 'package:haenaem/shared/models/user_detail.dart';
-import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 
 import '../../widgets/profile_image_menu.dart';
-import '../../provider/tag_provider.dart';
+import '../../../../shared/provider/tag_provider.dart';
 import '../../provider/user_profile_provider.dart';
 
 // 프로필 편집 화면
 class ProfileEditScreen extends ConsumerStatefulWidget {
-  final User user; // 닉네임, 프로필 이미지
-  final UserDetail detail; // 한줄소개, 태그
-  const ProfileEditScreen({
-    super.key,
-    required this.user,
-    required this.detail,
-  });
+  final UserDetail detail;
+  const ProfileEditScreen({super.key, required this.detail});
 
   @override
   ConsumerState<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -50,7 +41,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   void initState() {
     super.initState();
-    _nicknameController = TextEditingController(text: widget.user.nickname);
+    _nicknameController = TextEditingController(
+      text: widget.detail.user.nickname,
+    );
     _introController = TextEditingController(text: widget.detail.introduction);
 
     _nicknameController.addListener(_validateNickname);
@@ -140,7 +133,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           .read(userProfileProvider.notifier)
           .updateProfile(
             currentNickname:
-                widget.user.nickname, // ✅ widget.profile → widget.user
+                widget.detail.user.nickname, // ✅ widget.profile → widget.user
             newNickname: _nicknameController.text,
             currentIntro:
                 widget.detail.introduction, // ✅ widget.profile → widget.detail
@@ -283,10 +276,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                         _selectedImageFile!,
                         fit: BoxFit.cover,
                       ) // 2순위: 새로 고름
-                    : (widget.user.profileUrl ?? '')
+                    : (widget.detail.user.profileUrl ?? '')
                           .isNotEmpty // ✅ widget.profile → widget.user
                     ? Image.network(
                         widget
+                            .detail
                             .user
                             .profileUrl!, // ✅ widget.profile → widget.user
                         fit: BoxFit.cover,

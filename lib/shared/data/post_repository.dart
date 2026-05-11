@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../models/calendar_post.dart';
+import '../../features/challenge/detail/models/calendar_post.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 
 part 'post_repository.g.dart';

@@ -13,7 +13,7 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
   const ChallengeCreateSuccessDialog({
     super.key,
     required this.challengeId, // 필수
-    required this.challengeLink,
+    this.challengeLink = '',
   });
 
   @override

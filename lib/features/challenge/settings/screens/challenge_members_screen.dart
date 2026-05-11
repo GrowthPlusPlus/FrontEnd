@@ -2,16 +2,19 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:haenaem/features/challenge/data/challenge_repository.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
+// import 'package:haenaem/features/challenge/data/challenge_repository.dart';
+import '../data/challenge_member_repository.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:haenaem/core/utils/korean_string_utils.dart';
-import 'package:haenaem/features/user/models/user_model.dart';
-import 'package:haenaem/features/challenge/provider/challenge_member_provider.dart';
-import 'widgets/kick_confirm_dialog.dart';
+// import 'package:haenaem/features/user/models/user_model.dart';
+import 'package:haenaem/shared/models/user.dart';
+import '../provider/challenge_member_provider.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
+import '../widgets/kick_confirm_dialog.dart';
 
 // 1. StatefulWidget으로 변경 (검색어 상태 관리를 위해)
 class ChallengeMemberManagementScreen extends ConsumerStatefulWidget {
@@ -40,7 +43,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
     try {
       // 1. Repository 메서드 호출 (강퇴 요청)
       await ref
-          .read(challengeRepositoryProvider)
+          .read(challengeMemberRepositoryProvider)
           .kickMember(widget.challengeId, targetUserId);
 
       // 2. 성공 시 목록 새로고침 (Provider 초기화 -> 다시 로딩됨)
@@ -118,12 +121,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
       nickname: null,
     );
     final membersAsyncValue = ref.watch(challengeMembersProvider(filter));
-
-    // TODO: 실제 앱의 UserProvider 등을 통해 현재 로그인한 유저의 ID를 가져오기.
-    // 현재는 테스트용 임시 ID가 '나' 역할로 사용되고 있습니다.
-    // 그렇기에 '승빈'은 항상 '챌린지장' 배지가 표시되며 강퇴 버튼이 나타나지 않습니다.
-    // final currentUserId = ref.watch(userProvider).id;
-    const int currentUserId = 14; // 테스트용 임시 ID (로그상의 '승빈'님 ID)
+    final currentUserId = ref.watch(currentUserProvider)?.id;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -263,17 +261,15 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                         itemBuilder: (context, index) {
                           final member = filteredMembers[index];
                           // 현재 렌더링 중인 멤버가 '나'인지 확인
-                          final isMe = member.memberId == currentUserId;
+                          final isMe = member.id == currentUserId;
 
                           return _MemberTile(
                             member: member,
                             isMe: isMe, // 상태 전달
                             notificationRed: AppColors.notification,
                             // 콜백 함수 전달
-                            onKick: () => _handleKickMember(
-                              member.memberId,
-                              member.nickname,
-                            ),
+                            onKick: () =>
+                                _handleKickMember(member.id, member.nickname),
                           );
                         },
                       ),
@@ -297,7 +293,7 @@ class _MemberTile extends StatelessWidget {
     required this.onKick,
   });
 
-  final ChallengeMember member;
+  final User member;
   final bool isMe;
   final Color notificationRed;
   final VoidCallback onKick;
@@ -309,7 +305,7 @@ class _MemberTile extends StatelessWidget {
       child: Row(
         children: [
           // 프로필 이미지 (임시 플레이스홀더)
-          buildProfileCircle(member.profileImageUrl, 44),
+          buildProfileCircle(member.profileUrl, 44),
           const SizedBox(width: 10),
           // 이름 및 칭호
           Column(

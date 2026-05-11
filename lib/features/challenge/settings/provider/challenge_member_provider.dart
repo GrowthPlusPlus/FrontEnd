@@ -2,8 +2,9 @@
 library;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../data/challenge_repository.dart';
-import '../../user/models/user_model.dart';
+// import '../../data/challenge_repository.dart';
+import '../data/challenge_member_repository.dart';
+import 'package:haenaem/shared/models/user.dart';
 
 part 'challenge_member_provider.g.dart';
 
@@ -30,11 +31,11 @@ class MemberFilter {
 }
 
 @riverpod
-Future<List<ChallengeMember>> challengeMembers(
+Future<List<User>> challengeMembers(
   ChallengeMembersRef ref,
-  MemberFilter filter, // int challengeId 대신 Filter 객체를 받음
+  MemberFilter filter,
 ) async {
-  final repository = ref.watch(challengeRepositoryProvider);
+  final repository = ref.watch(challengeMemberRepositoryProvider);
 
   return repository.getChallengeMembers(
     filter.challengeId,
