@@ -9,11 +9,11 @@ final feedRepositoryProvider = Provider<FeedRepository>((ref) {
   final dio = Dio(
     BaseOptions(
       // Render.com 서버 주소를 베이스로 넣어두면 편리합니다
-      baseUrl: 'https://hanaem.onrender.com',
-      //baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
-      connectTimeout: const Duration(seconds: 45),
-      receiveTimeout: const Duration(seconds: 45),
-      //headers: {'ngrok-skip-browser-warning': 'true'},
+      baseUrl: 'http://158.247.216.11:8080',
+      // baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
+      // connectTimeout: const Duration(seconds: 45),
+      // receiveTimeout: const Duration(seconds: 45),
+      // headers: {'ngrok-skip-browser-warning': 'true'},
     ),
   );
 

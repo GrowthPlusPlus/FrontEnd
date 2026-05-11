@@ -33,6 +33,13 @@ class HomeRepository {
   //   }
   // }
   Future<HomeResponse> getHomeData(String date) async {
+    // 💡 [디버깅용] 호출 직전 헤더 상태를 확인합니다.
+    debugPrint(
+      '🚀 [Auth Check] Header: ${_dio.options.headers['Authorization']}',
+    );
+    debugPrint(
+      '🚀 [ngrok Check] Header: ${_dio.options.headers['ngrok-skip-browser-warning']}',
+    );
     try {
       final response = await _dio.get(
         '/api/mainHome',

@@ -144,7 +144,7 @@ class MyChallengeCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '${(progress * 100).toInt()}%',
+          '${progress.toInt()}%',
           style: AppTypography.h2.copyWith(color: color),
         ),
         Text('달성률', style: AppTypography.c1.copyWith(color: AppColors.gray2)),
