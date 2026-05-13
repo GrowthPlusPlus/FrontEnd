@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/shared/models/challenge_base.dart';
+import 'package:haenaem/shared/models/search_challenge_card.dart';
 
 class FeedRepository {
   final Dio _dio;
@@ -59,6 +61,38 @@ class FeedRepository {
     } catch (e) {
       print("❌ [API] 좋아요 토글 에러: $e");
       rethrow;
+    }
+  }
+
+  // AI 챌린지 추천 카드 데이터 가져오기
+  Future<List<SearchChallengeCard>> getAiRecommendations() async {
+    try {
+      final response = await _dio.post('/api/v1/rag/recommend/discovery');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((item) {
+          return SearchChallengeCard(
+            // 1. ChallengeBase 매핑 (id, title 포함)
+            base: ChallengeBase(
+              id: item['id'],
+              title: item['title'],
+              //isLeader: false, // 탐색 탭에서는 기본적으로 리더가 아님
+            ),
+            // 2. 참여자 수 (API: participantNumber -> 모델: participantCount)
+            participantCount: item['participantNumber'] ?? 0,
+            // 3. D-Day (API 명세서에 구체적인 필드가 없으므로 임시로 0 처리)
+            dDay: 0,
+            // 4. 태그 (API: 객체 리스트 -> 모델: String 리스트)
+            tags: (item['tags'] as List)
+                .map((tagObj) => tagObj['tag'] as String)
+                .toList(),
+          );
+        }).toList();
+      }
+      throw Exception('AI 추천 로드 실패');
+    } catch (e) {
+      throw Exception('네트워크 에러: $e');
     }
   }
 }

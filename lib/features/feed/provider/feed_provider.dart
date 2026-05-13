@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:haenaem/features/feed/data/feed_repository.dart';
 import 'package:haenaem/features/feed/models/feed_model.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
+import 'package:haenaem/shared/models/search_challenge_card.dart';
 
 // 1. Repository Provider 추가 (Dio 객체는 별도의 공통 Provider에서 가져오는 것이 좋습니다)
 final feedRepositoryProvider = Provider<FeedRepository>((ref) {
@@ -201,3 +202,11 @@ final memberFeedProvider =
         repository: repository,
       );
     });
+
+// AI 추천 챌린지 리스트를 관리하는 Provider
+final aiRecommendationProvider = FutureProvider<List<SearchChallengeCard>>((
+  ref,
+) {
+  final repository = ref.watch(feedRepositoryProvider);
+  return repository.getAiRecommendations();
+});
