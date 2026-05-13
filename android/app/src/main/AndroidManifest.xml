@@ -17,8 +17,9 @@
         android:label="해냄"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:enableOnBackInvokedCallback="true">
-ß
+        android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="false">
+
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/shared/models/tag_model.dart';

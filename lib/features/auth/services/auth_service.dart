@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
+import '../../../core/network/dio_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
@@ -35,10 +36,7 @@ class AuthService {
   //static const String kakaoRedirectUri =
   //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
 
-  // ♥️ 로컬 서버로 테스트
-  // static const String kakaoRedirectUri =
-  //     'https://ungenially-undebatable-sindy.ngrok-free.dev/oauth/kakao/callback';
-
+  // ♥️ 기존 서버
   static final Dio _dio = Dio(
     BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
   );

@@ -1,26 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'home_provider.dart';
+part of 'activity_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$homeNotifierHash() => r'79469b283e0bb3cd1f61eccb03f0923297609835';
+String _$activityRepositoryHash() =>
+    r'deac898ee453d5c15e95786c15a00557263bffc9';
 
-/// See also [HomeNotifier].
-@ProviderFor(HomeNotifier)
-final homeNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<HomeNotifier, HomeResponse>.internal(
-      HomeNotifier.new,
-      name: r'homeNotifierProvider',
+/// See also [ActivityRepository].
+@ProviderFor(ActivityRepository)
+final activityRepositoryProvider =
+    AutoDisposeAsyncNotifierProvider<ActivityRepository, ActivityData>.internal(
+      ActivityRepository.new,
+      name: r'activityRepositoryProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$homeNotifierHash,
+          : _$activityRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$HomeNotifier = AutoDisposeAsyncNotifier<HomeResponse>;
+typedef _$ActivityRepository = AutoDisposeAsyncNotifier<ActivityData>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -11,7 +11,6 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import '../provider/post_detail_provider.dart';
 import 'package:haenaem/shared/models/post.dart';
 import 'package:haenaem/features/feed/widgets/post_popup_menu.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
 class FeedPostCard extends ConsumerWidget {
   final Post post;
