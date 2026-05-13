@@ -18,6 +18,12 @@ void main() async {
   // 플러터 엔진 초기화 확인
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 전역 에러 핸들러
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('🔴 Flutter 에러: ${details.exception}');
+    debugPrint('🔴 스택: ${details.stack}');
+  };
+
   // 저장소 인스턴스 생성
   const storage = FlutterSecureStorage();
 

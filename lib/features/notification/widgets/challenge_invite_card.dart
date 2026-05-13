@@ -143,6 +143,7 @@ class ChallengeInviteCard extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (context) => ChallengeInviteDetailScreen(
                           challengeId: challengeInfo.base.id,
+                          challengeTitle: challengeInfo.base.title,
                           inviterName: inviterUser.nickname,
                           inviterProfileImageUrl: inviterUser.profileUrl,
                         ),

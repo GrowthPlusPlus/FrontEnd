@@ -5,9 +5,11 @@ import 'package:http_parser/http_parser.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/shared/models/user_detail.dart';
+
 part 'user_repository.g.dart';
 
 // 회원가입 + 내페이지

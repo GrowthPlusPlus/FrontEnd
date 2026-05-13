@@ -5,9 +5,12 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/screens/challenge_detail_screen.dart'; // 챌린지 소개 화면 뷰 재활용
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/user/models/user_model.dart';
+//import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
+// import 'package:haenaem/features/user/models/user_model.dart';
+import '../provider/challenge_search_provider.dart';
+import 'package:haenaem/shared/models/search_challenge_card.dart';
+import '../widgets/challenge_search_card.dart';
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 
@@ -109,7 +112,7 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
           // 챌린지 카드 리스트
           Expanded(
             child: _currentKeyword.isEmpty
-                ? _buildRecommendationSection(currentUser) // 검색어 없을 때
+                ? _buildRecommendationSection(currentUser)
                 : searchResults.when(
                     data: (list) => list.isEmpty
                         ? const Center(child: Text("검색 결과가 없습니다."))
@@ -120,9 +123,10 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
                             ),
                             itemCount: list.length,
                             itemBuilder: (context, index) {
-                              final SearchChallengeModel challengeItem =
-                                  list[index];
-                              return ChallengeCard(challenge: challengeItem);
+                              // 분리한 ChallengeSearchCard 위젯 사용
+                              return ChallengeSearchCard(
+                                challenge: list[index],
+                              );
                             },
                           ),
                     loading: () =>
@@ -191,140 +195,6 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class ChallengeCard extends StatelessWidget {
-  final SearchChallengeModel challenge;
-  const ChallengeCard({super.key, required this.challenge});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.fromLTRB(16, 10, 0, 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(40),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 챌린지 정보로 채우기
-                  Text(
-                    challenge.title,
-                    style: AppTypography.b3.copyWith(color: AppColors.black),
-                  ),
-                  const SizedBox(height: 10), // 이름과 정보 사이 간격 확대
-                  // 인원수 및 완료일 정보
-                  Row(
-                    children: [
-                      // 인원수
-                      Row(
-                        children: [
-                          SvgPicture.asset(
-                            'assets/images/icons/person_icon.svg',
-                            width: 18,
-                            height: 18,
-                            colorFilter: const ColorFilter.mode(
-                              AppColors.gray2,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${challenge.participantNumber}명',
-                            style: AppTypography.b2.copyWith(
-                              color: AppColors.gray2,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 15), // 인원수와 완료일 사이 간격
-                      // 완료일
-                      Text(
-                        '완료까지 D-000',
-                        style: AppTypography.b2.copyWith(
-                          color: AppColors.gray2,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // 챌린지 태그 정보
-                  Row(
-                    children: challenge.tags.isEmpty
-                        ? [const SizedBox.shrink()]
-                        : challenge.tags
-                              .take(2) // 최대 2개만 표시
-                              .map(
-                                (tagObj) => Padding(
-                                  padding: const EdgeInsets.only(right: 10),
-                                  child: buildTag(tagObj.tag),
-                                ),
-                              )
-                              .toList(),
-                  ),
-                ],
-              ),
-            ),
-
-            // 오른쪽 화살표 아이콘
-            Align(
-              alignment: Alignment.center,
-              child: IconButton(
-                onPressed: () {
-                  debugPrint("====> 이동하려는 챌린지 ID: ${challenge.challengeId}");
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChallengeDetailScreen(
-                        challengeId: challenge.challengeId,
-                      ),
-                    ),
-                  );
-                },
-                icon: SvgPicture.asset(
-                  'assets/images/icons/thick_right_arrow_icon.svg',
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.gray2,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildTag(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppColors.selected,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Text(
-        text,
-        style: AppTypography.b2.copyWith(color: AppColors.primaryAble),
       ),
     );
   }

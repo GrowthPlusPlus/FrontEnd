@@ -4,14 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/detail/widgets/challenge_detail_content.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import '../provider/challenge_participate_provider.dart';
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
+import 'package:haenaem/shared/widgets/challenge_detail_content.dart';
 import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 
 class ChallengeDetailScreen extends ConsumerStatefulWidget {
   final int challengeId;
-  const ChallengeDetailScreen({super.key, required this.challengeId});
+  final String challengeTitle;
+  const ChallengeDetailScreen({
+    super.key,
+    required this.challengeId,
+    required this.challengeTitle,
+  });
 
   @override
   ConsumerState<ChallengeDetailScreen> createState() =>
@@ -109,7 +116,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
               context: context,
               builder: (context) => EnterConfirmDialog(
                 challengeId: widget.challengeId,
-                challengeTitle: challenge.title,
+                challengeTitle: widget.challengeTitle,
               ),
             );
           } else {

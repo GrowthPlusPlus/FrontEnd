@@ -152,17 +152,20 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                       inviterName = noti.message.split('님이').first.trim();
                     }
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChallengeInviteDetailScreen(
-                          challengeId: noti.targetId!,
-                          inviterName: inviterName,
-                          inviterProfileImageUrl: noti.profileImageUrl,
-                        ),
-                      ),
-                    );
-                    break;
+                  // ChallengeInviteDetailScreen에서는 challengeTitle값이 필요한데 이 화면에는 존재하지 않아서 일단 주석 처리
+
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => ChallengeInviteDetailScreen(
+                  //       challengeId: noti.targetId!,
+                  //       challengeTitle: ,
+                  //       inviterName: inviterName,
+                  //       inviterProfileImageUrl: noti.profileImageUrl,
+                  //     ),
+                  //   ),
+                  // );
+                  // break;
 
                   // TODO: 챌린지 성공/실패 알림 타입 추가 시 여기에 케이스 추가
                   /*

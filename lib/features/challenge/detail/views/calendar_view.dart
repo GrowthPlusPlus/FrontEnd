@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:intl/intl.dart';
-
-import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import '../../../../shared/provider/post_provider.dart';
+import '../provider/stats_provider.dart';
+import '../widgets/calendar_grid.dart';
+import '../widgets/calendar_post_card.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
   final int challengeId;
+  final int streakCount;
   final ScrollController scrollController;
 
   const CalendarView({
     super.key,
     required this.challengeId,
+    required this.streakCount,
     required this.scrollController,
   });
 
@@ -26,103 +26,168 @@ class CalendarView extends ConsumerStatefulWidget {
 }
 
 class _CalendarViewState extends ConsumerState<CalendarView> {
+  late PageController _pageController;
   DateTime _focusedDay = DateTime.now();
+
+  final DateTime _firstDay = DateTime(2000, 1);
 
   @override
   void initState() {
     super.initState();
+
+    int initialPage =
+        (_focusedDay.year - _firstDay.year) * 12 +
+        _focusedDay.month -
+        _firstDay.month;
+    _pageController = PageController(initialPage: initialPage);
   }
 
   // 달 이동 로직
-  void _onPrevMonth() => setState(
-    () => _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1),
-  );
-  void _onNextMonth() => setState(
-    () => _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1),
-  );
+  void _onPrevMonth() {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onNextMonth() {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     // 1. 데이터 구독
-    final calendarDataAsync = ref.watch(
-      challengeCalendarDataProvider(widget.challengeId),
+    final statsAsync = ref.watch(challengeStatsProvider(widget.challengeId));
+
+    final postsProvider = monthlyChallengePostsProvider(
+      challengeId: widget.challengeId,
+      year: _focusedDay.year,
+      month: _focusedDay.month,
     );
 
-    final photosAsync = ref.watch(
-      challengeCalendarPhotosProvider(
-        challengeId: widget.challengeId,
-        year: _focusedDay.year,
-        month: _focusedDay.month,
-      ),
-    );
+    final postsAsync = ref.watch(postsProvider);
 
-    final postsAsync = ref.watch(
-      challengePostsProvider(
-        challengeId: widget.challengeId,
-        year: _focusedDay.year,
-        month: _focusedDay.month,
-      ),
-    );
-
-    // 2. UI 구성
-    return calendarDataAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('에러 발생: $err')),
-      data: (summaryData) => Scaffold(
+    // 2. 통합 로딩/에러/데이터 처리
+    return statsAsync.when(
+      loading: () => const Scaffold(
         backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-          controller: widget.scrollController,
-          // 하단 버튼 높이만큼 여유 공간을 주어 마지막 리스트가 가려지지 않게 합니다.
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
-          child: Column(
-            children: [
-              _buildStatCards(summaryData),
-              const SizedBox(height: 20),
-              _buildCalendarHeader(_focusedDay),
-              const SizedBox(height: 10),
-              _buildWeekdayHeader(),
-              const SizedBox(height: 10),
-              photosAsync.when(
-                data: (photos) {
-                  final allPosts = postsAsync.value ?? [];
-                  return _buildCalendarGrid(_focusedDay, photos, allPosts);
-                },
-                loading: () => const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (e, s) => const Text('달력을 불러오지 못했습니다.'),
-              ),
-              const SizedBox(height: 20),
-              _buildPostsHeader(postsAsync),
-              const SizedBox(height: 16),
-              postsAsync.when(
-                data: (posts) {
-                  if (posts.isEmpty) return _buildEmptyState();
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) =>
-                        _buildCertCard(context, post: posts[index]),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => const Text('인증글 로드 중 에러'),
-              ),
-            ],
-          ),
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, s) => Scaffold(body: Center(child: Text('통계 로드 실패: $e'))),
+      data: (stats) => postsAsync.when(
+        loading: () => const Scaffold(
+          backgroundColor: Colors.white,
+          body: Center(child: CircularProgressIndicator()),
         ),
+        error: (e, s) => Scaffold(body: Center(child: Text('인증글 로드 실패: $e'))),
+        data: (posts) {
+          return Scaffold(
+            backgroundColor: Colors.white,
+            // [추가] 당겨서 새로고침 위젯
+            body: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(challengeStatsProvider(widget.challengeId));
+                ref.invalidate(postsProvider);
+
+                // 두 데이터가 로드될 때까지 대기
+                await Future.wait([
+                  ref.read(challengeStatsProvider(widget.challengeId).future),
+                  ref.read(postsProvider.future),
+                ]);
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                controller: widget.scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+                child: Column(
+                  children: [
+                    _buildStatCards(
+                      stats.totalSuccessDays,
+                      stats.currentStreakDays,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildCalendarHeader(_focusedDay),
+                    const SizedBox(height: 10),
+                    _buildWeekdayHeader(),
+                    const SizedBox(height: 10),
+
+                    SizedBox(
+                      height: 320, // 달력 높이에 맞춰 조정
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _focusedDay = DateTime(
+                              _firstDay.year,
+                              _firstDay.month + index,
+                            );
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final monthDate = DateTime(
+                            _firstDay.year,
+                            _firstDay.month + index,
+                          );
+
+                          // 개별 달의 데이터를 Provider로 구독
+                          return Consumer(
+                            builder: (context, ref, child) {
+                              final postsAsync = ref.watch(
+                                monthlyChallengePostsProvider(
+                                  challengeId: widget.challengeId,
+                                  year: monthDate.year,
+                                  month: monthDate.month,
+                                ),
+                              );
+
+                              return postsAsync.when(
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                error: (e, s) =>
+                                    const Center(child: Text('에러')),
+                                data: (posts) => CalendarGrid(
+                                  focusedDay: monthDate,
+                                  posts: posts,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    _buildPostsHeaderForData(posts.length),
+                    const SizedBox(height: 16),
+                    posts.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: posts.length,
+                            itemBuilder: (context, index) =>
+                                CalendarPostCard(post: posts[index]),
+                          ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStatCards(ChallengeCalendarModel data) {
+  Widget _buildStatCards(int totalSuccessDays, int currentStreakDays) {
     return Row(
       children: [
-        _buildStatCard(data.totalSuccessDays.toString(), '완료 일수'),
+        _buildStatCard(totalSuccessDays.toString(), '완료 일수'),
         const SizedBox(width: 12),
-        _buildStatCard(data.currentStreakDays.toString(), '연속 일수'),
+        _buildStatCard(currentStreakDays.toString(), '연속 일수'),
       ],
     );
   }
@@ -239,100 +304,14 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     );
   }
 
-  Widget _buildCalendarGrid(
-    DateTime date,
-    List<ChallengeCalendarPhoto> photos,
-    List<CertificationPostModel> allPosts,
-  ) {
-    final int skipDays = DateTime(date.year, date.month, 1).weekday % 7;
-    final int lastDayOfMonth = DateTime(date.year, date.month + 1, 0).day;
-    final now = DateTime.now();
-
-    return GridView.builder(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: skipDays + lastDayOfMonth,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 7,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-      ),
-      itemBuilder: (context, index) {
-        if (index < skipDays) return const SizedBox();
-        int day = index - skipDays + 1;
-        final bool isToday =
-            now.year == date.year && now.month == date.month && now.day == day;
-        final String targetDateStr =
-            "${date.year}-${date.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
-
-        final photoData = photos.firstWhereOrNull(
-          (p) => p.postDate == targetDateStr,
-        );
-        bool isCertified = photoData != null && photoData.postId != -1;
-
-        final CertificationPostModel? fullPost = isCertified
-            ? allPosts.firstWhereOrNull((p) => p.postId == photoData.postId) ??
-                  allPosts.firstWhereOrNull((p) => p.postDate == targetDateStr)
-            : null;
-
-        return GestureDetector(
-          onTap: (isCertified && fullPost != null)
-              ? () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PostDetailScreen(
-                      postId: fullPost.postId,
-                      post: fullPost,
-                    ),
-                  ),
-                )
-              : null,
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isCertified
-                  ? AppColors.primaryAble
-                  : (isToday ? AppColors.gray5 : AppColors.gray5),
-              borderRadius: BorderRadius.circular(5),
-              border: (isToday && !isCertified)
-                  ? Border.all(color: AppColors.gray2, width: 1)
-                  : null,
-              image: (isCertified && photoData.imageUrl != null)
-                  ? DecorationImage(
-                      image: NetworkImage(photoData.imageUrl!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: Text(
-              '$day',
-              style: TextStyle(
-                color: isCertified
-                    ? Colors.white
-                    : (isToday ? AppColors.gray2 : AppColors.gray2),
-                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPostsHeader(
-    AsyncValue<List<CertificationPostModel>> postsAsync,
-  ) {
+  Widget _buildPostsHeaderForData(int count) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text('내 인증글', style: AppTypography.b1),
-        postsAsync.maybeWhen(
-          data: (posts) => Text(
-            '총 ${posts.length}개',
-            style: AppTypography.c1.copyWith(color: AppColors.gray2),
-          ),
-          orElse: () => const SizedBox(),
+        Text(
+          '총 $count개',
+          style: AppTypography.c1.copyWith(color: AppColors.gray2),
         ),
       ],
     );
@@ -342,77 +321,4 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     padding: EdgeInsets.symmetric(vertical: 40),
     child: Text('이번 달 인증글이 없습니다.', style: TextStyle(color: AppColors.gray2)),
   );
-
-  Widget _buildCertCard(
-    BuildContext context, {
-    required CertificationPostModel post,
-  }) {
-    final String formattedDate = (post.postDate.isNotEmpty)
-        ? DateFormat('M월 d일').format(DateTime.parse(post.postDate))
-        : "";
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PostDetailScreen(post: post, postId: post.postId),
-        ),
-      ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 15),
-        padding: const EdgeInsets.all(13),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.gray4),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (post.imageUrl != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  post.imageUrl!,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/icons/green_calendar.svg',
-                        width: 12,
-                        height: 12,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        formattedDate,
-                        style: AppTypography.c1.copyWith(
-                          color: AppColors.primaryAble,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    post.content,
-                    style: AppTypography.b2.copyWith(color: AppColors.black),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

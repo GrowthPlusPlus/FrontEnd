@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/user_repository.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
-import 'tag_provider.dart';
+import '../../../shared/provider/tag_provider.dart';
 
 part 'user_profile_provider.g.dart';
 

@@ -7,10 +7,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/models/image_model.dart';
-import 'package:intl/intl.dart';
+
+import 'package:haenaem/shared/models/post.dart';
+import '../provider/verification_provider.dart';
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
@@ -25,14 +25,11 @@ import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/features/challenge/widgets/verification_cancel_dialog.dart';
-import 'package:haenaem/features/feed/models/feed_model.dart';
-import 'package:haenaem/features/home/provider/home_provider.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {
   final int challengeId;
-  final CertificationPostModel? existingPost; // 데이터가 있으면 수정 모드
+  final Post? existingPost; // 데이터가 있으면 수정 모드
 
   const ChallengeVerificationScreen({
     super.key,
@@ -57,7 +54,7 @@ class _ChallengeVerificationScreenState
 
   // 현재 "살아있는" 모든 사진의 총 합 (기존 사진 - 삭제할 것 + 새 사진)
   int get _currentTotalPhotoCount {
-    final int existingCount = widget.existingPost?.images.length ?? 0;
+    final int existingCount = widget.existingPost?.pictureUrl.length ?? 0;
     final int activeExisting = existingCount - _imageIdsToDelete.length;
     return activeExisting + _newImages.length;
   }
@@ -73,7 +70,7 @@ class _ChallengeVerificationScreenState
 
   // 현재 화면에 보이는 총 사진 수 (기존 유지분 + 새로 추가분)
   int get _totalActivePhotoCount {
-    final int initialCount = widget.existingPost?.images.length ?? 0;
+    final int initialCount = widget.existingPost?.pictureUrl.length ?? 0;
     final int remainingExisting = initialCount - _imageIdsToDelete.length;
     return remainingExisting + _newImages.length;
   }
@@ -118,7 +115,9 @@ class _ChallengeVerificationScreenState
       text: isEditMode ? widget.existingPost!.content : '',
     );
     // 기존 이미지 데이터 초기화
-    _existingImages = isEditMode ? List.from(widget.existingPost!.images) : [];
+    _existingImages = isEditMode
+        ? List.from(widget.existingPost!.pictureUrl)
+        : [];
 
     _scrollController.addListener(_onScroll);
     _contentController.addListener(() => setState(() {})); // 글자수 실시간 반영
@@ -135,7 +134,20 @@ class _ChallengeVerificationScreenState
   }
 
   // 사진 추가 시트 띄우기
-  void _showImageSourceSheet() {
+  void _showImageSourceSheet() async {
+    // ✅ 갤러리/카메라 접근 전 권한 먼저 요청
+    final PermissionState ps = await PhotoManager.requestPermissionExtend();
+
+    if (!ps.hasAccess) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('사진 접근 권한이 필요합니다.')));
+        PhotoManager.openSetting(); // 설정 화면으로 유도
+      }
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -602,85 +614,45 @@ class _ChallengeVerificationScreenState
   }
 
   Future<void> _onSave() async {
-    final now = DateTime.now();
-    bool success = false;
     final content = _contentController.text.trim();
+    bool success = false;
 
-    try {
-      if (isEditMode) {
-        // ✨ editArticle의 파라미터명을 tempImageIds로 맞춤
-        success = await ref
-            .read(articleUpdateNotifierProvider.notifier)
-            .editArticle(
-              postId: widget.existingPost!.postId,
-              content: content,
-              deleteImageIds: _imageIdsToDelete,
-              tempImageIds: _tempImageIds, // 💡 File 대신 ID 리스트 전달
-            );
-      } else {
-        // ✨ submitArticle의 파라미터명을 tempImageIds로 맞춤
-        success = await ref
-            .read(articleCreateNotifierProvider.notifier)
-            .submitArticle(
-              challengeId: widget.challengeId,
-              content: content,
-              tempImageIds: _tempImageIds, // 💡 File 대신 ID 리스트 전달
-            );
-      }
-    } catch (e) {
-      success = false;
+    if (isEditMode) {
+      success = await ref
+          .read(articleUpdateNotifierProvider.notifier)
+          .editArticle(
+            postId: widget.existingPost!.id,
+            challengeId: widget.challengeId,
+            content: content,
+            deleteImageIds: _imageIdsToDelete,
+            tempImageIds: _tempImageIds,
+          );
+    } else {
+      success = await ref
+          .read(articleCreateNotifierProvider.notifier)
+          .submitArticle(
+            challengeId: widget.challengeId,
+            content: content,
+            tempImageIds: _tempImageIds,
+          );
     }
 
-    if (success && mounted) {
-      // 💡 [에러 해결] 이 프로바이더만 이름 없이 숫자만 넣습니다 (Positional)
-      ref.invalidate(challengeCalendarDataProvider(widget.challengeId));
+    if (!mounted) return;
 
-      // 💡 아래 프로바이더들은 정의된 대로 이름을 명시합니다 (Named)
-      ref.invalidate(
-        challengeCalendarPhotosProvider(
-          challengeId: widget.challengeId,
-          year: now.year,
-          month: now.month,
-        ),
-      );
-      ref.invalidate(
-        challengePostsProvider(
-          challengeId: widget.challengeId,
-          year: now.year,
-          month: now.month,
-        ),
-      );
-
-      // ♥️ 임시 코드 여기서부터
-      // ✅ 서버 재조회 없이 로컬 상태 즉시 반영
-      if (!isEditMode) {
-        ref
-            .read(homeNotifierProvider.notifier)
-            .markChallengeAsDone(widget.challengeId);
-      }
-      ref.invalidate(myInProgressChallengesProvider);
-
-      if (!mounted) return;
+    if (success) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
       Navigator.pop(context);
-    }
-    //  ♥️여기까지
-    // 복원할 코드
-    // // ✅ await로 fetch 완료 후 pop
-    // await ref.read(homeNotifierProvider.notifier).refresh();
-    // ref.invalidate(myInProgressChallengesProvider);
-    // if (!mounted) return;
-    // ScaffoldMessenger.of(
-    //   context,
-    // ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
-    // Navigator.pop(context);
-    //}
-    else if (mounted) {
+    } else {
+      // 에러 발생 시 처리 (예: 스낵바 노출)
+      final error = isEditMode
+          ? ref.read(articleUpdateNotifierProvider).error
+          : ref.read(articleCreateNotifierProvider).error;
+
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('인증에 실패했습니다. 다시 시도해주세요.')));
+      ).showSnackBar(SnackBar(content: Text('오류가 발생했습니다: $error')));
     }
   }
 }
