@@ -5,11 +5,13 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../core/network/dio_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // 구글 OAuth 2.0 기반의 사용자 인증과 JWT 토큰의 생명주기(발급, 재발급, 파기)를 전담하는 클래스
 // 서버로부터 받은 userStatus(NEW/ACTIVE)를 분석하여 사용자별 맞춤형 초기 화면 진입 경로를 제어
@@ -18,15 +20,14 @@ class AuthService {
   static const _storage = FlutterSecureStorage(); // 보안 저장소
 
   // 구글 설정 정보
-  static const String androidClientId =
-      '433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i.apps.googleusercontent.com';
+  static String androidClientId = dotenv.env['GOOGLE_ANDROID_CLIENT_ID'] ?? '';
   static const String customScheme =
       'com.googleusercontent.apps.433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i';
   static const String redirectUri = '$customScheme:/oauth2redirect';
 
   // 카카오 설정 정보
-  static const String kakaoRestApiKey = '9fdd13c0777c415d8fa4055b5b26a6c5';
-  static const String kakaoNativeAppKey = '05a36f172ea2945260862834654385ea';
+  static String kakaoRestApiKey = dotenv.env['KAKAO_REST_API_KEY'] ?? '';
+  static String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
   // static const String kakaoRedirectUri =
   //     'https://hanaem.onrender.com/api/oauth/kakao/token';
 

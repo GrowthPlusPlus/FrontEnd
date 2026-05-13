@@ -1,6 +1,7 @@
 // 최초 작성자: 김채영
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
@@ -17,6 +18,8 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 void main() async {
   // 플러터 엔진 초기화 확인
   WidgetsFlutterBinding.ensureInitialized();
+  // .env 파일 로드
+  await dotenv.load(fileName: ".env");
 
   // 전역 에러 핸들러
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -47,7 +50,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // 카카오 SDK 초기화
-  KakaoSdk.init(nativeAppKey: '05a36f172ea2945260862834654385ea');
+  KakaoSdk.init(nativeAppKey: dotenv.get('KAKAO_NATIVE_APP_KEY'));
 
   runApp(const ProviderScope(child: MyApp()));
 }

@@ -64,6 +64,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_sign_in: ^7.2.0
   dio: ^5.9.1
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +96,7 @@ flutter:
    - assets/images/illustrations/
    - assets/images/placeholders/
    - assets/images/
+   - .env
 
 
   #   - images/a_dot_burr.jpeg
