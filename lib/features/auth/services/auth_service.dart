@@ -5,11 +5,13 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../core/network/dio_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // 구글 OAuth 2.0 기반의 사용자 인증과 JWT 토큰의 생명주기(발급, 재발급, 파기)를 전담하는 클래스
 // 서버로부터 받은 userStatus(NEW/ACTIVE)를 분석하여 사용자별 맞춤형 초기 화면 진입 경로를 제어
@@ -18,15 +20,14 @@ class AuthService {
   static const _storage = FlutterSecureStorage(); // 보안 저장소
 
   // 구글 설정 정보
-  static const String androidClientId =
-      '433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i.apps.googleusercontent.com';
+  static String androidClientId = dotenv.env['GOOGLE_ANDROID_CLIENT_ID'] ?? '';
   static const String customScheme =
       'com.googleusercontent.apps.433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i';
   static const String redirectUri = '$customScheme:/oauth2redirect';
 
   // 카카오 설정 정보
-  static const String kakaoRestApiKey = '9fdd13c0777c415d8fa4055b5b26a6c5';
-  static const String kakaoNativeAppKey = '05a36f172ea2945260862834654385ea';
+  static String kakaoRestApiKey = dotenv.env['KAKAO_REST_API_KEY'] ?? '';
+  static String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
   // static const String kakaoRedirectUri =
   //     'https://hanaem.onrender.com/api/oauth/kakao/token';
 
@@ -35,6 +36,11 @@ class AuthService {
 
   //static const String kakaoRedirectUri =
   //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
+
+  // 네이버 설정 정보
+  static String naverClientId = dotenv.env['NAVER_CLIENT_ID'] ?? '';
+  static const String naverRedirectUri =
+      'http://158.247.216.11:8080/oauth/naver/callback';
 
   // ♥️ 기존 서버
   static final Dio _dio = Dio(
@@ -51,6 +57,56 @@ class AuthService {
   //     },
   //   ),
   // );
+
+  // ----------------------------------------
+  // 네이버 로그인 함수
+  // ----------------------------------------
+
+  // 3. 네이버 인증 URL 생성 (네이버는 CSRF 방지를 위해 state 파라미터가 필수입니다)
+  static String getNaverAuthUrl(String state) {
+    final clientId = naverClientId;
+    final redirectUri = Uri.encodeComponent(naverRedirectUri);
+
+    return 'https://nid.naver.com/oauth2.0/authorize'
+        '?response_type=code'
+        '&client_id=$clientId'
+        '&redirect_uri=$redirectUri'
+        '&state=$state';
+  }
+
+  // 4. 네이버 인가 코드를 서버로 전송
+  static Future<void> sendNaverAuthToBackend({
+    required String code,
+    required String state,
+    required BuildContext context,
+  }) async {
+    try {
+      debugPrint("🚀 서버로 네이버 인가 데이터 전송 시작...");
+
+      final response = await _dio.post(
+        '/api/oauth/naver/token', // 📍 이 주소가 맞는지 백엔드 팀과 꼭 확인하세요!
+        data: {
+          "code": code,
+          "state": state, // 네이버는 검증을 위해 state도 같이 보내는 경우가 많습니다.
+          "fcmToken": "",
+        },
+        options: Options(contentType: Headers.jsonContentType),
+      );
+
+      debugPrint("📥 네이버 로그인 서버 응답 코드: ${response.statusCode}");
+
+      if (response.statusCode == 200 && response.data != null) {
+        await _handleAuthResponse(response.data, context);
+      }
+    } on DioException catch (e) {
+      debugPrint('🌐 네이버 서버 통신 에러: ${e.response?.statusCode}');
+      debugPrint('내용: ${e.response?.data}');
+    }
+  }
+
+  // ----------------------------------------
+  // 카카오 로그인 함수
+  // ----------------------------------------
 
   // 1. PKCE 쌍 생성 (RFC 7636 표준 방식)
   static Map<String, String> generatePkcePair() {

@@ -6,7 +6,7 @@ part of 'feed_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$aiRecommendationHash() => r'd1240474f316be6de0e25b2eb6a55757f250510e';
+String _$aiRecommendationHash() => r'90ca6a9c155eaf19f39c8ef6ebc589e287b93686';
 
 /// See also [aiRecommendation].
 @ProviderFor(aiRecommendation)
