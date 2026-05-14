@@ -65,6 +65,19 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
 
+      // 키보드 외부 터치 시 키보드 내리기 설정
+      builder: (context, child) {
+        return GestureDetector(
+          // HitTestBehavior.opaque를 주어야 빈 공간 터치도 완벽하게 인식합니다.
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            // 현재 화면에 올라와 있는 키보드(포커스)를 강제로 내립니다.
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: child!,
+        );
+      },
+
       // 로컬라이징 설정 (달력 한글화를 위해 필수)
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
