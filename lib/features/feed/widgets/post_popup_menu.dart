@@ -1,4 +1,5 @@
 // 최초 작성자 : 강선욱
+import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,6 +16,7 @@ import '../provider/post_detail_provider.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/report/screens/report_screen.dart';
 import 'package:haenaem/features/report/provider/report_provider.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
 
 // 인증글 다이얼로그 (내 인증글일 경우와 타인의 인증글일 경우)
 class PostPopupMenu extends ConsumerWidget {
@@ -23,11 +25,11 @@ class PostPopupMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. 현재 로그인한 내 프로필 정보를 가져옵니다.
-    //final myProfileAsync = ref.watch(myProfileProvider);
+    // 1. user 전역값 가져오기
+    final currentUser = ref.watch(currentUserProvider);
 
     // 2. 내 닉네임과 게시글 작성자 닉네임을 비교하여 '내 글' 여부 판단
-    final bool isMine = post.isAuthor;
+    final bool isMine = (post.writer.id == currentUser?.id);
 
     // 2. [날짜 체크] 오늘 날짜 문자열(yyyy-MM-dd) 생성
     final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
