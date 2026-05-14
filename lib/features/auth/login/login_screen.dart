@@ -136,8 +136,42 @@ class LoginScreen extends StatelessWidget {
                   backgroundColor: const Color(0xFF03C75A),
                   textColor: Colors.white,
                   iconPath: 'assets/images/icons/naver_logo.svg',
-                  onTap: navigateToSignup,
-                  //onTap = () {},
+                  onTap: () async {
+                    // 1. 상태(state) 문자열 생성 (카카오의 PKCE 함수를 재사용하여 임의의 문자열 15자리 생성)
+                    final state = AuthService.generatePkcePair()['challenge']!
+                        .substring(0, 15);
+                    final authUrl = AuthService.getNaverAuthUrl(state);
+                    String? naverAuthCode;
+
+                    if (!context.mounted) return;
+
+                    // 2. 카카오처럼 바텀시트로 네이버 웹뷰 실행
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (ctx) => Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                        ),
+                        child: _buildNaverWebView(
+                          context: ctx,
+                          authUrl: authUrl,
+                          onCodeCaptured: (code) => naverAuthCode = code,
+                        ),
+                      ),
+                    );
+
+                    // 3. 획득한 코드가 있다면 백엔드로 전송
+                    if (naverAuthCode != null && context.mounted) {
+                      await AuthService.sendNaverAuthToBackend(
+                        code: naverAuthCode!,
+                        state: state,
+                        context: context,
+                      );
+                    }
+                  },
                 ),
 
                 const SizedBox(height: 30),
@@ -293,4 +327,61 @@ class LoginScreen extends StatelessWidget {
       child: WebViewWidget(controller: controller),
     );
   }
+}
+
+Widget _buildNaverWebView({
+  required BuildContext context,
+  required String authUrl,
+  required Function(String) onCodeCaptured,
+}) {
+  late final WebViewController controller;
+
+  controller = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setUserAgent(
+      "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+    )
+    ..setNavigationDelegate(
+      NavigationDelegate(
+        onNavigationRequest: (NavigationRequest request) {
+          final url = request.url;
+
+          // 📍 [핵심] 백엔드의 네이버 콜백 주소 감지
+          if (url.contains('/oauth/naver/callback')) {
+            debugPrint('🎣 [감지 성공] 네이버 콜백 주소가 포착되었습니다!');
+            final uri = Uri.parse(url);
+            final code = uri.queryParameters['code'];
+
+            if (code != null) {
+              debugPrint('✅ 획득한 네이버 인가 코드: $code');
+              onCodeCaptured(code);
+              Navigator.pop(context); // 웹뷰 닫기
+              return NavigationDecision.prevent; // 리다이렉트 방지
+            }
+          }
+          return NavigationDecision.navigate;
+        },
+        onPageStarted: (url) {
+          // 이중 체크 (만약 onNavigationRequest에서 못 잡았을 경우)
+          if (url.startsWith(AuthService.naverRedirectUri)) {
+            final uri = Uri.parse(url);
+            final code = uri.queryParameters['code'];
+            if (code != null) {
+              onCodeCaptured(code);
+              Navigator.pop(context);
+            }
+          }
+        },
+      ),
+    )
+    ..loadRequest(Uri.parse(authUrl));
+
+  return Container(
+    height: MediaQuery.of(context).size.height * 0.9,
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    child: WebViewWidget(controller: controller),
+  );
 }

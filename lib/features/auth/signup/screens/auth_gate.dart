@@ -38,6 +38,12 @@ class AuthGate extends ConsumerWidget {
                 );
               }
 
+              // 💡 에러가 발생한 경우 (예: 토큰 만료 후 재발급 실패 등) -> 로그인 화면으로
+              if (profileSnapshot.hasError) {
+                debugPrint("⚠️ 프로필 로드 실패 (에러): 로그인 화면으로 안내");
+                return const LoginScreen();
+              }
+
               // 프로필 정보가 있고, 특정 필드(예: 태그)가 비어있다면 가입 미완료로 간주
               final user = profileSnapshot.data;
 

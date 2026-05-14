@@ -31,47 +31,47 @@ Dio dio(DioRef ref) {
         return handler.next(options);
       },
       onError: (DioException e, handler) async {
-        // 1. 401 에러(토큰 만료) 발생 시
         if (e.response?.statusCode == 401) {
-          debugPrint(
-            '⚠️ [401 Detected] 토큰 만료됨. 재발급 시도 중... (Path: ${e.requestOptions.path})',
-          );
-
           const storage = FlutterSecureStorage();
           final refreshToken = await storage.read(key: 'refreshToken');
-
           if (refreshToken != null) {
             try {
+              // 🎯 토큰 갱신 전용 가벼운 Dio 생성 (인터셉터 없음)
               final refreshDio = Dio(
                 BaseOptions(baseUrl: e.requestOptions.baseUrl),
               );
-
-              debugPrint('🔄 [Refresh] 리프레시 토큰으로 전송 중: $refreshToken');
 
               final response = await refreshDio.post(
                 '/api/token',
                 data: {"refreshToken": refreshToken},
               );
 
-              // 성공 시 로그 (여기에 새 토큰 저장 로직이 추가되어야 합니다)
-              debugPrint('✅ [Refresh Success] 새로운 토큰 발급 완료: ${response.data}');
+              // 1. 서버 응답에서 새 토큰 추출 (백엔드 응답 키값에 맞게 수정하세요)
+              final newAccessToken = response.data['accessToken'];
+              final newRefreshToken = response.data['refreshToken'];
 
-              // TODO: 여기서 발급받은 새 토큰을 storage에 저장하고
-              // 원래 실패했던 요청(e.requestOptions)을 다시 시도(dio.fetch)하는 로직이 필요합니다.
-            } catch (err) {
-              // 2. 재발급 과정에서 발생한 상세 에러 로그
-              if (err is DioException) {
-                debugPrint(
-                  '❌ [Refresh Failed] 상태 코드: ${err.response?.statusCode}',
+              // 2. 새 토큰 스토리지에 저장
+              await storage.write(key: 'accessToken', value: newAccessToken);
+              if (newRefreshToken != null) {
+                await storage.write(
+                  key: 'refreshToken',
+                  value: newRefreshToken,
                 );
-                debugPrint('❌ [Refresh Failed] 서버 메시지: ${err.response?.data}');
-                debugPrint('❌ [Refresh Failed] 에러 타입: ${err.type}');
-              } else {
-                debugPrint('❌ [Refresh Failed] 알 수 없는 에러: $err');
               }
+
+              // 3. 실패했던 원래 요청의 헤더를 새 토큰으로 변경
+              e.requestOptions.headers['Authorization'] =
+                  'Bearer $newAccessToken';
+
+              // 4. 원래 요청 재시도 및 결과 반환
+              final retryResponse = await dio.fetch(e.requestOptions);
+              return handler.resolve(retryResponse);
+            } catch (err) {
+              // 재발급 실패 시: 토큰 찌꺼기 삭제
+              debugPrint("재발급 실패! 저장된 토큰 삭제");
+              await storage.deleteAll();
+              return handler.next(e);
             }
-          } else {
-            debugPrint('🚫 [Refresh Aborted] 저장된 리프레시 토큰이 없습니다.');
           }
         }
         return handler.next(e);
