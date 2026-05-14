@@ -4,17 +4,22 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/home/provider/home_provider.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
+import '../provider/create_provider.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'dart:convert';
 
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
-import 'package:haenaem/features/challenge/create/widgets/ai_notice_box.dart';
+// import 'package:haenaem/features/challenge/create/widgets/ai_notice_box.dart';
 import 'package:haenaem/features/challenge/create/widgets/plus_button.dart';
-import 'package:haenaem/features/challenge/create/widgets/challenge_select_button.dart';
+// import 'package:haenaem/features/challenge/create/widgets/challenge_select_button.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_calendar_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_duration_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_frequency_bottom_sheet.dart';
@@ -144,7 +149,12 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ChallengeMainScreen(challengeId: response.id),
+          builder: (context) => ChallengeMainScreen(
+            challengeId: response.id,
+            challengeTitle: response.title,
+            challengeLink: response.challengeLink,
+            isJustCreated: true,
+          ),
         ),
       );
     } else if (mounted) {

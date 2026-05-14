@@ -6,7 +6,6 @@ import 'package:haenaem/shared/models/user.dart';
 // ChallengeBase에 정의된 필드(id, title, isLeader)를 재사용
 // User 모델을 방장(host), 오늘 인증한 유저 리스트(todaySuccessUsers)에 재사용
 class ChallengeDetail {
-  final ChallengeBase challengeBase; // 챌린지 기본 정보 (id, title, isLeader)
   final DateTime startDate; // 챌린지 시작 날짜
   final DateTime endDate; // 챌린지 종료 날짜
   final int weeklyFrequency; // 주간 최소 인증 빈도
@@ -18,7 +17,6 @@ class ChallengeDetail {
   final List<User> todaySuccessUsers; // 오늘 인증 완료한 유저 리스트
 
   const ChallengeDetail({
-    required this.challengeBase,
     required this.startDate,
     required this.endDate,
     required this.weeklyFrequency,
@@ -32,23 +30,21 @@ class ChallengeDetail {
 
   factory ChallengeDetail.fromJson(Map<String, dynamic> json) {
     return ChallengeDetail(
-      challengeBase: ChallengeBase.fromJson(json),
-      startDate: DateTime.parse(json['start_date'] as String),
-      endDate: DateTime.parse(json['end_date'] as String),
-      weeklyFrequency: json['weekly_frequency'] as int,
-      photoRequired: json['photo_required'] as bool,
+      startDate: DateTime.parse(json['startDate'] as String),
+      endDate: DateTime.parse(json['endDate'] as String),
+      weeklyFrequency: json['requiredWeeklyCount'] as int,
+      photoRequired: json['photoRequired'] as bool,
       tags: List<String>.from(json['tags'] as List),
       description: json['description'] as String,
       leader: User.fromJson(json['host'] as Map<String, dynamic>),
-      participantCount: json['participant_count'] as int,
-      todaySuccessUsers: (json['today_success_users'] as List)
+      participantCount: json['participantCount'] as int,
+      todaySuccessUsers: (json['todaySuccessUsers'] as List)
           .map((e) => User.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
 
   ChallengeDetail copyWith({
-    ChallengeBase? challengeBase,
     DateTime? startDate,
     DateTime? endDate,
     int? weeklyFrequency,
@@ -60,7 +56,6 @@ class ChallengeDetail {
     List<User>? todaySuccessUsers,
   }) {
     return ChallengeDetail(
-      challengeBase: challengeBase ?? this.challengeBase,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       weeklyFrequency: weeklyFrequency ?? this.weeklyFrequency,

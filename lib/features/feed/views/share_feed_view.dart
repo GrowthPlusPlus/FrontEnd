@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/feed/provider/feed_provider.dart';
+import '../provider/feed_provider.dart';
 import 'package:haenaem/features/feed/widgets/feed_post_card.dart';
-import 'package:haenaem/features/feed/models/feed_model.dart';
+// import 'package:haenaem/features/feed/models/feed_model.dart';
 
 class ShareFeedView extends ConsumerStatefulWidget {
   final ScrollController scrollController;
-  final StateNotifierProvider<FeedNotifier, FeedState> provider;
+  final FeedNotifierProvider provider;
   final String emptyMessage;
 
   const ShareFeedView({
@@ -108,7 +108,7 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
 
           return FeedPostCard(
             key: ValueKey(
-              '${feedState.posts[index].postId}_${feedState.posts[index].liked}_${feedState.posts[index].likeNumber}_${feedState.posts[index].commentNumber}',
+              '${feedState.posts[index].id}_${feedState.posts[index].isLiked}_${feedState.posts[index].likeCount}_${feedState.posts[index].commentCount}',
             ),
             post: feedState.posts[index],
             provider: widget.provider,

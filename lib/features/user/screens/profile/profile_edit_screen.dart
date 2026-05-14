@@ -16,7 +16,7 @@ import 'package:haenaem/shared/models/user_detail.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 
 import '../../widgets/profile_image_menu.dart';
-import '../../provider/tag_provider.dart';
+import '../../../../shared/provider/tag_provider.dart';
 import '../../provider/user_profile_provider.dart';
 
 // 프로필 편집 화면

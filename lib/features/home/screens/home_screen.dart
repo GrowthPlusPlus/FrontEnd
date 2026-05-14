@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/create/screens/challenge_create_screen.dart';
-import '../provider/home_provider.dart';
+import '../../../shared/provider/home_provider.dart';
 import 'package:haenaem/features/notification/screens/notification_main_screen.dart';
 import 'package:haenaem/features/notification/provider/notification_provider.dart';
 import 'package:haenaem/shared/models/home_challenge_card.dart';

@@ -1,56 +1,19 @@
-/// 최초 작성자: 정승빈
-library;
-
+// 최초 작성자: 정승빈
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:haenaem/core/network/dio_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // 새 모델들 Import
 import '../../../shared/models/user.dart';
 import '../models/user_search_card.dart';
 import '../models/friend_request_card.dart';
-import '../../auth/services/auth_service.dart';
 
 // Dio Provider with Interceptor for adding Authorization header
-final dioProvider = Provider<Dio>((ref) {
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://158.247.216.11:8080', // 서버 주소
-      //baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
-      connectTimeout: const Duration(seconds: 5),
-      //headers: {'ngrok-skip-browser-warning': 'true'},
-    ),
-  );
-
-  // 요청 인터셉터 추가
-  dio.interceptors.add(
-    InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // 1. 저장소에서 액세스 토큰 읽기
-        final String? accessToken = await AuthService.getAccessToken();
-        debugPrint("🔍 저장소에서 꺼낸 토큰: $accessToken"); // 이 값이 null인지 확인!
-
-        // 2. 토큰이 있다면 헤더에 Bearer 토큰 주입
-        if (accessToken != null) {
-          options.headers['Authorization'] = 'Bearer $accessToken';
-          debugPrint("🔑 API 요청에 토큰 주입 완료");
-        }
-
-        return handler.next(options); // 다음 단계로 진행
-      },
-      onError: (DioException e, handler) async {
-        // 만약 401 에러가 나면 여기서 refreshTokens()를 호출하는 로직을 추가할 수도 있습니다.
-        return handler.next(e);
-      },
-    ),
-  );
-
-  return dio;
-});
-
-// Repository Provider
 final socialRepositoryProvider = Provider<SocialRepository>((ref) {
-  return SocialRepository(ref.watch(dioProvider));
+  // [리팩토링] 자체 정의한 dioProvider 대신 공통 dioProvider를 watch 합니다.
+  final dio = ref.watch(dioProvider);
+  return SocialRepository(dio);
 });
 
 class SocialRepository {
@@ -71,6 +34,7 @@ class SocialRepository {
       '/api/users/search',
       queryParameters: {'nickname': nickname},
     );
+    debugPrint('검색 유저 응답: ${response.data.toString()}');
     return (response.data as List?)?.map((e) {
           // 서버의 relationshipStatus를 FriendState enum으로 변환
           FriendState state = FriendState.stranger;
@@ -84,7 +48,7 @@ class SocialRepository {
             user: User.fromJson({
               'id': e['userId'],
               'nickname': e['nickname'],
-              'profileUrl': e['profileImageUrl'],
+              'profileImageUrl': e['profileImageUrl'],
             }),
             state: state,
           );
@@ -102,13 +66,14 @@ class SocialRepository {
   Future<List<FriendRequestCard>> getSentRequests() async {
     // Swagger operationId: getSentRequests
     final response = await _dio.get('/api/users/friend/request/sent');
+    debugPrint(response.data.toString());
 
     return (response.data as List?)?.map((e) {
           return FriendRequestCard(
             user: User.fromJson({
               'id': e['userId'] ?? 0, // 보낸 대상의 id (서버 응답 확인 필요)
               'nickname': e['nickname'],
-              'profileUrl': e['profileImageUrl'],
+              'profileImageUrl': e['profileImageUrl'],
             }),
             requestId: e['requestId'],
             requestDate: e['createdAt'] != null
@@ -129,13 +94,14 @@ class SocialRepository {
   Future<List<FriendRequestCard>> getReceivedRequests() async {
     // Swagger operationId: getReceivedRequests
     final response = await _dio.get('/api/users/friend/request/received');
+    debugPrint(response.data.toString());
 
     return (response.data as List?)?.map((e) {
           return FriendRequestCard(
             user: User.fromJson({
               'id': e['fromUserId'],
               'nickname': e['nickname'],
-              'profileUrl': e['profileImageUrl'],
+              'profileImageUrl': e['profileImageUrl'],
             }),
             requestId: e['requestId'],
             requestDate: e['createdAt'] != null

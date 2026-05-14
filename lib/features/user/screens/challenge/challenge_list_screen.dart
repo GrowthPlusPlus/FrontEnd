@@ -5,7 +5,8 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:haenaem/features/challenge/models/challenge_model.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
 import '../../widgets/my_challenge_card.dart'; // 💡 공통 카드 위젯 추가
 import 'package:haenaem/features/user/models/my_page_challenge_card.dart';
 
