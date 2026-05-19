@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/feed/screens/challenge_detail_screen.dart'; // 챌린지 소개 화면 뷰 재활용
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 //import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 // import 'package:haenaem/features/challenge/models/challenge_model.dart';
 // import 'package:haenaem/features/user/models/user_model.dart';
 import '../provider/challenge_search_provider.dart';
-import 'package:haenaem/shared/models/search_challenge_card.dart';
 import '../widgets/challenge_search_card.dart';
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';

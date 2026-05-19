@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 // import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
-import '../provider/challenge_participate_provider.dart';
+import '../../features/feed/provider/challenge_participate_provider.dart';
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import 'package:haenaem/shared/widgets/challenge_detail_content.dart';
 import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
@@ -60,7 +60,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "챌린지 상세정보",
+          widget.challengeTitle,
           style: AppTypography.h3.copyWith(color: AppColors.black),
         ),
         centerTitle: true,
