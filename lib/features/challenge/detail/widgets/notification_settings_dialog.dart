@@ -77,7 +77,12 @@ class _NotificationSettingsDialogState
                   "전체 알림",
                   "모든 알림 받기",
                   allNotifications,
-                  (val) => setState(() => allNotifications = val),
+                  (val) => setState(() {
+                    allNotifications = val;
+                    dailyReminder = val;
+                    mateReaction = val;
+                    mateVerification = val;
+                  }),
                 ),
                 _buildDailyReminderSection(),
                 _buildSwitchRow(
