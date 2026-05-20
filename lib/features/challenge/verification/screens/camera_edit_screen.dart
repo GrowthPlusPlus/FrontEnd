@@ -1,6 +1,8 @@
 // 최초 작성자 : 김채영
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +11,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:image/image.dart' as img;
+
+final GlobalKey _repaintKey = GlobalKey();
 
 // 카메라로 촬영했을 때의 편집 화면
 class CameraEditScreen extends StatefulWidget {
@@ -159,31 +163,35 @@ class _CameraEditScreenState extends State<CameraEditScreen> {
     // 현재 기기의 화면 너비 가져오기
     final double screenWidth = MediaQuery.of(context).size.width;
 
-    return Container(
-      width: screenWidth, // 너비: 화면 가득
-      height: screenWidth,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-      child: Stack(
-        children: [
-          // 배경 이미지 (회전 적용)
-          Positioned.fill(
-            child: RotatedBox(
-              quarterTurns: _rotationTurns,
-              child: Image.memory(_imageData!, fit: BoxFit.cover),
+    return RepaintBoundary(
+      // ✅ 추가
+      key: _repaintKey, // ✅ 추가
+      child: Container(
+        width: screenWidth, // 너비: 화면 가득
+        height: screenWidth,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+        child: Stack(
+          children: [
+            // 배경 이미지 (회전 적용)
+            Positioned.fill(
+              child: RotatedBox(
+                quarterTurns: _rotationTurns,
+                child: Image.memory(_imageData!, fit: BoxFit.cover),
+              ),
             ),
-          ),
-          // 타임스탬프 (자르기 모드가 아닐 때만 보임)
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: Text(
-              _timestamp,
-              textAlign: TextAlign.right,
-              style: AppTypography.h1.copyWith(color: Colors.white),
+            // 타임스탬프 (자르기 모드가 아닐 때만 보임)
+            Positioned(
+              right: 40,
+              bottom: 16,
+              child: Text(
+                _timestamp,
+                textAlign: TextAlign.right,
+                style: AppTypography.h1.copyWith(color: Colors.white),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -266,19 +274,31 @@ class _CameraEditScreenState extends State<CameraEditScreen> {
   Future<void> _saveAndReturn() async {
     if (_imageData == null) return;
 
-    // 회전이 적용된 경우 물리적으로 이미지 회전 처리
-    Uint8List finalData = _imageData!;
-    if (_rotationTurns != 0) {
-      finalData = rotateImageBytes(finalData, _rotationTurns);
+    try {
+      // RepaintBoundary로 화면에 보이는 그대로 캡처 (타임스탬프 포함)
+      final RenderRepaintBoundary boundary =
+          _repaintKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+
+      // pixelRatio를 높이면 캡처 해상도가 올라감 (3.0 권장)
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+
+      if (byteData == null) return;
+      final Uint8List finalData = byteData.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final file = File(
+        '${tempDir.path}/camera_edited_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      await file.writeAsBytes(finalData);
+
+      if (mounted) Navigator.pop(context, file);
+    } catch (e) {
+      debugPrint('이미지 캡처 에러: $e');
     }
-
-    final tempDir = await getTemporaryDirectory();
-    final file = File(
-      '${tempDir.path}/camera_edited_${DateTime.now().millisecondsSinceEpoch}.png',
-    );
-    await file.writeAsBytes(finalData);
-
-    if (mounted) Navigator.pop(context, file);
   }
 }
 

@@ -32,7 +32,7 @@ class AuthService {
   //     'https://hanaem.onrender.com/api/oauth/kakao/token';
 
   static const String kakaoRedirectUri =
-      'https://hanaem.onrender.com/oauth/kakao/callback';
+      'http://158.247.216.11:8080/oauth/kakao/callback';
 
   //static const String kakaoRedirectUri =
   //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';

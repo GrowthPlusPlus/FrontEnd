@@ -63,8 +63,8 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data
-            android:scheme="https"
-            android:host="hanaem.onrender.com"
+            android:scheme="http"
+            android:host="158.247.216.11:8080"
             android:pathPrefix="/oauth/kakao/callback" />
     </intent-filter>
 </activity>
