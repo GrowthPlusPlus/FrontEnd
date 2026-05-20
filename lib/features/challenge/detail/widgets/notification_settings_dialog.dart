@@ -77,20 +77,39 @@ class _NotificationSettingsDialogState
                   "전체 알림",
                   "모든 알림 받기",
                   allNotifications,
-                  (val) => setState(() => allNotifications = val),
+                  (val) => setState(() {
+                    allNotifications = val;
+                    dailyReminder = val;
+                    mateReaction = val;
+                    mateVerification = val;
+                  }),
                 ),
                 _buildDailyReminderSection(),
                 _buildSwitchRow(
                   "메이트 반응 소식",
                   "다른 참여자들이 내 인증글에 반응 시 알림",
                   mateReaction,
-                  (val) => setState(() => mateReaction = val),
+                  (val) => setState(() {
+                    mateReaction = val;
+                    if (!val) {
+                      allNotifications = false;
+                    } else if (dailyReminder && mateVerification) {
+                      allNotifications = true;
+                    }
+                  }),
                 ),
                 _buildSwitchRow(
                   "메이트 인증 소식",
                   "다른 참여자들이 인증 완료 시 알림",
                   mateVerification,
-                  (val) => setState(() => mateVerification = val),
+                  (val) => setState(() {
+                    mateVerification = val;
+                    if (!val) {
+                      allNotifications = false;
+                    } else if (dailyReminder && mateReaction) {
+                      allNotifications = true;
+                    }
+                  }),
                 ),
                 const SizedBox(height: 24),
 
@@ -129,7 +148,7 @@ class _NotificationSettingsDialogState
     String title,
     String subtitle,
     bool value,
-    ValueChanged<bool> onChanged,
+    ValueChanged<bool>? onChanged,
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -192,11 +211,18 @@ class _NotificationSettingsDialogState
           "일일 리마인더",
           "매일 $selectedTime 알림",
           dailyReminder,
-          (val) => setState(() => dailyReminder = val),
+          (val) => setState(() {
+            dailyReminder = val;
+            if (!val) {
+              allNotifications = false;
+            } else if (mateReaction && mateVerification) {
+              allNotifications = true;
+            }
+          }),
         ),
 
         // 2. 리마인더가 활성화되었을 때만 드롭다운 표시
-        if (dailyReminder)
+        if (dailyReminder && allNotifications)
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: GestureDetector(

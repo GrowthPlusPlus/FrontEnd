@@ -98,7 +98,7 @@ class FeedPostCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${post.title} ${post.totalSuccessDays}일차',
+                  post.title,
                   style: AppTypography.b3.copyWith(color: AppColors.black),
                 ),
                 const SizedBox(height: 4), // 간격 추가

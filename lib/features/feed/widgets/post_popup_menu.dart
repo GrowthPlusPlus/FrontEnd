@@ -1,4 +1,5 @@
 // 최초 작성자 : 강선욱
+import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,6 +16,8 @@ import '../provider/post_detail_provider.dart';
 import 'package:haenaem/features/challenge/verification/screens/challenge_verification_screen.dart';
 import 'package:haenaem/features/report/screens/report_screen.dart';
 import 'package:haenaem/features/report/provider/report_provider.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
+import 'package:haenaem/shared/screens/challenge_detail_screen.dart';
 
 // 인증글 다이얼로그 (내 인증글일 경우와 타인의 인증글일 경우)
 class PostPopupMenu extends ConsumerWidget {
@@ -23,11 +26,20 @@ class PostPopupMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. 현재 로그인한 내 프로필 정보를 가져옵니다.
-    //final myProfileAsync = ref.watch(myProfileProvider);
+    // 💡 Post 객체 내부 데이터 상태 확인용 로그
+    debugPrint('--- [Post Data Check] ---');
+    debugPrint('Post ID: ${post.id}');
+    debugPrint('Challenge ID: ${post.challengeId}'); // 0이 나온다면 매핑 오류 확률 99%
+    debugPrint('Challenge Title: ${post.challengeTitle}');
+    debugPrint('Writer ID: ${post.writer.id}');
+    debugPrint('Post Date: ${post.date}');
+    debugPrint('--------------------------');
+
+    // 1. user 전역값 가져오기
+    final currentUser = ref.watch(currentUserProvider);
 
     // 2. 내 닉네임과 게시글 작성자 닉네임을 비교하여 '내 글' 여부 판단
-    final bool isMine = post.isAuthor;
+    final bool isMine = (post.writer.id == currentUser?.id);
 
     // 2. [날짜 체크] 오늘 날짜 문자열(yyyy-MM-dd) 생성
     final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -217,15 +229,22 @@ class PostPopupMenu extends ConsumerWidget {
         break;
 
       case 'view_challenge':
-        // TODO: 챌린지 상세(소개) 페이지로 이동하거나 탭을 전환하는 로직
-        debugPrint('🚀 [Action] 챌린지 보기 클릭');
-        // TODO: Navigator.push(...) 혹은 현재 탭 전환 로직 추가
+        debugPrint('보내는 ID: ${post.challengeId}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChallengeDetailScreen(
+              // post 객체 내에 저장된 challenge 관련 정보를 전달합니다.
+              challengeId: post.challengeId,
+              challengeTitle: post.challengeTitle,
+            ),
+          ),
+        );
+
+        debugPrint(
+          '🚀 [Action] ChallengeDetailScreen으로 이동 (ID: ${post.challengeId})',
+        );
         break;
-      // case 'complain':
-      //   ScaffoldMessenger.of(
-      //     context,
-      //   ).showSnackBar(const SnackBar(content: Text("신고가 접수되었습니다.")));
-      //   break;
       case 'report':
         Navigator.push(
           context,
