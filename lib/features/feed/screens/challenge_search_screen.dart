@@ -9,6 +9,7 @@ import '../widgets/challenge_search_card.dart';
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 import 'package:haenaem/features/feed/provider/feed_provider.dart';
+import 'package:haenaem/shared/models/search_challenge_card.dart';
 
 class ChallengeSearchScreen extends ConsumerStatefulWidget {
   const ChallengeSearchScreen({super.key});

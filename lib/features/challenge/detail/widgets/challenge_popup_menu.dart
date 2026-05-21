@@ -124,7 +124,8 @@ class ChallengePopupMenu extends ConsumerWidget {
         // 알림 설정 로직 호출
         showDialog(
           context: context,
-          builder: (context) => const NotificationSettingsDialog(),
+          builder: (context) =>
+              NotificationSettingsDialog(challengeId: challengeId),
         );
         break;
       case 'invite':

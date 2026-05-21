@@ -201,7 +201,7 @@ class PostPopupMenu extends ConsumerWidget {
             // 💡 삭제 시도
             final success = await ref
                 .read(postDeleteNotifierProvider.notifier)
-                .removeArticle(post.id);
+                .removeArticle(post.id, post.challengeId);
 
             if (success && context.mounted) {
               ScaffoldMessenger.of(
