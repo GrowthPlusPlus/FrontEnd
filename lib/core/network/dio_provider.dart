@@ -13,9 +13,8 @@ part 'dio_provider.g.dart';
 Dio dio(DioRef ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://hanaem.onrender.com/',
-      connectTimeout: const Duration(seconds: 45),
-      receiveTimeout: const Duration(seconds: 45),
+      baseUrl: 'http://158.247.216.11:8080',
+      connectTimeout: const Duration(seconds: 5),
     ),
   );
 
@@ -24,6 +23,8 @@ Dio dio(DioRef ref) {
       onRequest: (options, handler) async {
         const storage = FlutterSecureStorage();
         final String? token = await storage.read(key: 'accessToken');
+        // 💡 [디버깅 로그] 저장소에서 꺼낸 생생한 토큰 상태를 확인합니다.
+        debugPrint('🕵️‍♂️ [Interceptor] Storage Read (accessToken): $token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -31,11 +32,46 @@ Dio dio(DioRef ref) {
       },
       onError: (DioException e, handler) async {
         if (e.response?.statusCode == 401) {
-          final newToken = await AuthService.refreshTokens();
-          if (newToken != null) {
-            e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-            final response = await dio.fetch(e.requestOptions);
-            return handler.resolve(response);
+          const storage = FlutterSecureStorage();
+          final refreshToken = await storage.read(key: 'refreshToken');
+          if (refreshToken != null) {
+            try {
+              // 🎯 토큰 갱신 전용 가벼운 Dio 생성 (인터셉터 없음)
+              final refreshDio = Dio(
+                BaseOptions(baseUrl: e.requestOptions.baseUrl),
+              );
+
+              final response = await refreshDio.post(
+                '/api/token',
+                data: {"refreshToken": refreshToken},
+              );
+
+              // 1. 서버 응답에서 새 토큰 추출 (백엔드 응답 키값에 맞게 수정하세요)
+              final newAccessToken = response.data['accessToken'];
+              final newRefreshToken = response.data['refreshToken'];
+
+              // 2. 새 토큰 스토리지에 저장
+              await storage.write(key: 'accessToken', value: newAccessToken);
+              if (newRefreshToken != null) {
+                await storage.write(
+                  key: 'refreshToken',
+                  value: newRefreshToken,
+                );
+              }
+
+              // 3. 실패했던 원래 요청의 헤더를 새 토큰으로 변경
+              e.requestOptions.headers['Authorization'] =
+                  'Bearer $newAccessToken';
+
+              // 4. 원래 요청 재시도 및 결과 반환
+              final retryResponse = await dio.fetch(e.requestOptions);
+              return handler.resolve(retryResponse);
+            } catch (err) {
+              // 재발급 실패 시: 토큰 찌꺼기 삭제
+              debugPrint("재발급 실패! 저장된 토큰 삭제");
+              await storage.deleteAll();
+              return handler.next(e);
+            }
           }
         }
         return handler.next(e);

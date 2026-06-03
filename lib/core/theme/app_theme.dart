@@ -1,12 +1,23 @@
 // 최초 작성자: 김채영
 
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     fontFamily: 'Pretendard',
     scaffoldBackgroundColor: Colors.white,
+
+    // 스피너랑 커서 우리 앱 초록색으로 변경
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.primaryAble,
+    ),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: AppColors.primaryAble,
+      selectionHandleColor: AppColors.primaryAble,
+      selectionColor: AppColors.primaryAble.withValues(alpha: 0.3),
+    ),
 
     // 상단 AppBar 테마 설정
     appBarTheme: const AppBarTheme(

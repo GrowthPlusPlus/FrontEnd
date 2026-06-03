@@ -1,16 +1,13 @@
 // 최초 작성자: 김채영
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
-import 'package:haenaem/features/social/screens/social_screen.dart';
-import 'package:haenaem/features/user/screens/my_page_screen.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:haenaem/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:haenaem/features/main/screens/main_screen.dart';
 
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,9 +18,14 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 void main() async {
   // 플러터 엔진 초기화 확인
   WidgetsFlutterBinding.ensureInitialized();
+  // .env 파일 로드
+  await dotenv.load(fileName: ".env");
 
-  // 비동기 초기화
-  WidgetsFlutterBinding.ensureInitialized();
+  // 전역 에러 핸들러
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('🔴 Flutter 에러: ${details.exception}');
+    debugPrint('🔴 스택: ${details.stack}');
+  };
 
   // 저장소 인스턴스 생성
   const storage = FlutterSecureStorage();
@@ -48,7 +50,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // 카카오 SDK 초기화
-  KakaoSdk.init(nativeAppKey: '05a36f172ea2945260862834654385ea');
+  KakaoSdk.init(nativeAppKey: dotenv.get('KAKAO_NATIVE_APP_KEY'));
 
   runApp(const ProviderScope(child: MyApp()));
 }

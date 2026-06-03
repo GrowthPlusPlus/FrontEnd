@@ -5,8 +5,11 @@ import 'package:http_parser/http_parser.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import 'package:haenaem/shared/models/user.dart';
+import 'package:haenaem/shared/models/user_detail.dart';
+
 part 'user_repository.g.dart';
 
 // 회원가입 + 내페이지
@@ -15,11 +18,11 @@ class UserRepository {
   UserRepository(this._dio);
 
   // 내 프로필 정보 조회
-  Future<UserProfileModel> getMyProfile() async {
+  Future<UserDetail> getMyProfile() async {
     try {
       final response = await _dio.get('/api/users/me/profile');
       if (response.statusCode == 200) {
-        return UserProfileModel.fromJson(response.data);
+        return UserDetail.fromJson(response.data);
       } else {
         throw Exception('프로필 정보를 불러오지 못했습니다.');
       }

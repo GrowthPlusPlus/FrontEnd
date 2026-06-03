@@ -9,7 +9,8 @@ class AppColors {
   static const Color gray2 = Color(0xFF616161);
   static const Color gray3 = Color(0xFF8c8c8c);
   static const Color gray4 = Color(0xFFD9D9D9);
-  static final Color gray5 = const Color(0xFFd9d9d9).withValues(alpha: 0.5);
+  static const Color gray5 = Color(0x7Fd9d9d9);
+  //static final Color gray5 = const Color(0xFFd9d9d9).withValues(alpha: 0.5);
 
   // Green - primary
   static const Color primaryAble = Color(0xff009951);
@@ -17,8 +18,8 @@ class AppColors {
   static const Color disable = Color(0xffd9e0d7);
 
   // Mainlist
-  static Color success = const Color(0xffbbf4bd).withValues(alpha: 0.5);
-  static Color warning = const Color(0xffffd6c8).withValues(alpha: 0.5);
+  static const success = Color(0x7fbbf4bd);
+  static const warning = Color(0x7fffd6c8);
 
   static const Color fire = Color(0xFFFB7039);
   static const Color notification = Color(0xffD11E1B);

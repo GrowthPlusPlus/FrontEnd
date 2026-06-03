@@ -36,17 +36,11 @@ class ChallengeInvitesView extends ConsumerWidget {
           final invite = state.invites[index];
 
           return ChallengeInviteCard(
-            challengeId: invite.challengeId,
-            inviterName: invite.inviterNickname,
-            inviterProfileImageUrl: invite.inviterProfileImageUrl,
-            challengeName: invite.challengeTitle,
-            participantCount: invite.participantCount,
-            dDay: 'D-${invite.remainingDays}',
-            labels: invite.tags,
+            inviteChallenge: invite,
             // 수락 콜백 연결
             onAccept: () async {
               try {
-                await notifier.acceptInvite(invite.challengeId);
+                await notifier.acceptInvite(invite.challengeInfo.base.id);
 
                 ref.read(needsHomeRefreshProvider.notifier).state =
                     true; // 홈 화면 새로고침 필요 플래그 켜기
@@ -58,7 +52,9 @@ class ChallengeInvitesView extends ConsumerWidget {
                   // 다이얼로그(showDialog) 대신 스낵바를 띄웁니다.
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${invite.challengeTitle} 초대를 수락했습니다.'),
+                      content: Text(
+                        '${invite.challengeInfo.base.title} 초대를 수락했습니다.',
+                      ),
                       behavior: SnackBarBehavior.floating, // 화면 아래에 살짝 떠 있는 스타일
                       duration: const Duration(seconds: 3),
                       // ✨ 꿀팁: 스낵바 우측에 '이동' 버튼 추가
@@ -70,7 +66,7 @@ class ChallengeInvitesView extends ConsumerWidget {
                           safeNavigator.push(
                             MaterialPageRoute(
                               builder: (context) => ChallengeMainScreen(
-                                challengeId: invite.challengeId,
+                                challengeId: invite.challengeInfo.base.id,
                               ),
                             ),
                           );
@@ -95,7 +91,7 @@ class ChallengeInvitesView extends ConsumerWidget {
             // 거절 콜백 연결
             onReject: () async {
               try {
-                await notifier.rejectInvite(invite.challengeId);
+                await notifier.rejectInvite(invite.challengeInfo.base.id);
 
                 ref.read(needsHomeRefreshProvider.notifier).state =
                     true; // 홈 화면 새로고침 필요 플래그 켜기
@@ -103,7 +99,9 @@ class ChallengeInvitesView extends ConsumerWidget {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${invite.challengeTitle} 초대를 거절했습니다.'),
+                      content: Text(
+                        '${invite.challengeInfo.base.title} 초대를 거절했습니다.',
+                      ),
                       behavior: SnackBarBehavior.floating, // 화면 아래에 살짝 떠 있는 스타일
                       duration: const Duration(seconds: 3),
                     ),

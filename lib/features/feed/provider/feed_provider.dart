@@ -1,100 +1,57 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
+// 최초 작성자: 강선욱
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/features/feed/data/feed_repository.dart';
-import 'package:haenaem/features/feed/model/feed_model.dart';
-import 'package:haenaem/features/auth/services/auth_service.dart';
+import 'package:haenaem/features/feed/models/feed_model.dart';
+import 'package:haenaem/shared/models/search_challenge_card.dart';
 
-// 1. Repository Provider 추가 (Dio 객체는 별도의 공통 Provider에서 가져오는 것이 좋습니다)
-final feedRepositoryProvider = Provider<FeedRepository>((ref) {
-  final dio = Dio(
-    BaseOptions(
-      // Render.com 서버 주소를 베이스로 넣어두면 편리합니다
-      baseUrl: 'https://hanaem.onrender.com',
-      //baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
-      connectTimeout: const Duration(seconds: 45),
-      receiveTimeout: const Duration(seconds: 45),
-      //headers: {'ngrok-skip-browser-warning': 'true'},
-    ),
-  );
+part 'feed_provider.g.dart';
 
-  // 💡 모든 API 요청에 자동으로 토큰을 가로채서(Intercept) 넣어줍니다.
-  dio.interceptors.add(
-    InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // AuthService에 만들어두신 메서드로 토큰을 읽어옵니다.
-        final token = await AuthService.getAccessToken();
+// ── AI 추천 챌린지 리스트를 관리하는 Provider 추가 ─────────────────────
+@riverpod
+Future<List<SearchChallengeCard>> aiRecommendation(AiRecommendationRef ref) {
+  final repository = ref.watch(feedRepositoryProvider);
+  return repository.getAiRecommendations();
+}
 
-        if (token != null) {
-          // 헤더에 Bearer 토큰 삽입
-          options.headers['Authorization'] = 'Bearer $token';
-          print("🔑 [Dio Interceptor] 토큰 삽입 완료");
-        } else {
-          print("⚠️ [Dio Interceptor] 토큰을 찾을 수 없습니다.");
-        }
+@riverpod
+class FeedNotifier extends _$FeedNotifier {
+  @override
+  FeedState build(String apiPath) => FeedState();
 
-        return handler.next(options);
-      },
-      onError: (DioException e, handler) async {
-        // 만약 401 에러(토큰 만료)가 나면 여기서 토큰 재발급 로직을 연결할 수도 있습니다.
-        if (e.response?.statusCode == 401) {
-          print("🚨 [Dio Interceptor] 401 에러 발생: 토큰이 만료되었을 수 있습니다.");
-        }
-        return handler.next(e);
-      },
-    ),
-  );
+  // feed_repository.dart의 @riverpod 어노테이션으로 생성된 Provider를 사용
+  FeedRepository get _repository => ref.read(feedRepositoryProvider);
 
-  return FeedRepository(dio);
-});
-
-// 2. Notifier 수정 (Repository 주입)
-class FeedNotifier extends StateNotifier<FeedState> {
-  final String apiPath;
-  final FeedRepository _repository; // 추가
-
-  FeedNotifier({
-    required this.apiPath,
-    required FeedRepository repository, // 추가
-  }) : _repository = repository,
-       super(FeedState());
+  // ── 피드 최초 로드 ────────────────────────────
 
   Future<void> fetchFeeds() async {
-    // [수정] 1. 중복 호출 방지 가드: 이미 로딩 중이거나 데이터가 있으면 중단
-    // (새로고침이 필요한 경우를 대비해 posts.isNotEmpty 조건은 상황에 따라 조절하세요)
     if (state.isLoading) return;
 
-    // [수정] 2. 호출 시작 즉시 로딩 상태로 변경
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
       currentPage: 0,
       isLastPage: false,
-      // posts: [], // 필요하다면 초기화
     );
 
     try {
-      print("📡 [FeedNotifier] Repository 데이터 요청 중...");
+      print("📡 [FeedNotifier] 요청 → $apiPath");
       final result = await _repository.getFeeds(apiPath, 0);
-
-      print("✅ [FeedNotifier] 데이터 수신 성공: ${result['posts'].length}개의 포스트");
+      print("✅ [FeedNotifier] ${result['posts'].length}개 수신");
 
       state = state.copyWith(
         posts: result['posts'],
         isLastPage: result['isLast'],
-        isLoading: false, // 로딩 완료
+        isLoading: false,
       );
-    } catch (e, stacktrace) {
-      print("❌ [FeedNotifier] 에러 발생: $e");
-      state = state.copyWith(
-        isLoading: false, // 에러 발생 시에도 로딩은 꺼줘야 함
-        errorMessage: e.toString(),
-      );
+    } catch (e, st) {
+      print("❌ [FeedNotifier] fetchFeeds 에러: $e\n$st");
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
-  // 다음 페이지 추가 로드 (무한 스크롤)
+  // ── 무한 스크롤 추가 로드 ─────────────────────
+
   Future<void> loadMore() async {
-    // 이미 로딩 중이거나 마지막 페이지면 중단
     if (state.isLoading || state.isLastPage) return;
 
     state = state.copyWith(isLoading: true);
@@ -104,100 +61,77 @@ class FeedNotifier extends StateNotifier<FeedState> {
       final result = await _repository.getFeeds(apiPath, nextPage);
 
       state = state.copyWith(
-        posts: [...state.posts, ...result['posts']], // 기존 데이터 + 새 데이터 합치기
+        posts: [...state.posts, ...result['posts']],
         currentPage: nextPage,
         isLastPage: result['isLast'],
         isLoading: false,
       );
     } catch (e) {
+      print("❌ [FeedNotifier] loadMore 에러: $e");
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
-  // 좋아요 상태 변경 메서드
-  Future<void> toggleLike(int postId) async {
-    // 1. 상태 변경 전, 현재 해당 포스트의 좋아요 여부를 확인합니다.
-    final post = state.posts.firstWhere((p) => p.postId == postId);
-    final wasLiked = post.liked;
+  // ── 좋아요 토글 (Optimistic Update + Rollback) ─
 
-    // 2. 로컬 UI 즉시 변경 (Optimistic Update)
-    toggleLikeLocally(postId);
+  Future<void> toggleLike(int postId) async {
+    final post = state.posts.firstWhere((p) => p.id == postId);
+    final wasLiked = post.isLiked;
+
+    toggleLikeLocally(postId); // 즉시 UI 반영
 
     try {
-      // 3. 확인한 'wasLiked' 상태를 리포지토리에 전달합니다.
       await _repository.toggleLike(postId, wasLiked);
     } catch (e) {
-      // 4. 서버 실패 시 다시 원래대로 롤백
-      toggleLikeLocally(postId);
-      print("좋아요 요청 실패로 롤백: $e");
+      toggleLikeLocally(postId); // 실패 시 롤백
+      print("⚠️ [FeedNotifier] 좋아요 실패 → 롤백: $e");
     }
   }
 
   void toggleLikeLocally(int postId) {
     state = state.copyWith(
       posts: state.posts.map((post) {
-        if (post.postId == postId) {
-          final isLiked = post.liked;
-          return post.copyWith(
-            liked: !isLiked,
-            likeNumber: isLiked ? post.likeNumber - 1 : post.likeNumber + 1,
-          );
-        }
-        return post;
+        if (post.id != postId) return post;
+        return post.copyWith(
+          isLiked: !post.isLiked,
+          likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
+        );
       }).toList(),
     );
   }
 
-  void incrementCommentCountLocally(int postId) {
-    state = state.copyWith(
-      posts: state.posts.map((post) {
-        if (post.postId == postId) {
-          // 기존 post를 복사하면서 commentNumber만 1 증가시킴
-          return post.copyWith(commentNumber: post.commentNumber + 1);
-        }
-        return post;
-      }).toList(),
-    );
-  }
+  // ── 댓글 수 로컬 업데이트 ─────────────────────
 
-  void decrementCommentCountLocally(int postId) {
+  void incrementCommentCountLocally(int postId) =>
+      _updateCommentCount(postId, 1);
+
+  void decrementCommentCountLocally(int postId) =>
+      _updateCommentCount(postId, -1);
+
+  void _updateCommentCount(int postId, int delta) {
     state = state.copyWith(
       posts: state.posts.map((post) {
-        if (post.postId == postId) {
-          return post.copyWith(
-            // 💡 0보다 작아지지 않도록 처리하면서 -1
-            commentNumber: post.commentNumber > 0 ? post.commentNumber - 1 : 0,
-          );
-        }
-        return post;
+        if (post.id != postId) return post;
+        final updated = post.commentCount + delta;
+        return post.copyWith(commentCount: updated < 0 ? 0 : updated);
       }).toList(),
     );
   }
 }
 
-// 3. Provider 정의 부분 수정
-final friendFeedProvider = StateNotifierProvider<FeedNotifier, FeedState>((
-  ref, //
-) {
-  final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
-  return FeedNotifier(apiPath: '/api/feed/friends', repository: repository);
-});
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 각 탭·화면 전용 Provider alias
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-final exploreFeedProvider = StateNotifierProvider<FeedNotifier, FeedState>((
-  ref, //
-) {
-  final repository = ref.watch(feedRepositoryProvider); // 리포지토리 구독
-  return FeedNotifier(apiPath: '/api/feed/public', repository: repository);
-});
+/// 친구 피드 (FeedScreen 친구 탭)
+/// 사용: ref.watch(friendFeedProvider)
+final friendFeedProvider = feedNotifierProvider('/api/feed/friends');
 
-final memberFeedProvider =
-    StateNotifierProvider.family<FeedNotifier, FeedState, int>((
-      ref,
-      challengeId,
-    ) {
-      final repository = ref.watch(feedRepositoryProvider);
-      return FeedNotifier(
-        apiPath: '/api/feed/challengeMember/$challengeId',
-        repository: repository,
-      );
-    });
+/// 둘러보기 피드 (FeedScreen 둘러보기 탭)
+/// 사용: ref.watch(exploreFeedProvider)
+final exploreFeedProvider = feedNotifierProvider('/api/feed/public');
+
+/// 챌린지 멤버 피드
+/// 사용: ref.watch(memberFeedProvider(42))
+memberFeedProvider(int challengeId) =>
+    feedNotifierProvider('/api/feed/challengeMember/$challengeId');

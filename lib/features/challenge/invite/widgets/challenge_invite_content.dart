@@ -7,8 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/core/utils/korean_string_utils.dart';
-import 'package:haenaem/features/challenge/data/challenge_repository.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
+import 'package:haenaem/features/challenge/invite/data/challenge_invite_repository.dart';
+import '../provider/challenge_invite_provider.dart';
+// import 'package:haenaem/features/notification/provider/notification_provider.dart';
+import '../models/invite_friend.dart';
+// import 'package:haenaem/features/challenge/data/challenge_repository.dart';
+// import 'package:haenaem/features/challenge/models/challenge_model.dart';
 // import 'package:share_plus/share_plus.dart';
 
 // [공통 위젯] 챌린지 초대 본문 (링크 공유 + 친구 검색 + 리스트)
@@ -105,7 +109,7 @@ class _ChallengeInviteContentState
   Widget build(BuildContext context) {
     // 챌린지 전용 초대 정보 Provider 사용
     final inviteInfoAsync = ref.watch(
-      challengeInviteInfoProvider(widget.challengeId),
+      challengeInviteProvider(widget.challengeId),
     );
 
     // [디버깅 로그] 현재 상태 찍어보기
@@ -156,7 +160,7 @@ class _ChallengeInviteContentState
   }
 
   // 친구 리스트 빌더 메서드 분리
-  Widget _buildFriendList(List<ChallengeInviteFriend> friends) {
+  Widget _buildFriendList(List<InviteFriend> friends) {
     debugPrint('🔍 [검색어] "$_searchQuery"');
     // 검색 필터링
     final filteredFriends = friends.where((friend) {
@@ -330,11 +334,11 @@ class _ChallengeInviteContentState
   }
 
   // 친구 리스트 아이템 + 실제 API 로직
-  Widget _buildFriendInviteItem(ChallengeInviteFriend friend) {
+  Widget _buildFriendInviteItem(InviteFriend friend) {
     // 1. 서버에서 온 상태(friend.isInvited)이거나
     // 2. 방금 내가 버튼 눌러서 초대한 상태(_newlyInvitedFriends 포함)인지 확인
     bool isInvited =
-        friend.isInvited || _newlyInvitedFriends.contains(friend.userId);
+        friend.isInvited || _newlyInvitedFriends.contains(friend.id);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -347,18 +351,14 @@ class _ChallengeInviteContentState
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0x7FDFE1DC),
-              image:
-                  friend.profileImageUrl != null &&
-                      friend.profileImageUrl!.isNotEmpty
+              image: friend.profileUrl != null && friend.profileUrl!.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage(friend.profileImageUrl!),
+                      image: NetworkImage(friend.profileUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child:
-                friend.profileImageUrl == null ||
-                    friend.profileImageUrl!.isEmpty
+            child: friend.profileUrl == null || friend.profileUrl!.isEmpty
                 ? Center(
                     child: SvgPicture.asset(
                       'assets/images/icons/default_profile_icon.svg',
@@ -381,13 +381,13 @@ class _ChallengeInviteContentState
                       try {
                         // ★ API 호출 복구 완료
                         await ref
-                            .read(challengeRepositoryProvider)
+                            .read(challengeInviteRepositoryProvider)
                             .inviteFriend(widget.challengeId, friend.nickname);
 
                         if (!mounted) return;
 
                         // 성공 시 '새로 초대된 목록'에 추가하여 버튼 비활성화 (낙관적 업데이트)
-                        setState(() => _newlyInvitedFriends.add(friend.userId));
+                        setState(() => _newlyInvitedFriends.add(friend.id));
 
                         // 커스텀 Toast 사용
                         _showToast(

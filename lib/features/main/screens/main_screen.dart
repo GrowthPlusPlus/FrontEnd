@@ -1,10 +1,11 @@
 // 최초 작성자 : 김채영
 import 'package:flutter/material.dart';
-import 'package:haenaem/features/home/home_screen.dart';
-import 'package:haenaem/features/social/screens/social_screen.dart';
+import 'package:haenaem/features/home/screens/home_screen.dart';
+import 'package:haenaem/features/social/screens/social_main_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'package:haenaem/features/user/screens/my_page_screen.dart';
+import 'package:haenaem/features/user/screens/my_page_main_screen.dart';
 import 'package:haenaem/features/feed/screens/feed_screen.dart';
+import 'package:haenaem/features/statistics/screens/statistics_screen.dart';
 
 // 내비게이션 바를 넣은 화면
 class MainScreen extends StatefulWidget {
@@ -20,10 +21,10 @@ class _MainScreenState extends State<MainScreen> {
   // 하단 바를 통해 전환될 화면 리스트
   final List<Widget> _pages = [
     const HomeScreen(),
-    const Center(child: Text("통계 화면")),
+    const StatisticsScreen(),
     const FeedScreen(),
-    const SocialScreen(),
-    const MyPageScreen(),
+    const SocialMainScreen(),
+    const MyPageMainScreen(),
   ];
 
   @override

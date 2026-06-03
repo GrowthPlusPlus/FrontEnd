@@ -3,23 +3,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../challenge/provider/challenge_provider.dart';
-import '../../challenge/detail/widgets/challenge_detail_content.dart';
+// import '../../challenge/provider/challenge_provider.dart';
+import 'package:haenaem/shared/widgets/challenge_detail_content.dart';
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import '../../../shared/widgets/bottom_action_button.dart';
 import '../provider/notification_provider.dart';
 import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
 
 class ChallengeInviteDetailScreen extends ConsumerWidget {
   final int challengeId;
+  final String challengeTitle;
   final String inviterName;
   final String? inviterProfileImageUrl;
 
   const ChallengeInviteDetailScreen({
     super.key,
     required this.challengeId,
+    required this.challengeTitle,
     required this.inviterName,
     this.inviterProfileImageUrl,
   });
@@ -129,7 +131,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
                   context: context,
                   builder: (context) => EnterConfirmDialog(
                     challengeId: challengeId,
-                    challengeTitle: challenge?.title ?? '챌린지', // 제목 전달
+                    challengeTitle: challengeTitle,
                   ),
                 );
               }

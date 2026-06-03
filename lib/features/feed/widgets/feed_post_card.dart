@@ -7,12 +7,13 @@ import 'package:haenaem/features/feed/screens/post_detail_screen.dart'; // 인�
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/model/challenge_model.dart';
-import 'package:haenaem/features/challenge/widgets/ChallengeFeedPopupMenu.dart';
-import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+//import 'package:haenaem/features/challenge/models/challenge_model.dart';
+import '../provider/post_detail_provider.dart';
+import 'package:haenaem/shared/models/post.dart';
+import 'package:haenaem/features/feed/widgets/post_popup_menu.dart';
 
 class FeedPostCard extends ConsumerWidget {
-  final CertificationPostModel post;
+  final Post post;
   final VoidCallback? onTap;
   final dynamic provider; // 어떤 Provider(친구/둘러보기)인지 받음
 
@@ -25,11 +26,15 @@ class FeedPostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    /*
     final displayDate = post.updatedAt ?? post.createdAt;
 
     String formattedDate = displayDate != null
         ? DateFormat('yyyy년 MM월 dd일 HH:mm').format(displayDate)
         : "";
+      */
+    // 💡 날짜 처리: post.date 하나로 통합
+    String formattedDate = DateFormat('yyyy년 MM월 dd일 HH:mm').format(post.date);
 
     return InkWell(
       onTap:
@@ -40,7 +45,7 @@ class FeedPostCard extends ConsumerWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => PostDetailScreen(
-                  postId: post.postId,
+                  postId: post.id,
                   post: post,
                   feedProvider: provider, // 기존에 넘겨주던 프로바이더
                 ),
@@ -52,18 +57,19 @@ class FeedPostCard extends ConsumerWidget {
         children: [
           // 1. 헤더
           Padding(
-            padding: const EdgeInsets.fromLTRB(15, 12, 5, 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
                 CircleAvatar(
-                  radius: 18,
+                  radius: 20, // 반지름
                   backgroundImage:
-                      (post.userImageUrl != null &&
-                          post.userImageUrl!.isNotEmpty)
-                      ? NetworkImage(post.userImageUrl!) as ImageProvider
+                      (post.writer.profileUrl != null &&
+                          post.writer.profileUrl!.isNotEmpty)
+                      ? NetworkImage(post.writer.profileUrl!) as ImageProvider
                       : null,
                   child:
-                      (post.userImageUrl == null || post.userImageUrl!.isEmpty)
+                      (post.writer.profileUrl == null ||
+                          post.writer.profileUrl!.isEmpty)
                       ? SvgPicture.asset(
                           'assets/images/icons/default_profile_icon.svg',
                         )
@@ -74,22 +80,25 @@ class FeedPostCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(post.userName ?? '해냄', style: AppTypography.b1),
+                      Text(post.writer.nickname, style: AppTypography.b1),
                     ],
                   ),
                 ),
-                ChallengeFeedPopupMenu(post: post),
+                PostPopupMenu(post: post),
               ],
             ),
           ),
           // 2. 텍스트 본문
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${post.challengeTitle} ${post.totalSuccessDays}일차',
+                  post.title,
                   style: AppTypography.b3.copyWith(color: AppColors.black),
                 ),
                 const SizedBox(height: 4), // 간격 추가
@@ -106,7 +115,7 @@ class FeedPostCard extends ConsumerWidget {
             ),
           ),
           // 3. 이미지
-          if (post.hasImage && post.images.isNotEmpty)
+          if (post.hasImage && post.pictureUrl.isNotEmpty)
             _PostImageSlider(post: post),
           // 4. 하단 아이콘 정보
           Padding(
@@ -117,29 +126,29 @@ class FeedPostCard extends ConsumerWidget {
                   onTap: () async {
                     // [로컬 업데이트] 서버 응답 기다리지 않고 즉시 UI 변경
                     if (provider != null) {
-                      ref
-                          .read(provider.notifier)
-                          .toggleLikeLocally(post.postId);
+                      ref.read(provider.notifier).toggleLikeLocally(post.id);
                     }
 
                     // [서버 통신] 백그라운드에서 조용히 처리
                     ref
-                        .read(articleLikeNotifierProvider.notifier)
+                        .read(postLikeNotifierProvider.notifier)
                         .toggleLike(
-                          postId: post.postId,
-                          isCurrentlyLiked: post.liked,
+                          postId: post.id,
+                          isCurrentlyLiked: post.isLiked,
                         );
                   },
                   child: Row(
                     children: [
                       SvgPicture.asset(
-                        post.liked
+                        post.isLiked
                             ? 'assets/images/icons/like_filled_icon.svg'
                             : 'assets/images/icons/like_icon.svg',
                         width: 20,
                         height: 20,
                         colorFilter: ColorFilter.mode(
-                          post.liked ? AppColors.notification : AppColors.gray2,
+                          post.isLiked
+                              ? AppColors.notification
+                              : AppColors.gray2,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -147,7 +156,7 @@ class FeedPostCard extends ConsumerWidget {
                       Text(
                         post.likeCount.toString(),
                         style: AppTypography.b2.copyWith(
-                          color: post.liked
+                          color: post.isLiked
                               ? AppColors.notification
                               : AppColors.gray2,
                         ),
@@ -158,7 +167,7 @@ class FeedPostCard extends ConsumerWidget {
                 const SizedBox(width: 16),
                 _buildIconInfo(
                   'assets/images/icons/comment_icon.svg',
-                  post.commentNumber.toString(),
+                  post.commentCount.toString(),
                 ),
                 const Spacer(),
                 Text(
@@ -195,7 +204,7 @@ class FeedPostCard extends ConsumerWidget {
 
 // ✅ 이미지 슬라이더와 인디케이터 상태를 관리하기 위한 내부 위젯
 class _PostImageSlider extends StatefulWidget {
-  final CertificationPostModel post;
+  final Post post;
 
   const _PostImageSlider({required this.post});
 
@@ -214,14 +223,14 @@ class _PostImageSliderState extends State<_PostImageSlider> {
           height: 375, // 기존 FeedPostCard 이미지 높이와 통일
           width: double.infinity,
           child: PageView.builder(
-            itemCount: widget.post.images.length,
+            itemCount: widget.post.pictureUrl.length,
             onPageChanged: (index) {
               setState(() {
                 _currentImagePage = index;
               });
             },
             itemBuilder: (context, index) {
-              final String path = widget.post.images[index].imageUrl;
+              final String path = widget.post.pictureUrl[index].imageUrl;
               // 💡 경로 처리: http로 시작하지 않으면 서버 주소 붙여주기
               final String fullUrl = path.startsWith('http')
                   ? path
@@ -251,12 +260,12 @@ class _PostImageSliderState extends State<_PostImageSlider> {
           ),
         ),
         // 💡 이미지가 2장 이상일 때만 하단에 페이지 점(Indicator) 표시
-        if (widget.post.images.length > 1)
+        if (widget.post.pictureUrl.length > 1)
           Padding(
             padding: const EdgeInsets.only(top: 10, bottom: 5),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.post.images.length, (index) {
+              children: List.generate(widget.post.pictureUrl.length, (index) {
                 return Container(
                   width: 6,
                   height: 6,

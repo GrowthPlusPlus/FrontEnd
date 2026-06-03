@@ -1,11 +1,17 @@
 // 최초 작성자: 김채영
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../core/network/dio_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // 구글 OAuth 2.0 기반의 사용자 인증과 JWT 토큰의 생명주기(발급, 재발급, 파기)를 전담하는 클래스
 // 서버로부터 받은 userStatus(NEW/ACTIVE)를 분석하여 사용자별 맞춤형 초기 화면 진입 경로를 제어
@@ -14,54 +20,135 @@ class AuthService {
   static const _storage = FlutterSecureStorage(); // 보안 저장소
 
   // 구글 설정 정보
-  static const String androidClientId =
-      '433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i.apps.googleusercontent.com';
+  static String androidClientId = dotenv.env['GOOGLE_ANDROID_CLIENT_ID'] ?? '';
   static const String customScheme =
       'com.googleusercontent.apps.433865217738-m3uqqdv9lumpf1ne8e3bkpsbtsa6919i';
   static const String redirectUri = '$customScheme:/oauth2redirect';
 
   // 카카오 설정 정보
-  static const String kakaoRestApiKey = '9fdd13c0777c415d8fa4055b5b26a6c5';
-  static const String kakaoNativeAppKey = '05a36f172ea2945260862834654385ea';
+  static String kakaoRestApiKey = dotenv.env['KAKAO_REST_API_KEY'] ?? '';
+  static String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
   // static const String kakaoRedirectUri =
   //     'https://hanaem.onrender.com/api/oauth/kakao/token';
-  static const String kakaoRedirectUri =
-      'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
 
+  static const String kakaoRedirectUri =
+      'http://158.247.216.11:8080/oauth/kakao/callback';
+
+  //static const String kakaoRedirectUri =
+  //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
+
+  // 네이버 설정 정보
+  static String naverClientId = dotenv.env['NAVER_CLIENT_ID'] ?? '';
+  static const String naverRedirectUri =
+      'http://158.247.216.11:8080/oauth/naver/callback';
+
+  // ♥️ 기존 서버
   static final Dio _dio = Dio(
-    BaseOptions(baseUrl: 'https://hanaem.onrender.com'),
+    BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
   );
 
-  // 카카오 로그인
-  static Future<Map<String, String>?> signInWithKakao() async {
-    try {
-      // 구글과 동일하게 인가 요청을 보냅니다.
-      final AuthorizationResponse result = await _appAuth.authorize(
-        AuthorizationRequest(
-          kakaoRestApiKey, // clientId 자리에 REST API 키 사용
-          kakaoRedirectUri,
-          serviceConfiguration: const AuthorizationServiceConfiguration(
-            authorizationEndpoint: 'https://kauth.kakao.com/oauth/authorize',
-            tokenEndpoint: 'https://kauth.kakao.com/oauth/token',
-          ),
-          scopes: ['profile_nickname', 'profile_image'], // 필요한 권한
-        ),
-      );
+  // ♥️ 로컬 서버로 테스트
+  // static final Dio _dio = Dio(
+  //   BaseOptions(
+  //     baseUrl: 'https://ungenially-undebatable-sindy.ngrok-free.dev',
+  //     headers: {
+  //       'ngrok-skip-browser-warning': 'true',
+  //       'Content-Type': 'application/json',
+  //     },
+  //   ),
+  // );
 
-      if (result.authorizationCode != null && result.codeVerifier != null) {
-        debugPrint('✅ 카카오 인가 코드 획득 성공');
-        return {
-          "code": result.authorizationCode!,
-          "codeVerifier": result.codeVerifier!,
-        };
-      }
-    } catch (e) {
-      debugPrint('🚨 카카오 PKCE 인증 에러: $e');
-    }
-    return null;
+  // ----------------------------------------
+  // 네이버 로그인 함수
+  // ----------------------------------------
+
+  // 3. 네이버 인증 URL 생성 (네이버는 CSRF 방지를 위해 state 파라미터가 필수입니다)
+  static String getNaverAuthUrl(String state) {
+    final clientId = naverClientId;
+    final redirectUri = Uri.encodeComponent(naverRedirectUri);
+
+    return 'https://nid.naver.com/oauth2.0/authorize'
+        '?response_type=code'
+        '&client_id=$clientId'
+        '&redirect_uri=$redirectUri'
+        '&state=$state';
   }
 
-  // 서버 통신 부분 (백엔드 엔드포인트에 맞춰 수정 필요)
+  // 4. 네이버 인가 코드를 서버로 전송
+  static Future<void> sendNaverAuthToBackend({
+    required String code,
+    required String state,
+    required BuildContext context,
+  }) async {
+    try {
+      debugPrint("🚀 서버로 네이버 인가 데이터 전송 시작...");
+
+      final response = await _dio.post(
+        '/api/oauth/naver/token', // 📍 이 주소가 맞는지 백엔드 팀과 꼭 확인하세요!
+        data: {
+          "code": code,
+          "state": state, // 네이버는 검증을 위해 state도 같이 보내는 경우가 많습니다.
+          "fcmToken": "",
+        },
+        options: Options(contentType: Headers.jsonContentType),
+      );
+
+      debugPrint("📥 네이버 로그인 서버 응답 코드: ${response.statusCode}");
+
+      if (response.statusCode == 200 && response.data != null) {
+        await _handleAuthResponse(response.data, context);
+      }
+    } on DioException catch (e) {
+      debugPrint('🌐 네이버 서버 통신 에러: ${e.response?.statusCode}');
+      debugPrint('내용: ${e.response?.data}');
+    }
+  }
+
+  // ----------------------------------------
+  // 카카오 로그인 함수
+  // ----------------------------------------
+
+  // 1. PKCE 쌍 생성 (RFC 7636 표준 방식)
+  static Map<String, String> generatePkcePair() {
+    // 1-1. Verifier 생성: 표준에 정의된 [A-Z, a-z, 0-9, -, ., _, ~] 문자만 사용
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    final random = Random.secure();
+
+    // 64자리의 무작위 문자열 생성 (표준 범위 43~128자 준수)
+    final verifier = List.generate(
+      64,
+      (_) => chars[random.nextInt(chars.length)],
+    ).join();
+    debugPrint("🔒 verifier 생성: $verifier");
+
+    // 1-2. Challenge 생성: Verifier를 SHA256으로 해싱 후 Base64Url 인코딩
+    final bytes = utf8.encode(verifier); // plain string을 바이트로 변환
+    final digest = sha256.convert(bytes); // SHA256 해싱
+
+    // Base64UrlEncode 후 패딩(=) 제거 및 특수문자 치환
+    final challenge = base64UrlEncode(
+      digest.bytes,
+    ).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+    debugPrint('🔒 생성된 Challenge: $challenge');
+
+    return {'codeVerifier': verifier, 'challenge': challenge};
+  }
+
+  // 2. 카카오 인증 URL 생성
+  static String getKakaoAuthUrl(String challenge) {
+    final clientId = kakaoRestApiKey;
+    final redirectUri = Uri.encodeComponent(kakaoRedirectUri);
+
+    return 'https://kauth.kakao.com/oauth/authorize'
+        '?client_id=$clientId'
+        '&redirect_uri=$redirectUri'
+        '&response_type=code'
+        '&code_challenge=$challenge'
+        '&code_challenge_method=S256';
+  }
+
+  // 서버 통신 부분
   static Future<void> sendKakaoAuthToBackend({
     required String code,
     required String codeVerifier,
@@ -69,6 +156,7 @@ class AuthService {
   }) async {
     try {
       debugPrint("🚀 서버로 카카오 인가 데이터 전송 시작...");
+      debugPrint("서버 전송 verifier: $codeVerifier");
 
       final response = await _dio.post(
         '/api/oauth/kakao/token',
@@ -281,10 +369,12 @@ class AuthService {
         debugPrint("🗑️ 회원 탈퇴 요청 시작");
         // 서버에 계정 삭제 요청 (DELETE)
         // 리프레시 토큰뿐만 아니라 유저의 개인정보 등을 삭제하도록 서버에 명령합니다.
-        await _dio.delete(
+        final response = await _dio.delete(
           '/api/me',
           options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
         );
+        // 📍 서버가 진짜 뭐라고 대답했는지 찍어보기
+        debugPrint("📥 탈퇴 응답 데이터: ${response.data}");
 
         // 탈퇴 성공 후 클라이언트 데이터 정리
         await _storage.deleteAll();

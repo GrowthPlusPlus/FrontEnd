@@ -6,7 +6,8 @@ import 'package:haenaem/features/main/screens/main_screen.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'signup_main_screen.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
-import 'package:haenaem/features/user/model/user_model.dart';
+import 'package:haenaem/shared/models/user_detail.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 
 // 앱을 껐다 켰을 때 저장된 토큰을 확인
@@ -28,7 +29,7 @@ class AuthGate extends ConsumerWidget {
         // 1. 토큰이 있는 경우
         if (snapshot.hasData && snapshot.data != null) {
           // 💡 핵심: 서버에 내 프로필을 물어봐서 가입이 끝났는지 확인합니다.
-          return FutureBuilder<UserProfileModel>(
+          return FutureBuilder<UserDetail>(
             future: ref.read(userRepositoryProvider).getMyProfile(),
             builder: (context, profileSnapshot) {
               if (profileSnapshot.connectionState == ConnectionState.waiting) {
@@ -37,24 +38,34 @@ class AuthGate extends ConsumerWidget {
                 );
               }
 
-              // 프로필 정보가 있고, 특정 필드(예: 태그)가 비어있다면 가입 미완료로 간주
-              final profile = profileSnapshot.data;
-              if (profile == null || profile.tags.isEmpty) {
-                debugPrint("⚠️ 가입 미완료 유저 감지: 회원가입 화면으로 이동");
-                return const SignupMainScreen(); // 닉네임 설정부터 다시!
+              // 💡 에러가 발생한 경우 (예: 토큰 만료 후 재발급 실패 등) -> 로그인 화면으로
+              if (profileSnapshot.hasError) {
+                debugPrint("⚠️ 프로필 로드 실패 (에러): 로그인 화면으로 안내");
+                return const LoginScreen();
               }
 
-              // 가입 완료가 확인되어 메인으로 가기 전, FCM 토큰을 업데이트
+              // 프로필 정보가 있고, 특정 필드(예: 태그)가 비어있다면 가입 미완료로 간주
+              final user = profileSnapshot.data;
+
+              // 가입 미완료 판별 로직
+              if (user == null) {
+                debugPrint("⚠️ 가입 미완료 유저: 회원가입 화면으로 안내");
+                return const SignupMainScreen();
+              }
+
+              // 성공적으로 정보를 가져왔다면 전역 Provider에 저장
+              // 프레임 렌더링 후에 상태를 업데이트하도록 처리
               WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(currentUserProvider.notifier).setUser(user.user);
+                // FCM 초기화 등 추가 작업
                 ref.read(fcmServiceProvider).initialize();
               });
 
-              return const MainScreen(); // 모든 정보가 있을 때만 홈으로!
+              return const MainScreen();
             },
           );
         }
-
-        // 2. 토큰이 없는 경우
+        // 토큰이 없는 경우 (로그아웃 상태)
         return const LoginScreen();
       },
     );

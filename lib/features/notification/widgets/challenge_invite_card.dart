@@ -4,34 +4,26 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../models/invite_challenge_card.dart';
 import '../screens/challenge_invite_detail_screen.dart';
 
 class ChallengeInviteCard extends StatelessWidget {
-  final int challengeId;
-  final String inviterName;
-  final String? inviterProfileImageUrl;
-  final String challengeName;
-  final int participantCount;
-  final String dDay;
-  final List<String> labels;
+  final InviteChallengecard inviteChallenge;
   final VoidCallback onAccept; // 수락 함수
   final VoidCallback onReject; // 거절 함수
 
   const ChallengeInviteCard({
     super.key,
-    required this.challengeId,
-    required this.inviterName,
-    this.inviterProfileImageUrl,
-    required this.challengeName,
-    required this.participantCount,
-    required this.dDay,
-    required this.labels,
+    required this.inviteChallenge,
     required this.onAccept,
     required this.onReject,
   });
 
   @override
   Widget build(BuildContext context) {
+    final challengeInfo = inviteChallenge.challengeInfo;
+    final inviterUser = inviteChallenge.inviterUser;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       // 디자인 가이드에 맞춘 패딩 적용
@@ -67,7 +59,7 @@ class ChallengeInviteCard extends StatelessWidget {
                           _buildIconBox(),
                           const SizedBox(width: 6),
                           Text(
-                            '$inviterName님의 초대',
+                            '${inviterUser.nickname}님의 초대',
                             style: AppTypography.b2.copyWith(
                               color: AppColors.gray1, // 디자인 코드 참조
                             ),
@@ -76,7 +68,7 @@ class ChallengeInviteCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      challengeName,
+                      challengeInfo.base.title,
                       style: AppTypography.b3.copyWith(color: AppColors.black),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -95,14 +87,16 @@ class ChallengeInviteCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${participantCount.toString()}명',
+                          '${challengeInfo.participantCount.toString()}명',
                           style: AppTypography.b2.copyWith(
                             color: AppColors.gray2,
                           ),
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          '완료까지 $dDay',
+                          challengeInfo.dDay == 0
+                              ? '오늘 완료'
+                              : '완료까지 D-${challengeInfo.dDay}',
                           style: AppTypography.b2.copyWith(
                             color: AppColors.gray2,
                           ),
@@ -114,7 +108,7 @@ class ChallengeInviteCard extends StatelessWidget {
                     Wrap(
                       spacing: 6, // 태그 사이 간격
                       // runSpacing: 8, // 줄 바꿈 시 간격 (필요 시 활성화)
-                      children: labels.map((label) {
+                      children: challengeInfo.tags.map((label) {
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -142,15 +136,16 @@ class ChallengeInviteCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: IconButton(
                   onPressed: () {
-                    print("====> 이동하려는 챌린지 ID: $challengeId");
+                    print("====> 이동하려는 챌린지 ID: ${challengeInfo.base.id}");
 
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChallengeInviteDetailScreen(
-                          challengeId: challengeId,
-                          inviterName: inviterName,
-                          inviterProfileImageUrl: inviterProfileImageUrl,
+                          challengeId: challengeInfo.base.id,
+                          challengeTitle: challengeInfo.base.title,
+                          inviterName: inviterUser.nickname,
+                          inviterProfileImageUrl: inviterUser.profileUrl,
                         ),
                       ),
                     );
@@ -231,20 +226,22 @@ class ChallengeInviteCard extends StatelessWidget {
         color: AppColors.gray5,
         shape: BoxShape.circle,
         image:
-            inviterProfileImageUrl != null &&
-                inviterProfileImageUrl!.startsWith('http')
+            inviteChallenge.inviterUser.profileUrl != null &&
+                inviteChallenge.inviterUser.profileUrl!.startsWith('http')
             ? DecorationImage(
-                image: NetworkImage(inviterProfileImageUrl!),
+                image: NetworkImage(inviteChallenge.inviterUser.profileUrl!),
                 fit: BoxFit.cover,
               )
-            : (inviterProfileImageUrl != null
+            : (inviteChallenge.inviterUser.profileUrl != null
                   ? DecorationImage(
-                      image: AssetImage(inviterProfileImageUrl!),
+                      image: AssetImage(
+                        inviteChallenge.inviterUser.profileUrl!,
+                      ),
                       fit: BoxFit.cover,
                     )
                   : null),
       ),
-      child: inviterProfileImageUrl == null
+      child: inviteChallenge.inviterUser.profileUrl == null
           ? Center(
               child: SvgPicture.asset(
                 'assets/images/icons/default_profile_icon.svg',
