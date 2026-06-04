@@ -1,6 +1,7 @@
 // 최초 작성자 : 김채영
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:haenaem/core/utils/image_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,7 +25,7 @@ import '../widgets/ai_success_box.dart';
 import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
-import 'package:haenaem/features/challenge/widgets/verification_cancel_dialog.dart';
+import 'package:haenaem/features/challenge/verification/widgets/verification_cancel_dialog.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {
@@ -367,10 +368,13 @@ class _ChallengeVerificationScreenState
   Future<void> _runImageVerification(File file) async {
     setState(() => _verifyStatus = ImageVerificationStatus.loading);
 
+    // 먼저 압축
+    final File compressed = await compressImageFile(file);
+
     // 1. 서버에 사진 검증 및 임시 업로드 요청 (Notifier 호출)
     final int? tempId = await ref
         .read(imageVerifyNotifierProvider.notifier)
-        .verify(file, widget.challengeId);
+        .verify(compressed, widget.challengeId);
 
     if (mounted) {
       setState(() {

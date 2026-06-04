@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/feed/screens/challenge_detail_screen.dart';
+import 'package:haenaem/shared/screens/challenge_detail_screen.dart';
 import 'package:haenaem/shared/models/search_challenge_card.dart'; // 모델 임포트
 
 class ChallengeSearchCard extends StatelessWidget {
@@ -114,7 +114,7 @@ class ChallengeSearchCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(
-        text.startsWith('#') ? text : '#$text',
+        text.startsWith('#') ? text : text,
         style: AppTypography.b2.copyWith(color: AppColors.primaryAble),
       ),
     );

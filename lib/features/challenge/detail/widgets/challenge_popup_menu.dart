@@ -6,7 +6,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/invite/screens/challenge_invite_screen.dart';
 import 'package:haenaem/features/challenge/detail/widgets/exit_confirm_dialog.dart';
-import 'package:haenaem/features/challenge/widgets/NotificationSettingsDialog.dart';
+import 'package:haenaem/features/challenge/detail/widgets/notification_settings_dialog.dart';
 import 'package:haenaem/features/challenge/settings/screens/challenge_settings_screen.dart';
 // import 'package:haenaem/features/challenge/provider/challenge_provider.dart'; // 추가
 import '../provider/challenge_leave_provider.dart';
@@ -124,7 +124,8 @@ class ChallengePopupMenu extends ConsumerWidget {
         // 알림 설정 로직 호출
         showDialog(
           context: context,
-          builder: (context) => const NotificationSettingsDialog(),
+          builder: (context) =>
+              NotificationSettingsDialog(challengeId: challengeId),
         );
         break;
       case 'invite':

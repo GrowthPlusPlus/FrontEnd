@@ -2,8 +2,16 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/features/feed/data/feed_repository.dart';
 import 'package:haenaem/features/feed/models/feed_model.dart';
+import 'package:haenaem/shared/models/search_challenge_card.dart';
 
 part 'feed_provider.g.dart';
+
+// ── AI 추천 챌린지 리스트를 관리하는 Provider 추가 ─────────────────────
+@riverpod
+Future<List<SearchChallengeCard>> aiRecommendation(AiRecommendationRef ref) {
+  final repository = ref.watch(feedRepositoryProvider);
+  return repository.getAiRecommendations();
+}
 
 @riverpod
 class FeedNotifier extends _$FeedNotifier {
@@ -70,17 +78,17 @@ class FeedNotifier extends _$FeedNotifier {
     final post = state.posts.firstWhere((p) => p.id == postId);
     final wasLiked = post.isLiked;
 
-    _updateLikeLocally(postId); // 즉시 UI 반영
+    toggleLikeLocally(postId); // 즉시 UI 반영
 
     try {
       await _repository.toggleLike(postId, wasLiked);
     } catch (e) {
-      _updateLikeLocally(postId); // 실패 시 롤백
+      toggleLikeLocally(postId); // 실패 시 롤백
       print("⚠️ [FeedNotifier] 좋아요 실패 → 롤백: $e");
     }
   }
 
-  void _updateLikeLocally(int postId) {
+  void toggleLikeLocally(int postId) {
     state = state.copyWith(
       posts: state.posts.map((post) {
         if (post.id != postId) return post;
