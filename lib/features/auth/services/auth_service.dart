@@ -28,14 +28,8 @@ class AuthService {
   // 카카오 설정 정보
   static String kakaoRestApiKey = dotenv.env['KAKAO_REST_API_KEY'] ?? '';
   static String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
-  // static const String kakaoRedirectUri =
-  //     'https://hanaem.onrender.com/api/oauth/kakao/token';
-
   static const String kakaoRedirectUri =
       'http://158.247.216.11:8080/oauth/kakao/callback';
-
-  //static const String kakaoRedirectUri =
-  //'kakao9fdd13c0777c415d8fa4055b5b26a6c5://oauth';
 
   // 네이버 설정 정보
   static String naverClientId = dotenv.env['NAVER_CLIENT_ID'] ?? '';

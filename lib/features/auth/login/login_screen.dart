@@ -12,6 +12,8 @@ import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io' show Platform; // 기기 OS 확인용
 
 // 소셜 로그인 화면
 class LoginScreen extends StatelessWidget {
@@ -58,7 +60,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // 버튼들 사이의 간격을 SizedBox로 조정 (버전 호환성)
+                // 카카오 로그인 버튼
                 _buildSocialButton(
                   label: '카카오로 시작하기',
                   backgroundColor: const Color(0xFFFEE500),
@@ -74,7 +76,6 @@ class LoginScreen extends StatelessWidget {
 
                     if (!context.mounted) return;
 
-                    // 2. 웹뷰 실행 (UI 부분이라 Screen에 두는 게 적절합니다)
                     await showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -84,25 +85,25 @@ class LoginScreen extends StatelessWidget {
                         padding: EdgeInsets.only(
                           bottom: MediaQuery.of(ctx).viewInsets.bottom,
                         ),
-                        child: _buildKakaoWebView(
-                          context: ctx,
+                        child: SocialLoginWebView(
                           authUrl: authUrl,
                           onCodeCaptured: (code) => kakaoAuthCode = code,
                         ),
                       ),
                     );
 
-                    // 3. 획득한 코드가 있다면 백엔드로 전송
                     if (kakaoAuthCode != null && context.mounted) {
                       await AuthService.sendKakaoAuthToBackend(
                         code: kakaoAuthCode!,
-                        codeVerifier: pkce['codeVerifier']!, // 원본 열쇠 전송
+                        codeVerifier: pkce['codeVerifier']!,
                         context: context,
                       );
                     }
                   },
                 ),
                 const SizedBox(height: 12),
+
+                // 구글 로그인 버튼
                 _buildSocialButton(
                   label: '구글로 시작하기',
                   backgroundColor: Colors.white,
@@ -145,7 +146,6 @@ class LoginScreen extends StatelessWidget {
 
                     if (!context.mounted) return;
 
-                    // 2. 카카오처럼 바텀시트로 네이버 웹뷰 실행
                     await showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -155,15 +155,13 @@ class LoginScreen extends StatelessWidget {
                         padding: EdgeInsets.only(
                           bottom: MediaQuery.of(ctx).viewInsets.bottom,
                         ),
-                        child: _buildNaverWebView(
-                          context: ctx,
+                        child: SocialLoginWebView(
                           authUrl: authUrl,
                           onCodeCaptured: (code) => naverAuthCode = code,
                         ),
                       ),
                     );
 
-                    // 3. 획득한 코드가 있다면 백엔드로 전송
                     if (naverAuthCode != null && context.mounted) {
                       await AuthService.sendNaverAuthToBackend(
                         code: naverAuthCode!,
@@ -228,160 +226,119 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildKakaoWebView({
-    required BuildContext context,
-    required String authUrl,
-    required Function(String) onCodeCaptured,
-  }) {
-    late final WebViewController controller;
+class SocialLoginWebView extends StatefulWidget {
+  final String authUrl;
+  final Function(String) onCodeCaptured;
 
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent(
+  const SocialLoginWebView({
+    super.key,
+    required this.authUrl,
+    required this.onCodeCaptured,
+  });
+
+  @override
+  State<SocialLoginWebView> createState() => _SocialLoginWebViewState();
+}
+
+class _SocialLoginWebViewState extends State<SocialLoginWebView> {
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 매번 새로운 로그인을 위해 쿠키와 캐시를 삭제합니다.
+    // 코드 삭제시: 이전 로그인 세션이 남아있어 다른 계정으로 로그인 시도 시 문제가 발생할 수 있습니다.
+    WebViewCookieManager().clearCookies();
+
+    // 컨트롤러 초기화
+    _controller = WebViewController();
+    _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+
+    // [크로스 플랫폼 설정] OS를 확인하여 User-Agent를 설정합니다.
+    if (Platform.isIOS) {
+      // iOS: 사파리 브라우저인 척 속여서 네이버 '웹 로그인'을 강제합니다.
+      _controller.setUserAgent(
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+      );
+    } else {
+      // Android: 기존에 사용하던 안드로이드 브라우저 설정을 유지합니다.
+      _controller.setUserAgent(
         "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('''
-    ⚠️ 웹뷰 로딩 에러 발생!
-    - 코드: ${error.errorCode}
-    - 설명: ${error.description}
-    - URL: ${error.url}
-  ''');
-          },
-          onNavigationRequest: (NavigationRequest request) async {
-            final url = request.url;
+      );
+    }
 
-            // 📍 [중요] 주소 감지 로그 추가
-            if (url.contains('/oauth/kakao/callback')) {
-              debugPrint('🎣 [감지 성공] 카카오 콜백 주소가 포착되었습니다!');
-              final uri = Uri.parse(url);
-              final code = uri.queryParameters['code'];
+    // 3. 네비게이션 델리게이트 설정 (케스케이드 연산자 없이 호출)
+    _controller.setNavigationDelegate(
+      NavigationDelegate(
+        onWebResourceError: (error) {
+          if (error.errorCode == -1002) return;
+          debugPrint("🌐 웹 리소스 에러: ${error.description}");
+        },
+        onNavigationRequest: (NavigationRequest request) async {
+          final url = request.url;
+          debugPrint("🔗 현재 이동하려는 URL: $url");
 
-              if (code != null) {
-                debugPrint('✅ 획득한 인가 코드: $code');
-                onCodeCaptured(code);
-                Navigator.pop(context); // 웹뷰 닫기
-                return NavigationDecision.prevent; // 페이지 이동 중단
-              }
-            }
+          // ⭐️ [크로스 플랫폼 설정] 외부 앱(카카오톡 등) 실행 로직
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            debugPrint("🚀 외부 앱 실행 시도: $url");
+            try {
+              final Uri uri = Uri.parse(url);
 
-            // 2️⃣ 카카오톡 앱 호출 주소 처리
-            if (url.startsWith('kakaotalk://') || url.startsWith('intent://')) {
-              try {
-                debugPrint('📱 카카오톡 앱 실행 시도: $url');
-
-                // intent:// 스킴인 경우 안드로이드용 특수 처리가 필요할 수 있지만,
-                // url_launcher가 대부분 해결해줍니다.
-                final canLaunch = await canLaunchUrl(Uri.parse(url));
-                if (canLaunch) {
-                  await launchUrl(
-                    Uri.parse(url),
+              if (Platform.isIOS) {
+                // iOS: 바로 앱 열기 시도
+                final launched = await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+                if (launched) debugPrint("✅ iOS 외부 앱 실행 성공!");
+              } else {
+                // Android: 안전하게 실행 가능 여부 확인 후 실행
+                if (await canLaunchUrl(uri)) {
+                  final launched = await launchUrl(
+                    uri,
                     mode: LaunchMode.externalApplication,
                   );
-                  return NavigationDecision.prevent;
+                  if (launched) debugPrint("✅ Android 외부 앱 실행 성공!");
                 }
-              } catch (e) {
-                debugPrint('🚨 앱 실행 실패: $e');
-                // 앱 실행 실패 시 웹에서 로그인하도록 유지 (prevent 하지 않음)
               }
+            } catch (e) {
+              debugPrint('🚨 외부 앱 실행 중 예외 발생: $e');
             }
+            return NavigationDecision.prevent;
+          }
 
-            // 리다이렉트 및 기타 주소 처리
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          // 콜백 주소 감지 로직 (기존과 동일)
+          if (url.contains('/oauth/naver/callback') ||
+              url.contains('/oauth/kakao/callback')) {
+            final uri = Uri.parse(url);
+            final code = uri.queryParameters['code'];
+            if (code != null) {
+              widget.onCodeCaptured(code);
+              if (mounted) Navigator.pop(context);
               return NavigationDecision.prevent;
             }
-            return NavigationDecision.navigate;
-          },
-          onPageStarted: (url) {
-            debugPrint("🚀 웹뷰 로딩 시작됨: $url");
-            // ✅ AuthService.kakaoRedirectUri로 시작하는지 감시
-            if (url.startsWith(AuthService.kakaoRedirectUri)) {
-              debugPrint('🎣 리다이렉트 감지!');
-              final uri = Uri.parse(url);
-              final code = uri.queryParameters['code'];
-              if (code != null) {
-                onCodeCaptured(code);
-                Navigator.pop(context);
-              }
-            }
-          },
-          onPageFinished: (url) {
-            debugPrint("✅ 웹뷰 로딩 완료됨: $url");
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(authUrl));
+          }
+          return NavigationDecision.navigate;
+        },
+      ),
+    );
 
-    // 📍 로드하기 직전에 실제 어떤 주소를 부르는지 확인!
-    debugPrint("🌍 웹뷰 로딩 시도 URL: $authUrl");
+    // 4. 페이지 로드 요청
+    _controller.loadRequest(Uri.parse(widget.authUrl));
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: WebViewWidget(controller: controller),
+      child: WebViewWidget(controller: _controller),
     );
   }
-}
-
-Widget _buildNaverWebView({
-  required BuildContext context,
-  required String authUrl,
-  required Function(String) onCodeCaptured,
-}) {
-  late final WebViewController controller;
-
-  controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setUserAgent(
-      "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-    )
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onNavigationRequest: (NavigationRequest request) {
-          final url = request.url;
-
-          // 📍 [핵심] 백엔드의 네이버 콜백 주소 감지
-          if (url.contains('/oauth/naver/callback')) {
-            debugPrint('🎣 [감지 성공] 네이버 콜백 주소가 포착되었습니다!');
-            final uri = Uri.parse(url);
-            final code = uri.queryParameters['code'];
-
-            if (code != null) {
-              debugPrint('✅ 획득한 네이버 인가 코드: $code');
-              onCodeCaptured(code);
-              Navigator.pop(context); // 웹뷰 닫기
-              return NavigationDecision.prevent; // 리다이렉트 방지
-            }
-          }
-          return NavigationDecision.navigate;
-        },
-        onPageStarted: (url) {
-          // 이중 체크 (만약 onNavigationRequest에서 못 잡았을 경우)
-          if (url.startsWith(AuthService.naverRedirectUri)) {
-            final uri = Uri.parse(url);
-            final code = uri.queryParameters['code'];
-            if (code != null) {
-              onCodeCaptured(code);
-              Navigator.pop(context);
-            }
-          }
-        },
-      ),
-    )
-    ..loadRequest(Uri.parse(authUrl));
-
-  return Container(
-    height: MediaQuery.of(context).size.height * 0.9,
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    child: WebViewWidget(controller: controller),
-  );
 }
