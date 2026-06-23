@@ -26,7 +26,7 @@ class UserProfile extends _$UserProfile {
           .updateProfileImage(null); // 전역 상태 업데이트
       ref
           .read(myProfileProvider.notifier)
-          .updateLocalDetail(profileUrl: null); // 로컬 업데이트
+          .updateLocalDetail(clearProfileUrl: true); // 로컬 업데이트
 
       state = const AsyncValue.data(null);
     } catch (e, stack) {

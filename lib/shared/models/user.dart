@@ -20,10 +20,10 @@ class User {
   }
 
   // 특정 필드만 변경하여 새 User 객체를 반환하는 메서드
-  User copyWith({int? id, String? profileUrl, String? nickname}) {
+  User copyWith({int? id, String? profileUrl, bool clearProfileUrl = false, String? nickname}) {
     return User(
       id: id ?? this.id,
-      profileUrl: profileUrl ?? this.profileUrl,
+      profileUrl: clearProfileUrl ? null : (profileUrl ?? this.profileUrl),
       nickname: nickname ?? this.nickname,
     );
   }

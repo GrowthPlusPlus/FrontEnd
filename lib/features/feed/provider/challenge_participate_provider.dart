@@ -2,6 +2,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/challenge_participate_repository.dart';
 import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
+import 'package:haenaem/features/feed/provider/feed_provider.dart';
 
 part 'challenge_participate_provider.g.dart';
 
@@ -28,9 +30,11 @@ class ChallengeParticipateNotifier extends _$ChallengeParticipateNotifier {
     state = result;
 
     if (!result.hasError) {
-      // 4. 참여 성공 시, 내 진행 중인 챌린지 목록을 새로고침합니다.
+      // 4. 참여 성공 시, 내페이지의 내 진행 중인 챌린지 목록을 새로고침합니다.
       // (기존 데이터가 무효화되어 다시 서버에서 받아오게 됩니다)
       ref.invalidate(myInProgressChallengesProvider);
+      ref.invalidate(aiRecommendationProvider);
+      ref.invalidate(homeNotifierProvider);
       return true;
     }
 
