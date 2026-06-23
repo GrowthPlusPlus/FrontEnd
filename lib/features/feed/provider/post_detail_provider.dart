@@ -5,6 +5,7 @@ import 'package:haenaem/shared/models/post.dart';
 import '../data/feed_repository.dart';
 import '../../../../shared/provider/post_provider.dart'; // monthlyChallengePostsProvider
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
+import 'package:haenaem/features/challenge/detail/provider/stats_provider.dart';
 
 part 'post_detail_provider.g.dart';
 
@@ -108,8 +109,10 @@ class PostDeleteNotifier extends _$PostDeleteNotifier {
           month: now.month,
         ),
       );
+      // ✅ 완료 일수 / 연속 일수 통계 갱신
+      ref.invalidate(challengeStatsProvider(challengeId));
       // ✅ 상세 캐시 제거
-      ref.invalidate(postDetailProvider(postId: postId));
+      // ref.invalidate(postDetailProvider(postId: postId));
       // ✅ 인증 여부 상태도 갱신 (인증하기 버튼 활성화)
       ref.invalidate(challengeDetailProvider(challengeId: challengeId));
     }

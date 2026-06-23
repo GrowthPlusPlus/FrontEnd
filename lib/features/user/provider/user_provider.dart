@@ -31,7 +31,11 @@ class CurrentUser extends _$CurrentUser {
 
   // 프로필 이미지만 업데이트
   void updateProfileImage(String? profileUrl) {
+    if (profileUrl == null) {
+    state = state?.copyWith(clearProfileUrl: true); // ✅ 삭제 의도를 명확히 전달
+  } else {
     state = state?.copyWith(profileUrl: profileUrl);
+  }
   }
 }
 
@@ -55,12 +59,14 @@ class MyProfile extends _$MyProfile {
     List<String>? tags,
     String? nickname,
     String? profileUrl,
+    bool clearProfileUrl = false,
   }) {
     state.whenData((current) {
       // 새로운 유저 객체 생성
       final updatedUser = current.user.copyWith(
         nickname: nickname ?? current.user.nickname,
-        profileUrl: profileUrl ?? current.user.profileUrl,
+        profileUrl: profileUrl,
+        clearProfileUrl: clearProfileUrl,
       );
       // 2. 업데이트된 User를 포함하여 UserDetail 전체 상태를 갱신합니다.
       state = AsyncData(
