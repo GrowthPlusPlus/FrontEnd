@@ -3,6 +3,7 @@
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/shared/models/search_challenge_card.dart';
 import 'package:haenaem/shared/models/challenge_base.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
 
 // API 응답 원본 데이터를 담는 모델
 class InviteResponse {
@@ -13,7 +14,7 @@ class InviteResponse {
   final String challengeTitle;
   final int participantCount;
   final int remainingDays;
-  final List<String> tags;
+  final List<ChallengeTagModel> tags;
 
   InviteResponse({
     required this.inviterId,
@@ -42,7 +43,9 @@ class InviteResponse {
       challengeTitle: json['challengeTitle'] as String,
       participantCount: json['participantCount'] as int,
       remainingDays: json['remainingDays'] as int,
-      tags: List<String>.from(json['tags'] as List),
+      tags: (json['tags'] as List? ?? [])
+          .map((t) => ChallengeTagModel.fromJson(t as Map<String, dynamic>))
+          .toList(),
     );
   }
 
