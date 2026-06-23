@@ -65,12 +65,13 @@ class EnterConfirmDialog extends ConsumerWidget {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: () => Navigator.pushReplacement(
+                onPressed: () => Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
                         ChallengeMainScreen(challengeId: challengeId),
                   ),
+                  (route) => route.isFirst, // ✅ 맨 처음 화면(보통 홈/피드의 루트)까지 싹 다 지움
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryAble,

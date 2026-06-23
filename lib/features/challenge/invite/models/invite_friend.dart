@@ -28,10 +28,11 @@ class InviteFriend extends User {
     String? profileUrl,
     String? nickname,
     bool? isInvited,
+    bool clearProfileUrl = false,
   }) {
     return InviteFriend(
       id: id ?? this.id,
-      profileUrl: profileUrl ?? this.profileUrl,
+      profileUrl: clearProfileUrl ? null : (profileUrl ?? this.profileUrl),
       nickname: nickname ?? this.nickname,
       isInvited: isInvited ?? this.isInvited,
     );
