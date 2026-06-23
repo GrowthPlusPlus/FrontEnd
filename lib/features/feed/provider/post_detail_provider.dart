@@ -3,6 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/shared/models/post.dart';
 // 💡 FeedRepository가 있는 경로를 임포트해주세요. (feed_provider.dart 내부에 있다면 해당 파일 임포트)
 import '../data/feed_repository.dart';
+import '../../../../shared/provider/post_provider.dart'; // monthlyChallengePostsProvider
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
+import 'package:haenaem/features/challenge/detail/provider/stats_provider.dart';
 
 part 'post_detail_provider.g.dart';
 
@@ -89,12 +92,30 @@ class PostDeleteNotifier extends _$PostDeleteNotifier {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
-  Future<bool> removeArticle(int postId) async {
+  Future<bool> removeArticle(int postId, int challengeId) async {
     state = const AsyncValue.loading();
 
     final result = await AsyncValue.guard(
       () => ref.read(feedRepositoryProvider).deleteArticle(postId),
     );
+
+    if (!result.hasError) {
+      final now = DateTime.now();
+      // ✅ 캘린더 목록 갱신
+      ref.invalidate(
+        monthlyChallengePostsProvider(
+          challengeId: challengeId,
+          year: now.year,
+          month: now.month,
+        ),
+      );
+      // ✅ 완료 일수 / 연속 일수 통계 갱신
+      ref.invalidate(challengeStatsProvider(challengeId));
+      // ✅ 상세 캐시 제거
+      // ref.invalidate(postDetailProvider(postId: postId));
+      // ✅ 인증 여부 상태도 갱신 (인증하기 버튼 활성화)
+      ref.invalidate(challengeDetailProvider(challengeId: challengeId));
+    }
 
     state = result;
     return !result.hasError;

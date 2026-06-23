@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
+import 'package:haenaem/features/notification/provider/push_notification_provider.dart';
 
 class LogoutDialog extends ConsumerWidget {
   const LogoutDialog({super.key});
@@ -55,10 +56,17 @@ class LogoutDialog extends ConsumerWidget {
                       // Navigator.pop(context);
 
                       // 2. FCM 토큰 삭제 (알림 방지)
-                      await ref.read(fcmServiceProvider).deleteFcmToken();
+                      try {
+                        await ref.read(fcmServiceProvider).deleteFcmToken();
+                      } catch (e) {
+                        debugPrint('FCM 토큰 삭제 실패 (로그아웃은 계속 진행): $e');
+                      }
 
                       // 3. 로그아웃 API 호출 및 로컬 데이터 삭제
                       await AuthService.logout();
+
+                      // ✅ 알림 설정 상태 초기화
+                      ref.invalidate(pushNotificationProvider);
 
                       // 4. 화면 이동 (context가 유효한지 확인 후 실행)
                       if (context.mounted) {

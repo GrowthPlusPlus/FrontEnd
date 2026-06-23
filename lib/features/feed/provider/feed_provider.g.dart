@@ -6,7 +6,26 @@ part of 'feed_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$feedNotifierHash() => r'c227fdc97b731185ee277c4b95adb93b83990108';
+String _$aiRecommendationHash() => r'90ca6a9c155eaf19f39c8ef6ebc589e287b93686';
+
+/// See also [aiRecommendation].
+@ProviderFor(aiRecommendation)
+final aiRecommendationProvider =
+    AutoDisposeFutureProvider<List<SearchChallengeCard>>.internal(
+      aiRecommendation,
+      name: r'aiRecommendationProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$aiRecommendationHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AiRecommendationRef =
+    AutoDisposeFutureProviderRef<List<SearchChallengeCard>>;
+String _$feedNotifierHash() => r'58f6bfea36959e5344b16506c194b07fbbcce5f5';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -31,7 +31,21 @@ class PieGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (top3.isEmpty) return const SizedBox.shrink();
+    // ✅ 데이터 없을 때 빈 상태 UI
+    if (top3.isEmpty) {
+      return StatisticsCard(
+        title: '나의 해냄 분포',
+        child: SizedBox(
+          height: 120,
+          child: Center(
+            child: Text(
+              '아직 완료한 챌린지가 없어요',
+              style: AppTypography.b2.copyWith(color: AppColors.gray3),
+            ),
+          ),
+        ),
+      );
+    }
 
     // 파이 차트용: top3 각각 + 나머지 합산 gray4 하나
     final pieData = [

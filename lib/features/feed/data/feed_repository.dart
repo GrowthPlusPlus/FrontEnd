@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +5,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 //import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:haenaem/shared/models/post.dart';
 import 'package:haenaem/features/feed/models/comment.dart';
+import 'package:haenaem/shared/models/search_challenge_card.dart';
+import 'package:haenaem/shared/models/challenge_base.dart';
 
 part 'feed_repository.g.dart';
 
@@ -17,8 +18,37 @@ FeedRepository feedRepository(FeedRepositoryRef ref) {
 
 class FeedRepository {
   final Dio _dio;
-
   FeedRepository(this._dio);
+
+  // ── AI 챌린지 추천 데이터 가져오기 ────────────────────────────
+  Future<List<SearchChallengeCard>> getAiRecommendations() async {
+    try {
+      // 명세서에 따른 POST 요청
+      final response = await _dio.post('/api/v1/rag/recommend/discovery');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((item) {
+          return SearchChallengeCard(
+            // 1. ChallengeBase 매핑 (리팩토링된 구조: id, title)
+            base: ChallengeBase(id: item['id'], title: item['title']),
+            // 2. 참여자 수
+            participantCount: item['participantNumber'] ?? 0,
+            // 3. D-Day (명세서에 없으므로 기본값 0 처리)
+            dDay: 0,
+            // 4. 태그 (API의 객체 리스트를 String 리스트로 변환)
+            tags: (item['tags'] as List)
+                .map((tagObj) => tagObj['tag'] as String)
+                .toList(),
+          );
+        }).toList();
+      }
+      throw Exception('AI 추천 로드 실패');
+    } catch (e) {
+      debugPrint('❌ AI 추천 에러: $e');
+      throw Exception('네트워크 에러가 발생했습니다.');
+    }
+  }
 
   /// 공통 피드 조회 메서드
   Future<Map<String, dynamic>> getFeeds(String apiPath, int page) async {

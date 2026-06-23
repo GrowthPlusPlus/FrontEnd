@@ -114,7 +114,7 @@ class ChallengeSearchCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(
-        text.startsWith('#') ? text : '#$text',
+        text.startsWith('#') ? text : text,
         style: AppTypography.b2.copyWith(color: AppColors.primaryAble),
       ),
     );

@@ -1,27 +1,216 @@
 // 최초 작성자 : 강선욱
+// 수정: 김채영 (피그마 디자인 반영)
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:haenaem/features/notification/data/challenge_notification_repository.dart';
 
-// 챌린지 알림 설정 다이얼로그
-class NotificationSettingsDialog extends StatefulWidget {
-  const NotificationSettingsDialog({super.key});
+class NotificationSettingsDialog extends ConsumerStatefulWidget {
+  final int challengeId;
+
+  const NotificationSettingsDialog({super.key, required this.challengeId});
 
   @override
-  State<NotificationSettingsDialog> createState() =>
+  ConsumerState<NotificationSettingsDialog> createState() =>
       _NotificationSettingsDialogState();
 }
 
 class _NotificationSettingsDialogState
-    extends State<NotificationSettingsDialog> {
-  // 스위치 상태 변수들
-  bool allNotifications = true;
-  bool dailyReminder = true;
-  bool mateReaction = true;
-  bool mateVerification = true;
-  String selectedTime = "오후 9시";
+    extends ConsumerState<NotificationSettingsDialog> {
+  // ── 스위치 상태 ───────────────────────────────────────
+  bool allNotifications = false;
+  bool dailyReminder = false;
+  bool likesNotification = false;
+  bool commentsNotification = false;
+  bool mateVerification = false;
+  String selectedTime = '오후 9시';
+  bool _isLoading = true;
+
+  // ── 전역 설정에 의해 비활성화된 항목 ────────────────────
+  bool _reminderDisabledByGlobal = false;
+  bool _likesDisabledByGlobal = false;
+  bool _commentsDisabledByGlobal = false;
+  bool _verificationDisabledByGlobal = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChallengeSettings();
+  }
+
+  // ── 초기 로드 ─────────────────────────────────────────
+
+  Future<void> _loadChallengeSettings() async {
+    try {
+      final dto = await ref
+          .read(challengeNotificationRepositoryProvider)
+          .getChallengeNotificationSettings(widget.challengeId);
+
+      // 🔔 임시 로그
+      debugPrint(
+        '===== 🔔 챌린지 알림 설정 조회 결과 (challengeId: ${widget.challengeId}) =====',
+      );
+      debugPrint('🔔 전체 알림: ${dto.challengeAllPushEnabled}');
+      debugPrint('🔔 일일 리마인더: ${dto.dailyReminderPushEnabled}');
+      debugPrint('🔔 일일 리마인더 시간: ${dto.dailyReminderTime}');
+      debugPrint(
+        '🔔 일일 리마인더 전역 차단: ${dto.dailyReminderDisabledByGlobalSetting}',
+      );
+      debugPrint('🔔 좋아요: ${dto.likesPushEnabled}');
+      debugPrint('🔔 좋아요 전역 차단: ${dto.likesDisabledByGlobalSetting}');
+      debugPrint('🔔 댓글: ${dto.commentsPushEnabled}');
+      debugPrint('🔔 댓글 전역 차단: ${dto.commentsDisabledByGlobalSetting}');
+      debugPrint('🔔 멤버 인증: ${dto.memberCertificationPushEnabled}');
+      debugPrint(
+        '🔔 멤버 인증 전역 차단: ${dto.memberCertificationDisabledByGlobalSetting}',
+      );
+      debugPrint(
+        '=================================================================',
+      );
+
+      setState(() {
+        allNotifications = dto.challengeAllPushEnabled;
+        dailyReminder = dto.dailyReminderPushEnabled;
+        likesNotification = dto.likesPushEnabled;
+        commentsNotification = dto.commentsPushEnabled;
+        mateVerification = dto.memberCertificationPushEnabled;
+        selectedTime = _convertToDisplayTime(dto.dailyReminderTime);
+
+        _reminderDisabledByGlobal = dto.dailyReminderDisabledByGlobalSetting;
+        _likesDisabledByGlobal = dto.likesDisabledByGlobalSetting;
+        _commentsDisabledByGlobal = dto.commentsDisabledByGlobalSetting;
+        _verificationDisabledByGlobal =
+            dto.memberCertificationDisabledByGlobalSetting;
+
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('챌린지 알림 설정 로드 실패: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // ── 시간 변환 헬퍼 ────────────────────────────────────
+
+  String _convertToDisplayTime(String serverTime) {
+    final hour = int.parse(serverTime.split(':')[0]);
+    if (hour == 0) return '오전 12시';
+    if (hour < 12) return '오전 $hour시';
+    if (hour == 12) return '오후 12시';
+    return '오후 ${hour - 12}시';
+  }
+
+  String _convertToServerTime(String period, String hourStr) {
+    int hour = int.parse(hourStr.replaceAll('시', ''));
+    if (period == '오후' && hour != 12) hour += 12;
+    if (period == '오전' && hour == 12) hour = 0;
+    return '${hour.toString().padLeft(2, '0')}:00';
+  }
+
+  // ── 전체 알림 동기화 헬퍼 ────────────────────────────
+
+  void _syncAllNotifications() {
+    allNotifications =
+        dailyReminder &&
+        likesNotification &&
+        commentsNotification &&
+        mateVerification;
+  }
+
+  // ── 토글 핸들러 ───────────────────────────────────────
+
+  Future<void> _toggleAll(bool val) async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    final success = await ref
+        .read(challengeNotificationRepositoryProvider)
+        .setChallengeAllNotification(widget.challengeId, val);
+
+    if (success) {
+      setState(() {
+        allNotifications = val;
+        dailyReminder = val;
+        likesNotification = val;
+        commentsNotification = val;
+        mateVerification = val;
+      });
+    }
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _toggleReminder(bool val) async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    final success = await ref
+        .read(challengeNotificationRepositoryProvider)
+        .setChallengeReminderNotification(widget.challengeId, val);
+
+    if (success) {
+      setState(() {
+        dailyReminder = val;
+        _syncAllNotifications();
+      });
+    }
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _toggleLikes(bool val) async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    final success = await ref
+        .read(challengeNotificationRepositoryProvider)
+        .setChallengeLikesNotification(widget.challengeId, val);
+
+    if (success) {
+      setState(() {
+        likesNotification = val;
+        _syncAllNotifications();
+      });
+    }
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _toggleComments(bool val) async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    final success = await ref
+        .read(challengeNotificationRepositoryProvider)
+        .setChallengeCommentsNotification(widget.challengeId, val);
+
+    if (success) {
+      setState(() {
+        commentsNotification = val;
+        _syncAllNotifications();
+      });
+    }
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _toggleVerification(bool val) async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    final success = await ref
+        .read(challengeNotificationRepositoryProvider)
+        .setChallengeVerificationNotification(widget.challengeId, val);
+
+    if (success) {
+      setState(() {
+        mateVerification = val;
+        _syncAllNotifications();
+      });
+    }
+    setState(() => _isLoading = false);
+  }
+
+  // ── UI ────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +222,8 @@ class _NotificationSettingsDialogState
       clipBehavior: Clip.antiAlias,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 1. 헤더 영역
+          // ── 헤더 ─────────────────────────────────────
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -48,10 +235,9 @@ class _NotificationSettingsDialogState
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '알림 설정',
+                  '챌린지 알림 설정',
                   style: AppTypography.h3.copyWith(color: AppColors.black),
                 ),
                 GestureDetector(
@@ -68,81 +254,92 @@ class _NotificationSettingsDialogState
             ),
           ),
 
-          // 3. 설정 리스트 및 버튼 영역
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-            child: Column(
-              children: [
-                _buildSwitchRow(
-                  "전체 알림",
-                  "모든 알림 받기",
-                  allNotifications,
-                  (val) => setState(() {
-                    allNotifications = val;
-                    dailyReminder = val;
-                    mateReaction = val;
-                    mateVerification = val;
-                  }),
-                ),
-                _buildDailyReminderSection(),
-                _buildSwitchRow(
-                  "메이트 반응 소식",
-                  "다른 참여자들이 내 인증글에 반응 시 알림",
-                  mateReaction,
-                  (val) => setState(() {
-                    mateReaction = val;
-                    if (!val) {
-                      allNotifications = false;
-                    } else if (dailyReminder && mateVerification) {
-                      allNotifications = true;
-                    }
-                  }),
-                ),
-                _buildSwitchRow(
-                  "메이트 인증 소식",
-                  "다른 참여자들이 인증 완료 시 알림",
-                  mateVerification,
-                  (val) => setState(() {
-                    mateVerification = val;
-                    if (!val) {
-                      allNotifications = false;
-                    } else if (dailyReminder && mateReaction) {
-                      allNotifications = true;
-                    }
-                  }),
-                ),
-                const SizedBox(height: 24),
-
-                // 완료 버튼
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryAble,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+          // ── 본문 ─────────────────────────────────────
+          _isLoading
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryAble,
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: Column(
+                    spacing: 20,
+                    children: [
+                      _buildSwitchRow(
+                        '전체 알림',
+                        '모든 알림 받기',
+                        allNotifications,
+                        _toggleAll,
                       ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      '완료',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      _buildDailyReminderSection(),
+                      _buildSwitchRowWithGlobalWarning(
+                        '내 글 좋아요',
+                        "내 게시물에 '좋아요' 반응이 올 때 알림",
+                        likesNotification,
+                        _likesDisabledByGlobal ? null : _toggleLikes,
+                        disabledByGlobal: _likesDisabledByGlobal,
                       ),
-                    ),
+                      _buildSwitchRowWithGlobalWarning(
+                        '댓글',
+                        '내 글에 새로운 댓글이 달릴 때 알림',
+                        commentsNotification,
+                        _commentsDisabledByGlobal ? null : _toggleComments,
+                        disabledByGlobal: _commentsDisabledByGlobal,
+                      ),
+                      _buildSwitchRowWithGlobalWarning(
+                        '멤버 인증 소식',
+                        '다른 참여자들이 인증 완료 시 알림',
+                        mateVerification,
+                        _verificationDisabledByGlobal
+                            ? null
+                            : _toggleVerification,
+                        disabledByGlobal: _verificationDisabledByGlobal,
+                      ),
+                    ],
                   ),
                 ),
-              ],
+
+          // ── 완료 버튼 ─────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              border: Border(top: BorderSide(width: 1, color: AppColors.gray4)),
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryAble,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  '완료',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
+  // ── 기본 스위치 행 ──────────────────────────────────────
 
   Widget _buildSwitchRow(
     String title,
@@ -150,140 +347,211 @@ class _NotificationSettingsDialogState
     bool value,
     ValueChanged<bool>? onChanged,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 텍스트 영역
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.b1.copyWith(color: AppColors.black),
-                ),
-                Text(
-                  subtitle,
-                  style: AppTypography.b2.copyWith(color: AppColors.gray2),
-                ),
-              ],
-            ),
-          ),
-
-          // 스위치 영역: 이미지와 동일한 초록색 테마 적용
-          Transform.scale(
-            scale: 0.8,
-            alignment: Alignment.centerRight,
-            child: Switch(
-              value: value,
-              onChanged: onChanged,
-              activeTrackColor: AppColors.primaryAble,
-              activeThumbColor: Colors.white,
-              inactiveTrackColor: AppColors.disable, // 이미지와 유사한 연회색
-              inactiveThumbColor: Colors.white,
-
-              // 테두리 제거
-              trackOutlineColor: const WidgetStatePropertyAll(
-                Colors.transparent,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTypography.b1.copyWith(color: AppColors.black),
               ),
-
-              // 비활성화 시에도 버튼 크기가 작아지지 않도록 설정
-              thumbIcon: WidgetStateProperty.all(
-                const Icon(null),
-              ), // 아이콘 공간 강제 확보
-              thumbColor: const WidgetStatePropertyAll(Colors.white),
-            ),
+              Text(
+                subtitle,
+                style: AppTypography.b2.copyWith(color: AppColors.gray2),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        _buildSwitch(value, onChanged),
+      ],
     );
   }
 
-  Widget _buildDailyReminderSection() {
+  // ── 전역 비활성화 안내 문구 포함 스위치 행 ──────────────
+
+  Widget _buildSwitchRowWithGlobalWarning(
+    String title,
+    String subtitle,
+    bool value,
+    ValueChanged<bool>? onChanged, {
+    bool disabledByGlobal = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. 상단 스위치 행
-        _buildSwitchRow(
-          "일일 리마인더",
-          "매일 $selectedTime 알림",
-          dailyReminder,
-          (val) => setState(() {
-            dailyReminder = val;
-            if (!val) {
-              allNotifications = false;
-            } else if (mateReaction && mateVerification) {
-              allNotifications = true;
-            }
-          }),
-        ),
-
-        // 2. 리마인더가 활성화되었을 때만 드롭다운 표시
-        if (dailyReminder && allNotifications)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: GestureDetector(
-              onTap: () => _showTimePicker(context), // 터치 시 피커 호출
-              child: Container(
-                width: double.infinity,
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: AppColors.gray5,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(selectedTime, style: AppTypography.b2),
-                    SvgPicture.asset(
-                      'assets/images/icons/big_down_arrow.svg',
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.gray2,
-                        BlendMode.srcIn,
-                      ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.b1.copyWith(
+                      color: disabledByGlobal
+                          ? AppColors.gray2
+                          : AppColors.black,
                     ),
-                  ],
-                ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                  ),
+                ],
               ),
+            ),
+            _buildSwitch(
+              value,
+              (_isLoading || disabledByGlobal) ? null : onChanged,
+            ),
+          ],
+        ),
+        if (disabledByGlobal)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              '전체 푸시 알림 설정에서 해당 알림이 꺼져 있습니다.',
+              style: AppTypography.c1.copyWith(color: AppColors.primaryAble),
             ),
           ),
       ],
     );
   }
 
+  // ── 공통 스위치 위젯 ────────────────────────────────────
+
+  Widget _buildSwitch(bool value, ValueChanged<bool>? onChanged) {
+    return Transform.scale(
+      scale: 0.8,
+      alignment: Alignment.centerRight,
+      child: Switch(
+        value: value,
+        onChanged: onChanged,
+        activeTrackColor: AppColors.primaryAble,
+        activeThumbColor: Colors.white,
+        inactiveTrackColor: AppColors.disable,
+        inactiveThumbColor: Colors.white,
+        trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+        thumbIcon: WidgetStateProperty.all(const Icon(null)),
+        thumbColor: const WidgetStatePropertyAll(Colors.white),
+      ),
+    );
+  }
+
+  // ── 일일 리마인더 섹션 ──────────────────────────────────
+
+  Widget _buildDailyReminderSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '일일 리마인더',
+                    style: AppTypography.b1.copyWith(
+                      color: _reminderDisabledByGlobal
+                          ? AppColors.gray2
+                          : AppColors.black,
+                    ),
+                  ),
+                  Text(
+                    '매일 $selectedTime 알림',
+                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                  ),
+                ],
+              ),
+            ),
+            _buildSwitch(
+              dailyReminder,
+              (_isLoading || _reminderDisabledByGlobal)
+                  ? null
+                  : _toggleReminder,
+            ),
+          ],
+        ),
+        if (dailyReminder && !_reminderDisabledByGlobal) ...[
+          const SizedBox(height: 4),
+          GestureDetector(
+            onTap: () => _showTimePicker(context),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.gray5,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    selectedTime,
+                    style: AppTypography.b2.copyWith(color: AppColors.gray3),
+                  ),
+                  Opacity(
+                    opacity: 0.5,
+                    child: SvgPicture.asset(
+                      'assets/images/icons/big_down_arrow.svg',
+                      width: 16,
+                      height: 16,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.gray2,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+        if (_reminderDisabledByGlobal)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              '전체 푸시 알림 설정에서 해당 알림이 꺼져 있습니다.',
+              style: AppTypography.c1.copyWith(color: AppColors.primaryAble),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ── 시간 피커 ───────────────────────────────────────────
+
   void _showTimePicker(BuildContext context) {
-    final List<String> hours = List.generate(12, (i) => "${i + 1}시");
-    String currentPeriod = selectedTime.contains("오후") ? "오후" : "오전";
+    final List<String> hours = List.generate(12, (i) => '${i + 1}시');
+    String currentPeriod = selectedTime.contains('오후') ? '오후' : '오전';
     String currentHour = selectedTime.split(' ').last;
     int initialHourIndex = hours.indexOf(currentHour);
     if (initialHourIndex == -1) initialHourIndex = 8;
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withAlpha(100), // 기존 투명도 유지
+      barrierColor: Colors.black.withAlpha(100),
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20), // 다이얼로그 전체 곡률 유지
+            borderRadius: BorderRadius.circular(20),
           ),
-          actionsAlignment: MainAxisAlignment.center,
           backgroundColor: Colors.white,
-          contentPadding: const EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            0,
-          ), // 하단 여백 제거하여 버튼 밀착
+          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           content: SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 1. 오전/오후 선택용 애니메이션 버튼
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: _buildAnimatedPeriodSelector(
@@ -292,15 +560,11 @@ class _NotificationSettingsDialogState
                         setDialogState(() => currentPeriod = newPeriod),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // 2. 시간 선택 휠
                 SizedBox(
-                  height: 150, // 휠의 높이를 원하는 만큼 고정 (너무 늘어나지 않음)
+                  height: 150,
                   child: Stack(
                     children: [
-                      // 중앙 하이라이트 바
                       Center(
                         child: Container(
                           height: 40,
@@ -330,20 +594,22 @@ class _NotificationSettingsDialogState
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Padding(
                   padding: const EdgeInsets.only(
                     bottom: 16,
                     left: 16,
                     right: 16,
-                  ), // 하단과 좌우 여백 설정
+                  ),
                   child: TextButton(
                     onPressed: () {
-                      setState(
-                        () => selectedTime = "$currentPeriod $currentHour",
+                      final newTime = '$currentPeriod $currentHour';
+                      final serverTime = _convertToServerTime(
+                        currentPeriod,
+                        currentHour,
                       );
+                      setState(() => selectedTime = newTime);
+                      // TODO: 챌린지별 리마인더 시간 변경 API 생기면 연동
                       Navigator.pop(context);
                     },
                     style: TextButton.styleFrom(
@@ -356,7 +622,7 @@ class _NotificationSettingsDialogState
                       ),
                     ),
                     child: Text(
-                      "완료",
+                      '완료',
                       style: AppTypography.b1.copyWith(
                         color: AppColors.primaryAble,
                         fontWeight: FontWeight.bold,
@@ -378,34 +644,31 @@ class _NotificationSettingsDialogState
   ) {
     return Container(
       height: 48,
-      padding: const EdgeInsets.all(4), // 테두리와 내부 버튼 사이의 여백
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.gray4, // 배경색 (이미지 b77188의 연회색)
+        color: AppColors.gray4,
         borderRadius: BorderRadius.circular(12),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // 전체 너비의 절반에서 패딩(4)을 뺀 값이 움직이는 배경의 너비가 됩니다.
-          double width = constraints.maxWidth / 2;
-
+          final double width = constraints.maxWidth / 2;
           return Stack(
             children: [
-              // 1. 배경에서 움직이는 흰색 하이라이트 박스
               AnimatedAlign(
-                duration: const Duration(milliseconds: 250), // 애니메이션 속도
-                curve: Curves.easeInOut, // 부드러운 가속도 곡선
-                alignment: currentPeriod == "오전"
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                alignment: currentPeriod == '오전'
                     ? Alignment.centerLeft
                     : Alignment.centerRight,
                 child: Container(
-                  width: width - 4, // 좌우 여백을 고려한 너비
+                  width: width - 4,
                   height: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(20), // 미세한 그림자 효과
+                        color: Colors.black.withAlpha(20),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -413,14 +676,11 @@ class _NotificationSettingsDialogState
                   ),
                 ),
               ),
-
-              // 2. 상단 텍스트 레이어 (오전, 오후)
               Row(
-                children: ["오전", "오후"].map((p) {
-                  bool isSelected = currentPeriod == p;
+                children: ['오전', '오후'].map((p) {
+                  final bool isSelected = currentPeriod == p;
                   return Expanded(
                     child: GestureDetector(
-                      // 투명한 영역을 클릭해도 인식되도록 설정
                       behavior: HitTestBehavior.opaque,
                       onTap: () => onPeriodChanged(p),
                       child: Center(
