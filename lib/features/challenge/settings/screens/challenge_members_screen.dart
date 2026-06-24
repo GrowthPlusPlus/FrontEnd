@@ -15,6 +15,7 @@ import 'package:haenaem/shared/models/user.dart';
 import '../provider/challenge_member_provider.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 import '../widgets/kick_confirm_dialog.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 1. StatefulWidget으로 변경 (검색어 상태 관리를 위해)
 class ChallengeMemberManagementScreen extends ConsumerStatefulWidget {
@@ -58,57 +59,13 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
       ref.invalidate(challengeMembersProvider(currentFilter));
 
       if (mounted) {
-        _showToast(context, '$nickname 님을 내보냈습니다.');
+        displayToast(context, '$nickname 님을 내보냈습니다.');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: AppColors.notification,
-          ),
-        );
+        displayToast(context, e.toString().replaceAll('Exception: ', ''));
       }
     }
-  }
-
-  // 토스트 메시지
-  void _showToast(BuildContext context, String message) {
-    // 토스트 위젯 생성
-    OverlayEntry overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: 100,
-        left: 20,
-        right: 20,
-        child: Material(
-          color: Colors.transparent,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: ShapeDecoration(
-                color: const Color(0xff1B1D1B).withAlpha(200),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                message, // 전달받은 메시지 그대로 출력
-                textAlign: TextAlign.center,
-                style: AppTypography.b1.copyWith(color: Colors.white),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    // 화면에 추가
-    Overlay.of(context).insert(overlayEntry);
-
-    // 2초 후 자동으로 사라지게 설정
-    Future.delayed(const Duration(seconds: 2), () {
-      overlayEntry.remove();
-    });
   }
 
   @override

@@ -8,6 +8,7 @@ import '../models/signup_state.dart';
 import 'package:haenaem/features/auth/signup/widgets/signup_page_layout.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:haenaem/shared/models/tag_model.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 태그 설정 화면
 class TagScreen extends ConsumerStatefulWidget {
@@ -35,9 +36,7 @@ class _TagScreenState extends ConsumerState<TagScreen> {
     if (success) {
       widget.onNext(); // 성공 시 폭죽 화면으로!
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('회원가입 처리 중 오류가 발생했습니다. (닉네임 중복 등)')),
-      );
+      displayToast(context, '회원가입 처리 중 오류가 발생했습니다. (닉네임 중복 등)');
     }
   }
 

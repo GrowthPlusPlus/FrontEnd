@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:image/image.dart' as img;
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 import '../widgets/circular_overlay_painter.dart';
 import '../widgets/profile_edit_tools.dart';
@@ -485,9 +486,7 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
       debugPrint('프로필 이미지 저장 실패: $e');
       if (mounted) {
         setState(() => _isProcessing = false); // 실패해도 로딩 풀어줌
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.')),
-        );
+        displayToast(context, '이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     }
   }

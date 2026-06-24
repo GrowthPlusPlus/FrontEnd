@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../provider/notification_provider.dart';
 import '../../challenge/detail/screens/challenge_main_screen.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 class ChallengeInvitesView extends ConsumerWidget {
   const ChallengeInvitesView({super.key});
@@ -79,12 +80,7 @@ class ChallengeInvitesView extends ConsumerWidget {
                 // 수락 실패 시 에러 메시지 띄우기
                 if (context.mounted) {
                   final errorMsg = e.toString().replaceAll('Exception: ', '');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(errorMsg),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                  displayToast(context, errorMsg);
                 }
               }
             },
@@ -97,26 +93,16 @@ class ChallengeInvitesView extends ConsumerWidget {
                     true; // 홈 화면 새로고침 필요 플래그 켜기
 
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${invite.challengeInfo.base.title} 초대를 거절했습니다.',
-                      ),
-                      behavior: SnackBarBehavior.floating, // 화면 아래에 살짝 떠 있는 스타일
-                      duration: const Duration(seconds: 3),
-                    ),
+                  displayToast(
+                    context,
+                    '${invite.challengeInfo.base.title} 초대를 거절했습니다.',
                   );
                 }
               } catch (e) {
                 // 거절 실패 시 에러 메시지 띄우기
                 if (context.mounted) {
                   final errorMsg = e.toString().replaceAll('Exception: ', '');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(errorMsg),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                  displayToast(context, errorMsg);
                 }
               }
             },

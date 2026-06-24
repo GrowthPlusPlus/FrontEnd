@@ -27,6 +27,7 @@ import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/features/challenge/verification/widgets/verification_cancel_dialog.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {
@@ -142,9 +143,7 @@ class _ChallengeVerificationScreenState
 
     if (!ps.hasAccess) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('사진 접근 권한이 필요합니다.')));
+        displayToast(context, '사진 접근 권한이 필요합니다.');
         PhotoManager.openSetting(); // 설정 화면으로 유도
       }
       return;
@@ -657,9 +656,7 @@ class _ChallengeVerificationScreenState
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
+      displayToast(context, isEditMode ? '수정 완료!' : '인증 완료!');
       Navigator.pop(context);
     } else {
       // 에러 발생 시 처리 (예: 스낵바 노출)
@@ -667,9 +664,7 @@ class _ChallengeVerificationScreenState
           ? ref.read(articleUpdateNotifierProvider).error
           : ref.read(articleCreateNotifierProvider).error;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('오류가 발생했습니다: $error')));
+      displayToast(context, '오류가 발생했습니다: $error');
     }
   }
 }

@@ -11,6 +11,7 @@ import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import '../../../shared/widgets/bottom_action_button.dart';
 import '../provider/notification_provider.dart';
 import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 class ChallengeInviteDetailScreen extends ConsumerWidget {
   final int challengeId;
@@ -139,14 +140,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
               // 수락 실패 시 에러 메시지 띄우기
               if (context.mounted) {
                 final errorMsg = e.toString().replaceAll('Exception: ', '');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(errorMsg),
-                    backgroundColor: AppColors.black, // 에러 느낌을 주려면 변경 가능
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                displayToast(context, errorMsg);
               }
             }
           },

@@ -8,6 +8,7 @@ import '../widgets/report_reason_tile.dart';
 import 'report_success_screen.dart';
 import 'package:haenaem/features/report/provider/report_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 class ReportScreen extends ConsumerStatefulWidget {
   final ReportTargetType targetType;
@@ -78,9 +79,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         MaterialPageRoute(builder: (context) => const ReportSuccessScreen()),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('신고 접수에 실패했습니다. 다시 시도해주세요.')),
-      );
+      displayToast(context, '신고 접수에 실패했습니다. 다시 시도해주세요.');
     }
   }
 

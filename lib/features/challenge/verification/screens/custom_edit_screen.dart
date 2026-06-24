@@ -12,6 +12,7 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/auth/signup/utils/profile_image_utils.dart';
 import '../widgets/square_overlay_painter.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 갤러리에서 선택한 사진 편집 화면
 class CustomEditScreen extends StatefulWidget {
@@ -222,9 +223,7 @@ class _CustomEditScreenState extends State<CustomEditScreen> {
       debugPrint('회전/줌 처리 실패: $e');
       if (mounted) {
         setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('이미지 처리 중 오류가 발생했습니다.')));
+        displayToast(context, '이미지 처리 중 오류가 발생했습니다.');
       }
     }
   }
@@ -524,9 +523,7 @@ class _CustomEditScreenState extends State<CustomEditScreen> {
       debugPrint('이미지 저장 실패: $e');
       if (mounted) {
         setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('이미지 저장 중 오류가 발생했습니다.')));
+        displayToast(context, '이미지 저장 중 오류가 발생했습니다.');
       }
     }
   }

@@ -18,6 +18,7 @@ import 'package:haenaem/features/user/provider/user_provider.dart';
 import '../../widgets/profile_image_menu.dart';
 import '../../../../shared/provider/tag_provider.dart';
 import '../../provider/user_profile_provider.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 프로필 편집 화면
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -143,9 +144,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('프로필 수정이 완료되었습니다.')));
+        displayToast(context, '프로필 수정이 완료되었습니다.');
       }
     } catch (e) {
       final errorMsg = e.toString();
@@ -153,9 +152,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         setState(() => _isDuplicate = true);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('저장 중 오류가 발생했습니다: $e')));
+          displayToast(context, '저장 중 오류가 발생했습니다: $e');
         }
       }
     }

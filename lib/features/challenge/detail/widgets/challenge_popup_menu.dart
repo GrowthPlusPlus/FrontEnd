@@ -10,6 +10,7 @@ import 'package:haenaem/features/challenge/detail/widgets/notification_settings_
 import 'package:haenaem/features/challenge/settings/screens/challenge_settings_screen.dart';
 // import 'package:haenaem/features/challenge/provider/challenge_provider.dart'; // 추가
 import '../provider/challenge_leave_provider.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 챌린지방 팝업 (방장일 경우/멤버일 경우)
 class ChallengePopupMenu extends ConsumerWidget {
@@ -171,16 +172,12 @@ class ChallengePopupMenu extends ConsumerWidget {
 
           if (success && context.mounted) {
             // 성공 시 메시지 표시 및 화면 이동 처리
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('챌린지에서 성공적으로 나갔습니다.')));
+            displayToast(context, '챌린지에서 성공적으로 나갔습니다.');
             // 홈 화면으로 이동
             Navigator.of(context).popUntil((route) => route.isFirst);
           } else if (context.mounted) {
             // 실패 시 에러 메시지
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('나가기 처리 중 오류가 발생했습니다.')),
-            );
+            displayToast(context, '나가기 처리 중 오류가 발생했습니다.');
           }
         }
         break;

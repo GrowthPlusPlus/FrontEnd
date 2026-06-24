@@ -35,7 +35,7 @@ class CircularOverlayPainter extends CustomPainter {
       radius,
 
       Paint()
-        ..color = Colors.white.withOpacity(0.5)
+        ..color = Colors.white.withValues(alpha: 0.5)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2,
     );
