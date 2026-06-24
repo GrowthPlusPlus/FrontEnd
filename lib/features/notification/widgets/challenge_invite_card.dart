@@ -108,7 +108,7 @@ class ChallengeInviteCard extends StatelessWidget {
                     Wrap(
                       spacing: 6, // 태그 사이 간격
                       // runSpacing: 8, // 줄 바꿈 시 간격 (필요 시 활성화)
-                      children: challengeInfo.tags.map((label) {
+                      children: challengeInfo.tags.map((tag) {
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -119,7 +119,7 @@ class ChallengeInviteCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16), // 모서리 둥글기
                           ),
                           child: Text(
-                            label,
+                            tag.tag,
                             style: AppTypography.b2.copyWith(
                               color: AppColors.primaryAble,
                             ),

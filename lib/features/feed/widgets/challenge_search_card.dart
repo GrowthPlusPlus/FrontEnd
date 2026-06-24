@@ -69,7 +69,7 @@ class ChallengeSearchCard extends StatelessWidget {
                               .map(
                                 (tag) => Padding(
                                   padding: const EdgeInsets.only(right: 10),
-                                  child: _buildTag(tag),
+                                  child: _buildTag(tag.tag),
                                 ),
                               )
                               .toList(),
