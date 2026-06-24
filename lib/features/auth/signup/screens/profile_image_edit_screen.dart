@@ -9,12 +9,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:image/image.dart' as img;
-import 'package:vector_math/vector_math_64.dart' as vm;
 
 import '../widgets/circular_overlay_painter.dart';
 import '../widgets/profile_edit_tools.dart';
 import '../utils/profile_image_utils.dart';
 
+// 프로필 사진 편집 화면
 class ProfileImageEditScreen extends StatefulWidget {
   final File imageFile;
 
@@ -37,6 +37,14 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
   double _imgWidth = 0;
   double _imgHeight = 0;
   Size? _lastViewportSize; // 미리보기 영역의 실제 크기 기억
+
+  double _scale = 1.0; // ✅ TransformationController 대신 직접 관리
+  Offset _pan = Offset.zero;
+
+  // 제스처 진행 중 임시 추적용
+  double? _gestureStartScale;
+  Offset? _gestureStartPan;
+  Offset? _gestureStartFocal;
 
   @override
   void initState() {
@@ -84,8 +92,9 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
           _imgHeight = temp;
         }
         _rotationTurns = 0;
-        _isProcessing = false; // ✅ 로딩 끝
-        _transformController.value = Matrix4.identity();
+        _isProcessing = false; // 로딩 끝
+        _scale = 1.0; // 회전 시 줌/팬 리셋
+        _pan = Offset.zero;
       });
     }
 
@@ -129,6 +138,56 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
     return Rect.fromLTWH(left, top, side, side);
   }
 
+  // 원형 가이드가 항상 사진 안에 있도록 팬 값을 직접 클램핑
+  Offset _clampPan(Offset pan, double scale, Size viewport) {
+    final baseRect = _calculateImageRect(BoxConstraints.tight(viewport));
+    if (baseRect == Rect.zero) return Offset.zero;
+
+    final guideSide = baseRect.shortestSide;
+    final halfW = baseRect.width * scale / 2;
+    final halfH = baseRect.height * scale / 2;
+
+    final maxDx = (halfW - guideSide / 2).clamp(0.0, double.infinity);
+    final maxDy = (halfH - guideSide / 2).clamp(0.0, double.infinity);
+
+    return Offset(pan.dx.clamp(-maxDx, maxDx), pan.dy.clamp(-maxDy, maxDy));
+  }
+
+  // 화면에 보이는 원형 가이드 영역 → 실제 이미지 픽셀 좌표로 역산
+  Rect? _calculateVisibleImageRect(Size viewportSize) {
+    final baseRect = _calculateImageRect(BoxConstraints.tight(viewportSize));
+    if (baseRect == Rect.zero) return null;
+
+    final center = Offset(viewportSize.width / 2, viewportSize.height / 2);
+
+    final displayedRect = Rect.fromCenter(
+      center: center + _pan,
+      width: baseRect.width * _scale,
+      height: baseRect.height * _scale,
+    );
+
+    final guideSide = baseRect.shortestSide;
+    final guideRect = Rect.fromCenter(
+      center: center,
+      width: guideSide,
+      height: guideSide,
+    );
+
+    final relLeft = (guideRect.left - displayedRect.left) / displayedRect.width;
+    final relTop = (guideRect.top - displayedRect.top) / displayedRect.height;
+    final relRight =
+        (guideRect.right - displayedRect.left) / displayedRect.width;
+    final relBottom =
+        (guideRect.bottom - displayedRect.top) / displayedRect.height;
+
+    return Rect.fromLTRB(
+      (relLeft * _imgWidth).clamp(0, _imgWidth),
+      (relTop * _imgHeight).clamp(0, _imgHeight),
+      (relRight * _imgWidth).clamp(0, _imgWidth),
+      (relBottom * _imgHeight).clamp(0, _imgHeight),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,7 +214,7 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
               ],
             ),
 
-            // ✅ 로딩 인디케이터
+            // 로딩 인디케이터
             if (_isProcessing)
               Container(
                 color: Colors.black.withValues(alpha: 0.5),
@@ -250,23 +309,21 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
                       _imgWidth = decoded.width.toDouble();
                       _imgHeight = decoded.height.toDouble();
                     }
-                    _transformController.value = Matrix4.identity();
+                    _scale = 1.0;
+                    _pan = Offset.zero;
                   });
                 }
               },
-
               aspectRatio: 1 / 1,
               maskColor: Colors.transparent,
               radius: 0,
               initialRectBuilder: InitialRectBuilder.withBuilder(
                 (viewRect, imageRect) => largeCropRect,
               ),
-
               interactive: true,
               fixCropRect: true,
               baseColor: AppColors.black,
             ),
-
             IgnorePointer(
               child: CustomPaint(
                 size: Size.infinite,
@@ -279,91 +336,64 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
     );
   }
 
-  // 화면에 보이는 원형 가이드 영역 → 실제 이미지 픽셀 좌표로 역산
-  // 프로필 편집 미리보기 화면에서도 사진 확대/축소를 통해 편집할 수 있도록 함
-  Rect? _calculateVisibleImageRect(Size viewportSize) {
-    if (_imgWidth == 0 || _imgHeight == 0) return null;
-
-    // 1) 확대/축소 없을 때 기준 이미지 렌더링 영역
-    final Rect baseRect = _calculateImageRect(
-      BoxConstraints.tight(viewportSize),
-    );
-
-    // 2) 화면에 고정으로 보이는 원형 가이드 영역
-    final double circleSide = baseRect.shortestSide;
-    final Rect circleOnScreen = Rect.fromCenter(
-      center: Offset(viewportSize.width / 2, viewportSize.height / 2),
-      width: circleSide,
-      height: circleSide,
-    );
-
-    // 3) InteractiveViewer 변환의 역행렬 적용
-    final Matrix4 inverse = Matrix4.inverted(_transformController.value);
-    Offset toChildSpace(Offset p) {
-      final v = inverse.transform3(vm.Vector3(p.dx, p.dy, 0));
-      return Offset(v.x, v.y);
-    }
-
-    // 4) child 좌표(=BoxFit.contain 기준 좌표) → 실제 이미지 픽셀 좌표
-    Offset toPixelSpace(Offset childPt) {
-      final relX = (childPt.dx - baseRect.left) / baseRect.width;
-      final relY = (childPt.dy - baseRect.top) / baseRect.height;
-      return Offset(relX * _imgWidth, relY * _imgHeight);
-    }
-
-    final p1 = toPixelSpace(toChildSpace(circleOnScreen.topLeft));
-    final p2 = toPixelSpace(toChildSpace(circleOnScreen.bottomRight));
-
-    return Rect.fromLTRB(
-      p1.dx.clamp(0, _imgWidth),
-      p1.dy.clamp(0, _imgHeight),
-      p2.dx.clamp(0, _imgWidth),
-      p2.dy.clamp(0, _imgHeight),
-    );
-  }
-
   Widget _buildImageArea() {
     if (_imageData == null) return const SizedBox();
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        _lastViewportSize = Size(
-          constraints.maxWidth,
-          constraints.maxHeight,
-        ); // 미리보기에서 확대/축소 기억해두기
-        final Rect imageRect = _calculateImageRect(
-          constraints,
-        ); // 실시간 회전 상태가 반영된 이미지 영역 계산
+        final viewport = Size(constraints.maxWidth, constraints.maxHeight);
+        _lastViewportSize = viewport;
+        final Rect imageRect = _calculateImageRect(constraints);
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            InteractiveViewer(
-              transformationController: _transformController,
-              minScale: 1.0,
-              maxScale: 4.0,
-              boundaryMargin: EdgeInsets.zero,
-              child: Center(
-                child: RotatedBox(
-                  quarterTurns: _rotationTurns,
-                  child: Image.memory(
-                    _imageData!,
-                    key: ValueKey(_imageData),
-                    fit: BoxFit.contain,
+        return ClipRect(
+          child: GestureDetector(
+            onScaleStart: (details) {
+              _gestureStartScale = _scale;
+              _gestureStartPan = _pan;
+              _gestureStartFocal = details.localFocalPoint;
+            },
+            onScaleUpdate: (details) {
+              final newScale = (_gestureStartScale! * details.scale).clamp(
+                1.0,
+                4.0,
+              );
+              final focalDelta = details.localFocalPoint - _gestureStartFocal!;
+              final rawPan = _gestureStartPan! + focalDelta;
+              setState(() {
+                _scale = newScale;
+                _pan = _clampPan(rawPan, newScale, viewport);
+              });
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Center(
+                  child: Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()
+                      ..translate(_pan.dx, _pan.dy)
+                      ..scale(_scale),
+                    child: RotatedBox(
+                      quarterTurns: _rotationTurns,
+                      child: Image.memory(
+                        _imageData!,
+                        key: ValueKey(_imageData),
+                        width: viewport.width,
+                        height: viewport.height,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                IgnorePointer(
+                  child: CustomPaint(
+                    size: Size.infinite,
+                    painter: CircularOverlayPainter(cropRect: imageRect),
+                  ),
+                ),
+              ],
             ),
-
-            IgnorePointer(
-              child: CustomPaint(
-                size: Size.infinite,
-
-                // 계산된 이미지 영역을 전달하여 원형 가이드를 그립니다.
-                painter: CircularOverlayPainter(cropRect: imageRect),
-              ),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -376,10 +406,12 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
       children: [
         _buildToolButton('assets/images/icons/rotate.svg', '회전', () {
           setState(() => _rotationTurns = (_rotationTurns + 1) % 4);
+          // 회전하면 비율이 바뀌므로 줌/팬 리셋
+          _scale = 1.0;
+          _pan = Offset.zero;
         }),
 
         const SizedBox(width: 155),
-
         _buildToolButton('assets/images/icons/cut.svg', '자르기', _onCropPressed),
       ],
     );
@@ -427,7 +459,7 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
           RotateParams(finalData, _rotationTurns),
         );
       } else if (_lastViewportSize != null &&
-          !_transformController.value.isIdentity()) {
+          (_scale != 1.0 || _pan != Offset.zero)) {
         final visibleRect = _calculateVisibleImageRect(_lastViewportSize!);
         if (visibleRect != null &&
             visibleRect.width > 1 &&
@@ -452,7 +484,7 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
     } catch (e) {
       debugPrint('프로필 이미지 저장 실패: $e');
       if (mounted) {
-        setState(() => _isProcessing = false); // ✅ 실패해도 로딩 풀어줌
+        setState(() => _isProcessing = false); // 실패해도 로딩 풀어줌
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.')),
         );

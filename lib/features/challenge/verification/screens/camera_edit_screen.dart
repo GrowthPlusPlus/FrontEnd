@@ -99,9 +99,12 @@ class _CameraEditScreenState extends State<CameraEditScreen> {
               }
             },
             child: _isCropping
-                ? const Text(
+                ? Text(
                     '취소',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                    style: AppTypography.b3.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   )
                 : SvgPicture.asset(
                     'assets/images/icons/arrow_left.svg',

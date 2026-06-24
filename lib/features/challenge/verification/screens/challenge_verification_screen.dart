@@ -18,6 +18,7 @@ import '../../../../shared/widgets/challenge_input_box.dart';
 import '../../../../shared/widgets/image_source_sheet.dart';
 import 'custom_gallery_screen.dart';
 import 'custom_camera_screen.dart';
+import '../widgets/photo_free_box.dart';
 import '../widgets/ai_verification_box.dart';
 import '../widgets/verification_tip_box.dart';
 import '../widgets/verification_info_box.dart';
@@ -105,7 +106,7 @@ class _ChallengeVerificationScreenState
       return _currentTotalPhotoCount > 0 && hasContent && !isVerifying;
     } else {
       // ✍️ 사진 자유: 텍스트만 있으면 OK
-      return hasContent && !isVerifying;
+      return hasContent;
     }
   }
 
@@ -409,6 +410,18 @@ class _ChallengeVerificationScreenState
   }
 
   Widget _buildStatusBox() {
+    final challengeAsync = ref.watch(
+      challengeDetailProvider(challengeId: widget.challengeId),
+    );
+    final bool isPhotoRequired = challengeAsync.value?.photoRequired ?? false;
+
+    // ✍️ 사진 자유 챌린지: AI 검증 UI 대신 안내 박스 노출
+    if (!isPhotoRequired) {
+      return _allImages.isEmpty
+          ? const PhotoFreeBox()
+          : const SizedBox.shrink(); // 사진 올렸으면 안내 문구 숨김
+    }
+
     // 사진이 한 장도 없는 경우 -> 검증 UI를 아예 보여주지 않고 가이드만 노출
     if (_allImages.isEmpty) {
       return const Column(

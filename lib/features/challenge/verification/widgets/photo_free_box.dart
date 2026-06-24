@@ -5,8 +5,8 @@ import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
 // 사진을 추가해주세요 박스
-class VerificationInfoBox extends StatelessWidget {
-  const VerificationInfoBox({super.key});
+class PhotoFreeBox extends StatelessWidget {
+  const PhotoFreeBox({super.key});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,11 +30,11 @@ class VerificationInfoBox extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '사진을 추가해주세요',
+                  '사진 첨부는 선택이에요',
                   style: AppTypography.b2.copyWith(color: AppColors.gray1),
                 ),
                 Text(
-                  '챌린지를 수행한 증거 사진을 올려주세요. \n최대 3장 첨부할 수 있습니다.',
+                  '사진을 함께 올리면 더 생생한 인증글이 완성돼요😎',
                   style: AppTypography.c1.copyWith(color: AppColors.gray2),
                 ),
               ],

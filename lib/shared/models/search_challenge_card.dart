@@ -16,12 +16,31 @@ class SearchChallengeCard {
     required this.tags,
   });
 
+  //
+  // factory SearchChallengeCard.fromJson(Map<String, dynamic> json) {
+  //   return SearchChallengeCard(
+  //     base: ChallengeBase.fromJson(json),
+  //     participantCount: json['participant_count'] as int,
+  //     dDay: json['end_date'] as int,
+  //     tags: List<String>.from(json['tag'] as List),
+  //   );
+  // }
+  //
+
   factory SearchChallengeCard.fromJson(Map<String, dynamic> json) {
     return SearchChallengeCard(
-      base: ChallengeBase.fromJson(json),
-      participantCount: json['participant_count'] as int,
-      dDay: json['end_date'] as int,
-      tags: List<String>.from(json['tag'] as List),
+      base: ChallengeBase(
+        id: json['id'] as int, // ✅ 검색 API는 id로 직접 매핑
+        title: json['title'] as String,
+      ),
+      // base: ChallengeBase.fromJson(json),
+      participantCount: json['participantNumber'] as int,
+      // TODO: api 수정해주시면 dDay 수정 ㄱㄱ
+      dDay: 0, // dDay: json['end_date'] as int,
+      tags: (json['tags'] as List)
+          .map((tagObj) => tagObj['tag'] as String)
+          .toList(),
+      // tags: List<String>.from(json['tag'] as List),
     );
   }
 
