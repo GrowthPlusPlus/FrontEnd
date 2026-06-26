@@ -7,6 +7,7 @@ import 'package:haenaem/shared/models/post.dart';
 import 'package:haenaem/features/feed/models/comment.dart';
 import 'package:haenaem/shared/models/search_challenge_card.dart';
 import 'package:haenaem/shared/models/challenge_base.dart';
+import 'package:haenaem/shared/models/tag_model.dart';
 
 part 'feed_repository.g.dart';
 
@@ -37,8 +38,10 @@ class FeedRepository {
             // 3. D-Day (명세서에 없으므로 기본값 0 처리)
             dDay: 0,
             // 4. 태그 (API의 객체 리스트를 String 리스트로 변환)
-            tags: (item['tags'] as List)
-                .map((tagObj) => tagObj['tag'] as String)
+            tags: (item['tags'] as List? ?? [])
+                .map(
+                  (t) => ChallengeTagModel.fromJson(t as Map<String, dynamic>),
+                )
                 .toList(),
           );
         }).toList();
