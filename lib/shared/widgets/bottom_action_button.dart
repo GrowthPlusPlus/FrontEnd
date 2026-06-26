@@ -61,9 +61,14 @@ class BottomActionButton extends StatelessWidget {
                     : BorderSide.none,
               ),
             ),
-            child: Text(
-              text,
-              style: AppTypography.h3.copyWith(color: effectiveTextColor),
+            child: FittedBox(
+              fit: BoxFit.scaleDown, // 상위 박스를 넘어가면 비율을 유지하며 축소
+              child: Text(
+                text,
+                style: AppTypography.h3.copyWith(color: effectiveTextColor),
+                maxLines: 1, // 절대 줄바꿈이 일어나서 깨지지 않도록 방어
+                softWrap: false,
+              ),
             ),
           ),
         ),
