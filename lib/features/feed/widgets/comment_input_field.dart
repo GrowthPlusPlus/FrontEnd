@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/provider/comment_provider.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 class CommentInputField extends ConsumerStatefulWidget {
   final int postId;
@@ -56,7 +57,7 @@ class _CommentInputFieldState extends ConsumerState<CommentInputField> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, -2),
             blurRadius: 4,
           ),
@@ -105,9 +106,7 @@ class _CommentInputFieldState extends ConsumerState<CommentInputField> {
                       // 입력창 초기화
                       _commentController.clear();
                       FocusScope.of(context).unfocus();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('댓글이 작성되었습니다.')),
-                      );
+                      displayToast(context, '댓글이 작성되었습니다.');
                     }
                   }
                 : null,

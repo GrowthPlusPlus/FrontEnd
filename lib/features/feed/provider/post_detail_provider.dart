@@ -6,6 +6,7 @@ import '../data/feed_repository.dart';
 import '../../../../shared/provider/post_provider.dart'; // monthlyChallengePostsProvider
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import 'package:haenaem/features/challenge/detail/provider/stats_provider.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
 
 part 'post_detail_provider.g.dart';
 
@@ -101,7 +102,7 @@ class PostDeleteNotifier extends _$PostDeleteNotifier {
 
     if (!result.hasError) {
       final now = DateTime.now();
-      // ✅ 캘린더 목록 갱신
+      // 캘린더 목록 갱신
       ref.invalidate(
         monthlyChallengePostsProvider(
           challengeId: challengeId,
@@ -109,12 +110,16 @@ class PostDeleteNotifier extends _$PostDeleteNotifier {
           month: now.month,
         ),
       );
-      // ✅ 완료 일수 / 연속 일수 통계 갱신
-      ref.invalidate(challengeStatsProvider(challengeId));
-      // ✅ 상세 캐시 제거
+
+      ref.invalidate(
+        challengeStatsProvider(challengeId),
+      ); // 완료 일수 / 연속 일수 통계 갱신
+      // 상세 캐시 제거
       // ref.invalidate(postDetailProvider(postId: postId));
-      // ✅ 인증 여부 상태도 갱신 (인증하기 버튼 활성화)
-      ref.invalidate(challengeDetailProvider(challengeId: challengeId));
+      ref.invalidate(
+        challengeDetailProvider(challengeId: challengeId),
+      ); // 인증 여부 상태도 갱신 (인증하기 버튼 활성화)
+      ref.invalidate(homeNotifierProvider); // 홈탭의 챌린지 상태 갱신
     }
 
     state = result;

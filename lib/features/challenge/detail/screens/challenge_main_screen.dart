@@ -14,6 +14,7 @@ import 'package:haenaem/features/challenge/verification/screens/challenge_verifi
 import 'package:haenaem/features/challenge/detail/screens/member_ranking_screen.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 분리된 뷰 파일들 (아래 2번 단계에서 생성/수정할 파일들)
 import 'package:haenaem/features/challenge/detail/views/calendar_view.dart';
@@ -192,13 +193,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
           // 소개/내 현황 탭: 오늘 이미 인증했는지 확인
           if (hasDoneToday) {
             // 💡 이미 인증한 경우 안내 문구 노출
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('이미 오늘 인증글을 작성했습니다.'),
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            displayToast(context, '이미 오늘 인증글을 작성했습니다.');
           } else {
             // 아직 인증 전이면 인증 페이지로 이동
             Navigator.push(

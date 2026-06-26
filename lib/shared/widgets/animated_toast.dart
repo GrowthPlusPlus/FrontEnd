@@ -1,5 +1,6 @@
 // 최초 작성자: 정승빈
-
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -18,6 +19,28 @@ void displayToast(BuildContext context, String message) {
   );
 
   overlay.insert(overlayEntry);
+}
+
+bool? _isAndroid13Plus;
+
+// os 시스템 링크 복사 토스트 메시지와 해냄 커스텀 토스트 메시지가
+// 겹치는 거 막는 코드
+Future<bool> _shouldShowCustomCopyToast() async {
+  if (_isAndroid13Plus != null) return !_isAndroid13Plus!;
+  if (!Platform.isAndroid) {
+    _isAndroid13Plus = false;
+    return true;
+  }
+  final info = await DeviceInfoPlugin().androidInfo;
+  _isAndroid13Plus = info.version.sdkInt >= 33;
+  return !_isAndroid13Plus!;
+}
+
+// 클립보드 복사 전용 — Android 13+ 에서는 시스템 토스트와 중복되니 건너뜀
+Future<void> displayCopyToast(BuildContext context, String message) async {
+  if (await _shouldShowCustomCopyToast()) {
+    if (context.mounted) displayToast(context, message);
+  }
 }
 
 class AnimatedToast extends StatefulWidget {
