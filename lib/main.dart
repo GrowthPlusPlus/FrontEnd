@@ -52,7 +52,33 @@ void main() async {
   // 카카오 SDK 초기화
   KakaoSdk.init(nativeAppKey: dotenv.get('KAKAO_NATIVE_APP_KEY'));
 
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(const AppRoot());
+}
+
+// ProviderScope를 감싸서 통째로 재시작 가능하게 만드는 래퍼
+class AppRoot extends StatefulWidget {
+  const AppRoot({super.key});
+
+  // 어디서든 이 함수를 호출하면 ProviderScope 전체(모든 Provider)가 리셋됨
+  static void restart(BuildContext context) {
+    context.findAncestorStateOfType<_AppRootState>()?._restart();
+  }
+
+  @override
+  State<AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends State<AppRoot> {
+  Key _scopeKey = UniqueKey();
+
+  void _restart() {
+    setState(() => _scopeKey = UniqueKey());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProviderScope(key: _scopeKey, child: const MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {

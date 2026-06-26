@@ -17,6 +17,17 @@ class SearchChallengeCard {
     required this.tags,
   });
 
+  //
+  // factory SearchChallengeCard.fromJson(Map<String, dynamic> json) {
+  //   return SearchChallengeCard(
+  //     base: ChallengeBase.fromJson(json),
+  //     participantCount: json['participant_count'] as int,
+  //     dDay: json['end_date'] as int,
+  //     tags: List<String>.from(json['tag'] as List),
+  //   );
+  // }
+  //
+
   factory SearchChallengeCard.fromJson(Map<String, dynamic> json) {
     return SearchChallengeCard(
       base: ChallengeBase.fromJson(json),

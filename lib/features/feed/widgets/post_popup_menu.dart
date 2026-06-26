@@ -18,6 +18,7 @@ import 'package:haenaem/features/report/screens/report_screen.dart';
 import 'package:haenaem/features/report/provider/report_provider.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 import 'package:haenaem/shared/screens/challenge_detail_screen.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 인증글 다이얼로그 (내 인증글일 경우와 타인의 인증글일 경우)
 class PostPopupMenu extends ConsumerWidget {
@@ -204,9 +205,7 @@ class PostPopupMenu extends ConsumerWidget {
                 .removeArticle(post.id, post.challengeId);
 
             if (success && context.mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text("인증글이 삭제되었습니다.")));
+              displayToast(context, "인증글이 삭제되었습니다.");
 
               // 만약 상세페이지라면 뒤로가기
               Navigator.pop(context);
@@ -220,9 +219,7 @@ class PostPopupMenu extends ConsumerWidget {
             }
 
             if (context.mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(errorMessage)));
+              displayToast(context, errorMessage);
             }
           }
         }

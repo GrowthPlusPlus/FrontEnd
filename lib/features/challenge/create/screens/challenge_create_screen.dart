@@ -27,6 +27,7 @@ import 'package:haenaem/features/challenge/create/widgets/challenge_tag_bottom_s
 import 'package:haenaem/features/challenge/create/widgets/challenge_visibility_selector.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_type_selector.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // -- 챌린지 생성 화면 --
 class ChallengeCreateScreen extends ConsumerStatefulWidget {
@@ -158,9 +159,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
         ),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('챌린지 생성 중 오류가 발생했습니다.')));
+      displayToast(context, '챌린지 생성 중 오류가 발생했습니다.');
     }
   }
 

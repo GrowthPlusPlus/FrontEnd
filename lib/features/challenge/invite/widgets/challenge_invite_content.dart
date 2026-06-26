@@ -14,6 +14,7 @@ import '../models/invite_friend.dart';
 // import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 // import 'package:haenaem/features/challenge/models/challenge_model.dart';
 // import 'package:share_plus/share_plus.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // [공통 위젯] 챌린지 초대 본문 (링크 공유 + 친구 검색 + 리스트)
 class ChallengeInviteContent extends ConsumerStatefulWidget {
@@ -57,51 +58,11 @@ class _ChallengeInviteContentState
     });
   }
 
-  // 커스텀 오버레이 토스트
-  void _showToast(BuildContext context, String message) {
-    // 토스트 위젯 생성
-    OverlayEntry overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: 100,
-        left: 20,
-        right: 20,
-        child: Material(
-          color: Colors.transparent,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: ShapeDecoration(
-                color: const Color(0xff1B1D1B).withAlpha(200),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                //'$name 님에게 챌린지 초대를 보냈습니다!',
-                message, // 전달받은 메시지 그대로 출력
-                textAlign: TextAlign.center,
-                style: AppTypography.b1.copyWith(color: Colors.white),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    // 화면에 추가
-    Overlay.of(context).insert(overlayEntry);
-
-    // 2초 후 자동으로 사라지게 설정
-    Future.delayed(const Duration(seconds: 2), () {
-      overlayEntry.remove();
-    });
-  }
-
   // 클립보드 복사 (API에서 받은 최신 링크 사용)
   void _copyToClipboard(String currentLink) {
     Clipboard.setData(ClipboardData(text: currentLink)).then((_) {
       if (!mounted) return;
-      _showToast(context, '링크가 복사되었습니다.');
+      displayCopyToast(context, '링크가 복사되었습니다.');
     });
   }
 
@@ -390,16 +351,13 @@ class _ChallengeInviteContentState
                         setState(() => _newlyInvitedFriends.add(friend.id));
 
                         // 커스텀 Toast 사용
-                        _showToast(
+                        displayToast(
                           context,
                           '${friend.nickname} 님에게 챌린지 초대를 보냈습니다!',
                         );
                       } catch (e) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('초대 전송에 실패했습니다. 다시 시도해주세요.'),
-                          ),
+                        displayToast(context, '초대 전송에 실패했습니다. 다시 시도해주세요.'                      ),
                         );
                       }
                     },

@@ -12,6 +12,7 @@ import 'package:haenaem/features/challenge/widgets/DeleteConfirmDialog.dart';
 import 'edit_article_dialog.dart';
 import 'package:haenaem/features/report/screens/report_screen.dart';
 import 'package:haenaem/features/report/provider/report_provider.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 내 댓글이면 삭제/수정 + 다른 사람 댓글이면 신고 다이얼로그
 class CommentPopupMenu extends ConsumerWidget {
@@ -126,9 +127,7 @@ class CommentPopupMenu extends ConsumerWidget {
               );
 
           if (success && context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text("댓글이 수정되었습니다.")));
+            displayToast(context, "댓글이 수정되었습니다.");
           }
           break;
         }
@@ -157,9 +156,7 @@ class CommentPopupMenu extends ConsumerWidget {
                   .decrementCommentCountLocally(postId);
             }
 
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text("댓글이 삭제되었습니다.")));
+            displayToast(context, "댓글이 삭제되었습니다.");
             // ref.invalidate는 이미 Notifier 내부에서 처리되므로
             // UI가 자동으로 업데이트된다.
           }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 
+import 'package:haenaem/main.dart';
 import 'package:haenaem/features/notification/services/fcm_service.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
@@ -65,12 +66,12 @@ class LogoutDialog extends ConsumerWidget {
                       // 3. 로그아웃 API 호출 및 로컬 데이터 삭제
                       await AuthService.logout();
 
-                      // ✅ 알림 설정 상태 초기화
-                      ref.invalidate(pushNotificationProvider);
-
                       // 4. 화면 이동 (context가 유효한지 확인 후 실행)
                       if (context.mounted) {
-                        // rootNavigator: true를 사용하여 최상단 네비게이터 기준으로 이동
+                        AppRoot.restart(
+                          context,
+                        ); // ref.invalidate(pushNotificationProvider) 등을 전부 대체
+
                         Navigator.of(
                           context,
                           rootNavigator: true,
@@ -78,7 +79,7 @@ class LogoutDialog extends ConsumerWidget {
                           MaterialPageRoute(
                             builder: (context) => const AuthGate(),
                           ),
-                          (route) => false, // 다이얼로그를 포함한 모든 이전 화면 지우기
+                          (route) => false,
                         );
                       }
                     },

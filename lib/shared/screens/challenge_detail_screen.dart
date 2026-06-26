@@ -10,6 +10,7 @@ import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import 'package:haenaem/shared/widgets/challenge_detail_content.dart';
 import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 class ChallengeDetailScreen extends ConsumerStatefulWidget {
   final int challengeId;
@@ -128,14 +129,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
                 state.error?.toString().replaceAll('Exception: ', '') ??
                 '이미 참여 중인 챌린지입니다.';
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(errorMessage),
-                backgroundColor: AppColors.black, // 앱 테마에 맞는 색상 사용
-                behavior: SnackBarBehavior.floating, // 떠 있는 스타일
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            displayToast(context, errorMessage);
           }
         },
       ),

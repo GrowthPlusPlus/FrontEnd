@@ -24,17 +24,21 @@ class ProfileHeaderView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasIntro = introduction.trim().isNotEmpty; // 한줄소개 있없 확인
+
     return Column(
       children: [
         _buildImage(),
         const SizedBox(height: 17),
         Text(nickname, style: AppTypography.h2),
-        const SizedBox(height: 2),
-        Text(
-          introduction,
-          style: AppTypography.b1.copyWith(color: AppColors.gray3),
-        ),
-        const SizedBox(height: 17),
+        if (hasIntro) ...[
+          const SizedBox(height: 2),
+          Text(
+            introduction,
+            style: AppTypography.b1.copyWith(color: AppColors.gray3),
+          ),
+        ],
+        SizedBox(height: hasIntro ? 17 : 14), // 한줄소개 없으면 닉네임과 태그 사이 간격 좁힘
         _buildTagList(tags),
       ],
     );

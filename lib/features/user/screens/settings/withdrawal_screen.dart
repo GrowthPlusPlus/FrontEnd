@@ -7,6 +7,8 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/auth_gate.dart';
+import 'package:haenaem/main.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 /// 클래스의 용도: 회원 탈퇴 안내 및 동의 확인, 탈퇴 처리를 수행하는 화면
 class WithdrawalScreen extends StatefulWidget {
@@ -185,9 +187,9 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
                         // 2. 탈퇴 성공 알림 및 이동
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('회원 탈퇴가 완료되었습니다.')),
-                          );
+                          AppRoot.restart(context); // 전역 Provider 전체 초기화
+
+                          displayToast(context, '회원 탈퇴가 완료되었습니다.');
                           // 3. AuthGate로 이동하여 초기화된 상태로 보냄
                           Navigator.pushAndRemoveUntil(
                             context,
@@ -200,9 +202,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       } catch (e) {
                         // 4. 에러 발생 시 처리
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('탈퇴 처리 중 오류가 발생했습니다: $e')),
-                          );
+                          displayToast(context, '탈퇴 처리 중 오류가 발생했습니다: $e');
                         }
                       }
                     }

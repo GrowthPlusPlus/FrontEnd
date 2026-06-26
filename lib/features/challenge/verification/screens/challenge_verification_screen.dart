@@ -18,6 +18,7 @@ import '../../../../shared/widgets/challenge_input_box.dart';
 import '../../../../shared/widgets/image_source_sheet.dart';
 import 'custom_gallery_screen.dart';
 import 'custom_camera_screen.dart';
+import '../widgets/photo_free_box.dart';
 import '../widgets/ai_verification_box.dart';
 import '../widgets/verification_tip_box.dart';
 import '../widgets/verification_info_box.dart';
@@ -26,6 +27,7 @@ import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/features/challenge/verification/widgets/verification_cancel_dialog.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {
@@ -105,7 +107,7 @@ class _ChallengeVerificationScreenState
       return _currentTotalPhotoCount > 0 && hasContent && !isVerifying;
     } else {
       // ✍️ 사진 자유: 텍스트만 있으면 OK
-      return hasContent && !isVerifying;
+      return hasContent;
     }
   }
 
@@ -141,9 +143,7 @@ class _ChallengeVerificationScreenState
 
     if (!ps.hasAccess) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('사진 접근 권한이 필요합니다.')));
+        displayToast(context, '사진 접근 권한이 필요합니다.');
         PhotoManager.openSetting(); // 설정 화면으로 유도
       }
       return;
@@ -409,6 +409,18 @@ class _ChallengeVerificationScreenState
   }
 
   Widget _buildStatusBox() {
+    final challengeAsync = ref.watch(
+      challengeDetailProvider(challengeId: widget.challengeId),
+    );
+    final bool isPhotoRequired = challengeAsync.value?.photoRequired ?? false;
+
+    // ✍️ 사진 자유 챌린지: AI 검증 UI 대신 안내 박스 노출
+    if (!isPhotoRequired) {
+      return _allImages.isEmpty
+          ? const PhotoFreeBox()
+          : const SizedBox.shrink(); // 사진 올렸으면 안내 문구 숨김
+    }
+
     // 사진이 한 장도 없는 경우 -> 검증 UI를 아예 보여주지 않고 가이드만 노출
     if (_allImages.isEmpty) {
       return const Column(
@@ -644,9 +656,7 @@ class _ChallengeVerificationScreenState
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(isEditMode ? '수정 완료!' : '인증 완료!')));
+      displayToast(context, isEditMode ? '수정 완료!' : '인증 완료!');
       Navigator.pop(context);
     } else {
       // 에러 발생 시 처리 (예: 스낵바 노출)
@@ -654,9 +664,7 @@ class _ChallengeVerificationScreenState
           ? ref.read(articleUpdateNotifierProvider).error
           : ref.read(articleCreateNotifierProvider).error;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('오류가 발생했습니다: $error')));
+      displayToast(context, '오류가 발생했습니다: $error');
     }
   }
 }

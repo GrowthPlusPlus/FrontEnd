@@ -14,6 +14,7 @@ import 'profile/profile_edit_screen.dart';
 import '../views/profile_header_view.dart';
 import '../views/my_challenge_section_view.dart';
 import '../views/my_page_menu_view.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 class MyPageMainScreen extends ConsumerStatefulWidget {
   const MyPageMainScreen({super.key});
@@ -112,9 +113,7 @@ class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
                 );
               } else {
                 // 데이터 로딩 중이거나 에러 시 알림
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('프로필 정보를 불러오는 중입니다.')),
-                );
+                displayToast(context, '프로필 정보를 불러오는 중입니다.');
               }
             },
             child: SvgPicture.asset(
