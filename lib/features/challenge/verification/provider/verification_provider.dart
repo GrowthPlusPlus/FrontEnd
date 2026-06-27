@@ -7,6 +7,10 @@ import 'package:haenaem/shared/models/post.dart';
 import 'package:haenaem/shared/provider/post_provider.dart';
 import 'package:haenaem/shared/provider/home_provider.dart';
 import 'package:haenaem/features/challenge/detail/provider/stats_provider.dart';
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
+import 'package:haenaem/features/statistics/data/activity_repository.dart';
+import 'package:haenaem/features/statistics/data/distribution_repository.dart';
+import 'package:haenaem/features/statistics/data/monthly_weekly_repository.dart';
 
 part 'verification_provider.g.dart';
 
@@ -31,6 +35,13 @@ void _refreshRelatedProviders(Ref ref, int challengeId) {
 
   // 4. 멤버 현황 갱신
   ref.invalidate(feedNotifierProvider);
+
+  ref.invalidate(challengeDetailProvider(challengeId: challengeId));
+
+  // 통계 탭 세 가지 카드 갱신
+  ref.invalidate(activityRepositoryProvider);
+  ref.invalidate(distributionRepositoryProvider);
+  ref.invalidate(monthlyWeeklyRepositoryProvider);
 }
 
 // 인증 이미지 검증

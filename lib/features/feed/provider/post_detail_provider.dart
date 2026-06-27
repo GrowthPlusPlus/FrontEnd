@@ -7,6 +7,9 @@ import '../../../../shared/provider/post_provider.dart'; // monthlyChallengePost
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import 'package:haenaem/features/challenge/detail/provider/stats_provider.dart';
 import 'package:haenaem/shared/provider/home_provider.dart';
+import 'package:haenaem/features/statistics/data/activity_repository.dart';
+import 'package:haenaem/features/statistics/data/distribution_repository.dart';
+import 'package:haenaem/features/statistics/data/monthly_weekly_repository.dart';
 
 part 'post_detail_provider.g.dart';
 
@@ -120,6 +123,11 @@ class PostDeleteNotifier extends _$PostDeleteNotifier {
         challengeDetailProvider(challengeId: challengeId),
       ); // 인증 여부 상태도 갱신 (인증하기 버튼 활성화)
       ref.invalidate(homeNotifierProvider); // 홈탭의 챌린지 상태 갱신
+
+      // 통계 탭 세 가지 카드 갱신
+      ref.invalidate(activityRepositoryProvider);
+      ref.invalidate(distributionRepositoryProvider);
+      ref.invalidate(monthlyWeeklyRepositoryProvider);
     }
 
     state = result;

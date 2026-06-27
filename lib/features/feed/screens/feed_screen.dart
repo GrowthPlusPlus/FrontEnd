@@ -76,6 +76,9 @@ class _FeedScreenState extends State<FeedScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
+                    settings: const RouteSettings(
+                      name: ChallengeSearchScreen.routeName,
+                    ),
                     builder: (context) => const ChallengeSearchScreen(),
                   ),
                 );

@@ -31,8 +31,18 @@ class VerificationRepository {
       );
 
       if (response.statusCode == 200 || response.statusCode == 204) {
-        debugPrint('✅ 이미지 검증 및 임시 업로드 성공: ${response.data}');
-        return response.data?['tempImageId'];
+        debugPrint('✅ 이미지 요청 처리됨: ${response.data}');
+
+        final String? passed = response.data?['passed'];
+        final int? tempImageId = response.data?['tempImageId'];
+
+        // 'PASS'일 때만 성공으로 인정
+        if (passed == 'PASS') {
+          return tempImageId;
+        }
+
+        debugPrint('❌ 이미지 검증 통과 못함 (passed: $passed)');
+        return null;
       }
       return null;
     } on DioException catch (e) {

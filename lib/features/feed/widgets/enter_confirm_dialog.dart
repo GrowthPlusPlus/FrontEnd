@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import '../provider/challenge_participate_provider.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
+import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
 
 class EnterConfirmDialog extends ConsumerWidget {
   final int challengeId;
@@ -71,7 +72,11 @@ class EnterConfirmDialog extends ConsumerWidget {
                     builder: (context) =>
                         ChallengeMainScreen(challengeId: challengeId),
                   ),
-                  (route) => route.isFirst, // ✅ 맨 처음 화면(보통 홈/피드의 루트)까지 싹 다 지움
+                  (route) =>
+                      route.settings.name ==
+                          ChallengeSearchScreen
+                              .routeName || // 탐색 화면을 찾으면 거기서 멈춤
+                      route.isFirst, // 못 찾으면(다른 경로로 들어온 경우) 기존처럼 맨 처음까지
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryAble,

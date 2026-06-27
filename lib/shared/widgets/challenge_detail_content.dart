@@ -163,7 +163,7 @@ class ChallengeDetailContent extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${challenge.participantCount}/50',
+            '${challenge.participantCount}명/50명',
             style: AppTypography.b1.copyWith(color: AppColors.black),
           ),
 

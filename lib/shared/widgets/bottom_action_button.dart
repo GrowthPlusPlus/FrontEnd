@@ -6,7 +6,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 
 class BottomActionButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   // 커스텀 파라미터 추가
   final Color? backgroundColor; // 버튼 배경색
@@ -16,7 +16,7 @@ class BottomActionButton extends StatelessWidget {
   const BottomActionButton({
     super.key,
     required this.text,
-    required this.onPressed,
+    this.onPressed,
     this.backgroundColor,
     this.textColor,
     this.borderColor,

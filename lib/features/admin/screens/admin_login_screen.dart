@@ -114,7 +114,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
         // 빈 영역 탭 시 키보드 내리기
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

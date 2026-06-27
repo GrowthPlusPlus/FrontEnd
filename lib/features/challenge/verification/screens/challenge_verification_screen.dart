@@ -28,6 +28,7 @@ import 'package:haenaem/features/challenge/verification/widgets/reverification_g
 import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/features/challenge/verification/widgets/verification_cancel_dialog.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
 
 // 챌린지 인증하기 화면
 class ChallengeVerificationScreen extends ConsumerStatefulWidget {
@@ -82,6 +83,9 @@ class _ChallengeVerificationScreenState
   ImageVerificationStatus _verifyStatus = ImageVerificationStatus.idle;
   bool _showShadow = true;
 
+  // 파일 경로별 개별 검증 상태
+  final Map<String, ImageVerificationStatus> _fileStatusMap = {};
+
   bool get isEditMode => widget.existingPost != null;
   List<File> get _newImages => [..._cameraImages, ..._galleryImages];
   List<File> get _allImages => [..._cameraImages, ..._galleryImages];
@@ -95,6 +99,8 @@ class _ChallengeVerificationScreenState
     // 💡 정보 로딩 중에는 버튼을 잠시 끕니다. (가장 안전한 방법)
     if (challengeAsync.isLoading) return false;
 
+    final challenge = challengeAsync.value;
+
     // 정보를 못 가져왔다면 유저를 위해 '사진 자유'로 간주하거나 서버 설정을 따릅니다.
     final bool isPhotoRequired = challengeAsync.value?.photoRequired ?? false;
     final bool hasContent = _contentController.text.trim().isNotEmpty;
@@ -102,12 +108,25 @@ class _ChallengeVerificationScreenState
     // 💡 검증이 진행 중인 사진이 있는지 확인 (AI 분석 중에는 기다려야 함)
     final bool isVerifying = _verifyStatus == ImageVerificationStatus.loading;
 
+    // 신규 작성 모드일 때만 "오늘 이미 인증했는지" 체크
+    // 수정 모드(isEditMode)는 이미 작성된 오늘 글을 고치는 거니 막으면 안 됨
+    if (!isEditMode) {
+      final myId = ref.read(currentUserProvider)?.id;
+      final bool alreadyDoneToday =
+          challenge?.todaySuccessUsers.any(
+            (user) => user.id.toString() == myId?.toString(),
+          ) ??
+          false;
+
+      if (alreadyDoneToday) return false; // ✅ 이미 했으면 무조건 비활성화
+    }
+
     if (isPhotoRequired) {
       // 📸 사진 필수: (전체 사진 > 0) && 텍스트 있음 && (새 사진은 모두 검증 완료)
       return _currentTotalPhotoCount > 0 && hasContent && !isVerifying;
     } else {
       // ✍️ 사진 자유: 텍스트만 있으면 OK
-      return hasContent;
+      return hasContent && !isVerifying;
     }
   }
 
@@ -189,17 +208,19 @@ class _ChallengeVerificationScreenState
   // 이미지 삭제 -> id 바구니에서 제거
   void _handleDeleteImage(int index) {
     setState(() {
+      File removed;
       if (index < _cameraImages.length) {
-        _cameraImages.removeAt(index);
-        if (index < _tempImageIds.length)
-          _tempImageIds.removeAt(index); // ID 동기화
+        removed = _cameraImages.removeAt(index);
       } else {
         int galleryIndex = index - _cameraImages.length;
-        _galleryImages.removeAt(galleryIndex);
+        removed = _galleryImages.removeAt(galleryIndex);
         _selectedAssets.removeAt(galleryIndex);
-        // 전체 리스트에서의 인덱스로 ID 제거
-        if (index < _tempImageIds.length) _tempImageIds.removeAt(index);
       }
+
+      _newImageIdMap.remove(removed.path); // 삭제된 파일의 ID도 같이 제거
+      _fileStatusMap.remove(removed.path);
+      _rebuildTempImageIds(); // 남은 사진들 기준으로 ID 리스트 재구성
+      _verifyStatus = _computeOverallStatus();
     });
   }
 
@@ -364,46 +385,76 @@ class _ChallengeVerificationScreenState
     );
   }
 
+  // 개별 상태들을 종합해서 화면에 보여줄 상태를 계산
+  ImageVerificationStatus _computeOverallStatus() {
+    if (_fileStatusMap.isEmpty) return ImageVerificationStatus.idle;
+
+    final statuses = _fileStatusMap.values;
+
+    if (statuses.any((s) => s == ImageVerificationStatus.loading)) {
+      return ImageVerificationStatus.loading; // 하나라도 진행 중이면 로딩
+    }
+    if (statuses.any((s) => s == ImageVerificationStatus.fail)) {
+      return ImageVerificationStatus.fail; // 하나라도 실패하면 실패
+    }
+    if (statuses.every((s) => s == ImageVerificationStatus.success)) {
+      return ImageVerificationStatus.success; // 전부 성공해야 성공
+    }
+    return ImageVerificationStatus.idle;
+  }
+
   // 이미지 검증 로직 함수
-  Future<void> _runImageVerification(File file) async {
-    setState(() => _verifyStatus = ImageVerificationStatus.loading);
+  Future<void> _verifyAndTrack(File file) async {
+    if (_newImageIdMap.containsKey(file.path)) return; // 이미 검증된 파일은 재검증 안 함
 
-    // 먼저 압축
-    final File compressed = await compressImageFile(file);
+    setState(() {
+      _fileStatusMap[file.path] = ImageVerificationStatus.loading; // 이 파일만 로딩으로
+      _verifyStatus = _computeOverallStatus();
+    });
 
-    // 1. 서버에 사진 검증 및 임시 업로드 요청 (Notifier 호출)
+    final File compressed = await compressImageFile(file); // 호출될 때마다 매번 압축
+
     final int? tempId = await ref
         .read(imageVerifyNotifierProvider.notifier)
         .verify(compressed, widget.challengeId);
 
-    if (mounted) {
-      setState(() {
-        if (tempId != null) {
-          _tempImageIds.add(tempId); // ✅ 발급받은 ID 저장
-          _verifyStatus = ImageVerificationStatus.success;
-        } else {
-          _verifyStatus = ImageVerificationStatus.fail;
-        }
-      });
+    if (!mounted) return;
+
+    setState(() {
+      if (tempId != null) {
+        _newImageIdMap[file.path] = tempId; // ✅ 파일 경로 기준으로 ID 저장
+        _fileStatusMap[file.path] = ImageVerificationStatus.success;
+      } else {
+        _fileStatusMap[file.path] = ImageVerificationStatus.fail;
+      }
+      _verifyStatus = _computeOverallStatus(); // 전체 다시 계산
+      _rebuildTempImageIds();
+    });
+  }
+
+  // _newImageIdMap을 기준으로, 현재 사진 순서에 맞게 _tempImageIds를 다시 구성
+  void _rebuildTempImageIds() {
+    _tempImageIds.clear();
+    for (final file in _newImages) {
+      // 카메라 + 갤러리 순서 그대로
+      final id = _newImageIdMap[file.path];
+      if (id != null) _tempImageIds.add(id);
     }
   }
 
   // 사진 추가 후 검증 호출
   void _handleImageResult(dynamic result) async {
-    File? selectedFile;
     if (result is File) {
-      selectedFile = result;
-      _cameraImages.add(selectedFile);
+      _cameraImages.add(result);
+      await _verifyAndTrack(result);
     } else if (result is Map<String, dynamic>) {
       _selectedAssets.clear();
       _selectedAssets.addAll(result['assets'] as List<AssetEntity>);
       _galleryImages.clear();
       _galleryImages.addAll(result['files'] as List<File>);
-      selectedFile = _galleryImages.last;
-    }
 
-    if (selectedFile != null) {
-      await _runImageVerification(selectedFile);
+      // 순차적으로 하지 않고 병렬로 동시 처리 (빠르게 처리하기 위해)
+      await Future.wait(_galleryImages.map((file) => _verifyAndTrack(file)));
     }
     setState(() {});
   }
