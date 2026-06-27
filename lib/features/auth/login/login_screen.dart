@@ -12,20 +12,35 @@ import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
 import 'package:haenaem/features/auth/services/auth_service.dart';
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
+import 'package:haenaem/features/admin/screens/admin_login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform; // 기기 OS 확인용
 
 // 소셜 로그인 화면
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  int _logoClickCount = 0;
 
   @override
   Widget build(BuildContext context) {
     // 공통으로 사용할 네비게이션 함수
-    void navigateToSignup() {
+    // void navigateToSignup() {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => const SignupMainScreen()),
+    //   );
+    // }
+
+    void navigateToAdminLogin() {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const SignupMainScreen()),
+        MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
       );
     }
 
@@ -41,7 +56,20 @@ class LoginScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 160), // 상단 여백
                 // 메인 타이틀 & 로고 영역
-                SvgPicture.asset('assets/images/icons/sign_up_logo.svg'),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _logoClickCount++;
+                      if (_logoClickCount == 7) {
+                        _logoClickCount = 0; // 횟수 초기화
+                        navigateToAdminLogin();
+                      }
+                    });
+                  },
+                  child: SvgPicture.asset(
+                    'assets/images/icons/sign_up_logo.svg',
+                  ),
+                ),
                 const SizedBox(height: 26),
                 Text(
                   "오늘의 '해냄'을 위해\n지금 시작해보세요",
