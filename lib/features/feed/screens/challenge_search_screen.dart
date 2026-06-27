@@ -13,6 +13,9 @@ import 'package:haenaem/shared/models/search_challenge_card.dart';
 
 class ChallengeSearchScreen extends ConsumerStatefulWidget {
   const ChallengeSearchScreen({super.key});
+
+  static const String routeName = '/challengeSearch';
+
   @override
   ConsumerState<ChallengeSearchScreen> createState() =>
       _ChallengeSearchScreenState();

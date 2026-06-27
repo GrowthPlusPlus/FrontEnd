@@ -45,7 +45,7 @@ class ChallengeSearchCard extends StatelessWidget {
                     children: [
                       _buildInfoItem(
                         iconPath: 'assets/images/icons/person_icon.svg',
-                        text: '${challenge.participantCount}/50',
+                        text: '${challenge.participantCount}명/50명',
                       ),
                       const SizedBox(width: 15),
                       // 하드코딩된 D-000을 모델의 dDay 데이터로 변경

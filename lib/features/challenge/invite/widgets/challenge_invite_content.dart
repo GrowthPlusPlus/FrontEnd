@@ -357,8 +357,7 @@ class _ChallengeInviteContentState
                         );
                       } catch (e) {
                         if (!mounted) return;
-                        displayToast(context, '초대 전송에 실패했습니다. 다시 시도해주세요.'                      ),
-                        );
+                        displayToast(context, '초대 전송에 실패했습니다. 다시 시도해주세요.');
                       }
                     },
               style: ElevatedButton.styleFrom(

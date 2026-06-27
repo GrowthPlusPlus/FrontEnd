@@ -174,39 +174,40 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
         }) ??
         false;
 
+    // 비활성화 여부를 하나로 정리 (멤버 탭이 아니면서, 오늘 이미 인증했을 때)
+    final bool isDisabled = !isMemberTab && hasDoneToday;
+
     return BottomActionButton(
-      text: isMemberTab ? '내 순위 확인하기' : '인증하기',
-      backgroundColor: isMemberTab ? Colors.white : AppColors.primaryAble,
+      text: isMemberTab ? '내 순위 확인하기' : (isDisabled ? '인증 완료!' : '인증하기'),
+      backgroundColor: isDisabled
+          ? AppColors.disable
+          : (isMemberTab ? Colors.white : AppColors.primaryAble),
       textColor: isMemberTab ? AppColors.primaryAble : Colors.white,
       borderColor: isMemberTab ? AppColors.primaryAble : null,
-      onPressed: () {
-        if (isMemberTab) {
-          // 멤버 탭: 랭킹 페이지 이동
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  MemberRankingScreen(challengeId: widget.challengeId),
-            ),
-          );
-        } else {
-          // 소개/내 현황 탭: 오늘 이미 인증했는지 확인
-          if (hasDoneToday) {
-            // 💡 이미 인증한 경우 안내 문구 노출
-            displayToast(context, '이미 오늘 인증글을 작성했습니다.');
-          } else {
-            // 아직 인증 전이면 인증 페이지로 이동
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChallengeVerificationScreen(
-                  challengeId: widget.challengeId,
-                ),
-              ),
-            );
-          }
-        }
-      },
+      onPressed: isDisabled
+          ? null // 비활성화 시 탭 자체를 막음 (토스트 제거)
+          : () {
+              if (isMemberTab) {
+                // 멤버 탭: 랭킹 페이지 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MemberRankingScreen(challengeId: widget.challengeId),
+                  ),
+                );
+              } else {
+                // 아직 인증 전이면 인증 페이지로 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChallengeVerificationScreen(
+                      challengeId: widget.challengeId,
+                    ),
+                  ),
+                );
+              }
+            },
     );
   }
 
