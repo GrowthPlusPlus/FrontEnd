@@ -180,7 +180,7 @@ final postUpdateNotifierProvider =
 
 typedef _$PostUpdateNotifier = AutoDisposeNotifier<AsyncValue<Post?>>;
 String _$postDeleteNotifierHash() =>
-    r'07b47c44d9e04acef1f1ede70e94a8534f8a4285';
+    r'20a8b5cfcb2ef93011a74ddef163e329cd192cb2';
 
 /// See also [PostDeleteNotifier].
 @ProviderFor(PostDeleteNotifier)
