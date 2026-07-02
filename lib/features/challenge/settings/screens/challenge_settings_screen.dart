@@ -4,7 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/delegate_dialog.dart';
+import 'package:haenaem/shared/widgets/select_dialog.dart';
+import '../provider/challenge_member_provider.dart';
+// import '../data/challenge_member_repository.dart';
+
+// import '../widgets/delegate_dialog.dart';
 import '../widgets/delete_challenge_dialog.dart';
 import 'challenge_members_screen.dart';
 
@@ -49,14 +53,6 @@ class ChallengeSettingsScreen extends ConsumerWidget {
               _buildSectionTitle('챌린지 운영 관리', AppColors.black),
               const SizedBox(height: 8),
               _buildManageTile(
-                title: '챌린지 정보 수정',
-                iconPath: 'assets/images/icons/edit_icon.svg',
-                onTap: () {
-                  /* 정보 수정 로직 */
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildManageTile(
                 title: '챌린지 멤버 관리',
                 iconPath: 'assets/images/icons/friend_icon_on.svg',
                 onTap: () {
@@ -71,7 +67,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                 },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 30),
 
               // --- 위험 구역 섹션 (통합 박스 구조) ---
               Text(
@@ -163,7 +159,28 @@ class ChallengeSettingsScreen extends ConsumerWidget {
               // 1. 다이얼로그 호출 (결과값은 int? 타입)
               showDialog(
                 context: context,
-                builder: (context) => DelegateDialog(challengeId: challengeId),
+                builder: (context) => SelectDialog(
+                  title: '챌린지장 위임하기',
+                  content: '다른 멤버에게 챌린지장을 위임하고\n정말 이 챌린지에서 나가시겠습니까?',
+                  confirmText: '나가기',
+                  confirmBackgroundColor: AppColors.notification,
+                  cancelText: '취소',
+                  onConfirm: () async {
+                    final currentFilter = MemberFilter(
+                      challengeId: challengeId,
+                    );
+
+                    // 자동 위임 함수 호출
+                    final success = await ref
+                        .read(challengeMembersProvider(currentFilter).notifier)
+                        .delegateOwnerAuto(challengeId: challengeId);
+
+                    if (success && context.mounted) {
+                      Navigator.pop(context); // 다이얼로그 닫기
+                      Navigator.pop(context); // 챌린지 화면 나가기 (이전 화면으로 돌아감)
+                    }
+                  },
+                ),
               );
             },
           ),
