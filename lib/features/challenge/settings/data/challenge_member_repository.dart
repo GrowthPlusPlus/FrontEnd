@@ -115,19 +115,14 @@ class ChallengeMemberRepository {
 
   /// 챌린지장 위임 API
   /// - [challengeId]: 챌린지 ID
-  /// - [delegateMemberId]: 위임할 멤버의 유저 ID
-  Future<void> delegateChallengeOwner(
-    int challengeId,
-    int delegateMemberId,
-  ) async {
+  Future<void> delegateChallengeOwnerAuto(int challengeId) async {
     try {
       debugPrint(
-        '🚀 [POST Request] /api/challenges/$challengeId/owner/delegate',
+        '🚀 [POST Request] /api/challenges/$challengeId/owner/delegateAuto',
       );
 
       final response = await _dio.post(
-        '/api/challenges/$challengeId/owner/delegate',
-        data: {'delegateMemberId': delegateMemberId},
+        '/api/challenges/$challengeId/owner/delegateAuto',
       );
 
       if (response.statusCode != 204 && response.statusCode != 200) {

@@ -6,7 +6,7 @@ part of 'challenge_member_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$challengeMembersHash() => r'8d51eb07d492fdeba9dc138d34a2984b483c2cbb';
+String _$challengeMembersHash() => r'11a81846e1a973d4d4fe9e85496a38c3ac86352e';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,16 +29,23 @@ class _SystemHash {
   }
 }
 
-/// See also [challengeMembers].
-@ProviderFor(challengeMembers)
+abstract class _$ChallengeMembers
+    extends BuildlessAutoDisposeAsyncNotifier<List<User>> {
+  late final MemberFilter filter;
+
+  FutureOr<List<User>> build(MemberFilter filter);
+}
+
+/// See also [ChallengeMembers].
+@ProviderFor(ChallengeMembers)
 const challengeMembersProvider = ChallengeMembersFamily();
 
-/// See also [challengeMembers].
+/// See also [ChallengeMembers].
 class ChallengeMembersFamily extends Family<AsyncValue<List<User>>> {
-  /// See also [challengeMembers].
+  /// See also [ChallengeMembers].
   const ChallengeMembersFamily();
 
-  /// See also [challengeMembers].
+  /// See also [ChallengeMembers].
   ChallengeMembersProvider call(MemberFilter filter) {
     return ChallengeMembersProvider(filter);
   }
@@ -65,12 +72,13 @@ class ChallengeMembersFamily extends Family<AsyncValue<List<User>>> {
   String? get name => r'challengeMembersProvider';
 }
 
-/// See also [challengeMembers].
-class ChallengeMembersProvider extends AutoDisposeFutureProvider<List<User>> {
-  /// See also [challengeMembers].
+/// See also [ChallengeMembers].
+class ChallengeMembersProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<ChallengeMembers, List<User>> {
+  /// See also [ChallengeMembers].
   ChallengeMembersProvider(MemberFilter filter)
     : this._internal(
-        (ref) => challengeMembers(ref as ChallengeMembersRef, filter),
+        () => ChallengeMembers()..filter = filter,
         from: challengeMembersProvider,
         name: r'challengeMembersProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -95,13 +103,16 @@ class ChallengeMembersProvider extends AutoDisposeFutureProvider<List<User>> {
   final MemberFilter filter;
 
   @override
-  Override overrideWith(
-    FutureOr<List<User>> Function(ChallengeMembersRef provider) create,
-  ) {
+  FutureOr<List<User>> runNotifierBuild(covariant ChallengeMembers notifier) {
+    return notifier.build(filter);
+  }
+
+  @override
+  Override overrideWith(ChallengeMembers Function() create) {
     return ProviderOverride(
       origin: this,
       override: ChallengeMembersProvider._internal(
-        (ref) => create(ref as ChallengeMembersRef),
+        () => create()..filter = filter,
         from: from,
         name: null,
         dependencies: null,
@@ -113,7 +124,8 @@ class ChallengeMembersProvider extends AutoDisposeFutureProvider<List<User>> {
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<User>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<ChallengeMembers, List<User>>
+  createElement() {
     return _ChallengeMembersProviderElement(this);
   }
 
@@ -133,13 +145,14 @@ class ChallengeMembersProvider extends AutoDisposeFutureProvider<List<User>> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ChallengeMembersRef on AutoDisposeFutureProviderRef<List<User>> {
+mixin ChallengeMembersRef on AutoDisposeAsyncNotifierProviderRef<List<User>> {
   /// The parameter `filter` of this provider.
   MemberFilter get filter;
 }
 
 class _ChallengeMembersProviderElement
-    extends AutoDisposeFutureProviderElement<List<User>>
+    extends
+        AutoDisposeAsyncNotifierProviderElement<ChallengeMembers, List<User>>
     with ChallengeMembersRef {
   _ChallengeMembersProviderElement(super.provider);
 
