@@ -6,7 +6,7 @@ part of 'user_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$currentUserHash() => r'1cd77fb5bb48fa22fbd7a130413d96bac74fdc3d';
+String _$currentUserHash() => r'721868d3eac035a495bfb3b1a66256426e75dbff';
 
 /// See also [CurrentUser].
 @ProviderFor(CurrentUser)
@@ -21,7 +21,7 @@ final currentUserProvider = NotifierProvider<CurrentUser, User?>.internal(
 );
 
 typedef _$CurrentUser = Notifier<User?>;
-String _$myProfileHash() => r'a2ae41d2429d95cb9cbdecd38b5825067b6b9ebc';
+String _$myProfileHash() => r'4d03a134e873e0ea18fc9ca5388a2f6c22f2ae54';
 
 /// See also [MyProfile].
 @ProviderFor(MyProfile)
