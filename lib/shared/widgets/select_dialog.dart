@@ -12,6 +12,11 @@ class SelectDialog extends StatelessWidget {
   final String cancelText;
   final VoidCallback onConfirm; // 승인 버튼 눌렀을 때 실행할 로직
 
+  final Color? confirmBackgroundColor;
+  final Color? confirmTextColor;
+  final Color? cancelBackgroundColor;
+  final Color? cancelTextColor;
+
   const SelectDialog({
     super.key,
     this.title,
@@ -19,6 +24,10 @@ class SelectDialog extends StatelessWidget {
     this.confirmText = '확인',
     this.cancelText = '취소',
     required this.onConfirm,
+    this.confirmBackgroundColor, // 기본값은 BottomActionButton 내부 설정을 따름
+    this.confirmTextColor,
+    this.cancelBackgroundColor = const Color(0xFFEFEFEF),
+    this.cancelTextColor = const Color(0xFF757575),
   });
 
   @override
@@ -52,6 +61,8 @@ class SelectDialog extends StatelessWidget {
                     removeBottom: true,
                     child: BottomActionButton(
                       text: cancelText,
+                      backgroundColor: cancelBackgroundColor,
+                      textColor: cancelTextColor,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
@@ -62,6 +73,8 @@ class SelectDialog extends StatelessWidget {
                     removeBottom: true,
                     child: BottomActionButton(
                       text: confirmText,
+                      backgroundColor: confirmBackgroundColor,
+                      textColor: confirmTextColor,
                       onPressed: () {
                         Navigator.of(context).pop();
                         onConfirm();
