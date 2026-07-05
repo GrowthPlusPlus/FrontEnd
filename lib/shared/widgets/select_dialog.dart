@@ -6,12 +6,14 @@ import './bottom_action_button.dart';
 // 최초 작성자: 강선욱
 
 class SelectDialog extends StatelessWidget {
+  final String? emoji;
   final String? title;
   final String content;
   final String confirmText;
   final String cancelText;
   final VoidCallback onConfirm; // 승인 버튼 눌렀을 때 실행할 로직
 
+  final Color? contentColor;
   final Color? confirmBackgroundColor;
   final Color? confirmTextColor;
   final Color? cancelBackgroundColor;
@@ -19,11 +21,13 @@ class SelectDialog extends StatelessWidget {
 
   const SelectDialog({
     super.key,
+    this.emoji,
     this.title,
     required this.content,
     this.confirmText = '확인',
     this.cancelText = '취소',
     required this.onConfirm,
+    this.contentColor = AppColors.gray2,
     this.confirmBackgroundColor =
         AppColors.gray5, // 기본값은 BottomActionButton 내부 설정을 따름
     this.confirmTextColor = AppColors.gray2,
@@ -36,11 +40,17 @@ class SelectDialog extends StatelessWidget {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.white,
-      child: Padding(
+      child: Container(
+        width: 335,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (emoji != null) ...[
+              Text(emoji!, style: const TextStyle(fontSize: 64)),
+              const SizedBox(height: 8),
+            ],
+
             if (title != null) ...[
               Text(
                 title!,
@@ -50,7 +60,7 @@ class SelectDialog extends StatelessWidget {
             ],
             Text(
               content,
-              style: AppTypography.b1.copyWith(color: AppColors.gray2),
+              style: AppTypography.b1.copyWith(color: contentColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
