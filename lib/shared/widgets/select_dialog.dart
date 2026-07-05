@@ -11,7 +11,8 @@ class SelectDialog extends StatelessWidget {
   final String content;
   final String confirmText;
   final String cancelText;
-  final VoidCallback onConfirm; // 승인 버튼 눌렀을 때 실행할 로직
+  final VoidCallback onConfirm;
+  final VoidCallback onCancel;
 
   final Color? contentColor;
   final Color? confirmBackgroundColor;
@@ -27,6 +28,7 @@ class SelectDialog extends StatelessWidget {
     this.confirmText = '확인',
     this.cancelText = '취소',
     required this.onConfirm,
+    required this.onCancel,
     this.contentColor = AppColors.gray2,
     this.confirmBackgroundColor =
         AppColors.gray5, // 기본값은 BottomActionButton 내부 설정을 따름
