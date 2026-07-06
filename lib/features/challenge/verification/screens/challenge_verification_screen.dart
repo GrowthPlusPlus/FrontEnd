@@ -123,7 +123,11 @@ class _ChallengeVerificationScreenState
 
     if (isPhotoRequired) {
       // 📸 사진 필수: (전체 사진 > 0) && 텍스트 있음 && (새 사진은 모두 검증 완료)
-      return _currentTotalPhotoCount > 0 && hasContent && !isVerifying;
+      final bool clipFailed = _verifyStatus == ImageVerificationStatus.fail;
+      return _currentTotalPhotoCount > 0 &&
+          hasContent &&
+          !isVerifying &&
+          !clipFailed;
     } else {
       // ✍️ 사진 자유: 텍스트만 있으면 OK
       return hasContent && !isVerifying;
@@ -222,6 +226,12 @@ class _ChallengeVerificationScreenState
       _rebuildTempImageIds(); // 남은 사진들 기준으로 ID 리스트 재구성
       _verifyStatus = _computeOverallStatus();
     });
+
+    // 삭제 후 새 첫 번째 사진에 대해 CLIP 재검사
+    // (사진 필수 챌린지이고, 삭제된 사진이 index 0이었을 때만 의미 있음)
+    if (index == 0) {
+      _runClipVerifyIfNeeded();
+    }
   }
 
   @override
@@ -403,32 +413,67 @@ class _ChallengeVerificationScreenState
     return ImageVerificationStatus.idle;
   }
 
-  // 이미지 검증 로직 함수
-  Future<void> _verifyAndTrack(File file) async {
-    if (_newImageIdMap.containsKey(file.path)) return; // 이미 검증된 파일은 재검증 안 함
+  // 모든 사진에 대해 업로드만 수행 (AI 검사 없음)
+  Future<void> _uploadAndTrack(File file) async {
+    if (_newImageIdMap.containsKey(file.path)) return;
 
     setState(() {
-      _fileStatusMap[file.path] = ImageVerificationStatus.loading; // 이 파일만 로딩으로
+      _fileStatusMap[file.path] = ImageVerificationStatus.loading;
       _verifyStatus = _computeOverallStatus();
     });
 
-    final File compressed = await compressImageFile(file); // 호출될 때마다 매번 압축
+    final File compressed = await compressImageFile(file);
 
     final int? tempId = await ref
-        .read(imageVerifyNotifierProvider.notifier)
-        .verify(compressed, widget.challengeId);
+        .read(imageUploadNotifierProvider.notifier) // ✅ 변경
+        .upload(compressed, widget.challengeId);
 
     if (!mounted) return;
 
     setState(() {
       if (tempId != null) {
-        _newImageIdMap[file.path] = tempId; // ✅ 파일 경로 기준으로 ID 저장
+        _newImageIdMap[file.path] = tempId;
+        // ✅ 업로드 성공 상태는 일단 success로 (CLIP 검사 전)
         _fileStatusMap[file.path] = ImageVerificationStatus.success;
       } else {
         _fileStatusMap[file.path] = ImageVerificationStatus.fail;
       }
-      _verifyStatus = _computeOverallStatus(); // 전체 다시 계산
+      _verifyStatus = _computeOverallStatus();
       _rebuildTempImageIds();
+    });
+  }
+
+  // 사진 필수 챌린지에서만, 첫 번째 사진에 대해 AI CLIP 검사 수행
+  Future<void> _runClipVerifyIfNeeded() async {
+    // 사진 자유 챌린지는 AI 검사 생략
+    final challengeAsync = ref.read(
+      challengeDetailProvider(challengeId: widget.challengeId),
+    );
+    final bool isPhotoRequired = challengeAsync.value?.photoRequired ?? false;
+    if (!isPhotoRequired) return;
+
+    // 첫 번째 사진의 tempId 가져오기
+    if (_newImages.isEmpty) return;
+    final firstFile = _newImages.first;
+    final int? firstTempId = _newImageIdMap[firstFile.path];
+    if (firstTempId == null) return; // 업로드 실패한 사진이면 스킵
+
+    setState(() {
+      _fileStatusMap[firstFile.path] = ImageVerificationStatus.loading;
+      _verifyStatus = _computeOverallStatus();
+    });
+
+    final bool passed = await ref
+        .read(clipVerifyNotifierProvider.notifier)
+        .verify(widget.challengeId, firstTempId);
+
+    if (!mounted) return;
+
+    setState(() {
+      _fileStatusMap[firstFile.path] = passed
+          ? ImageVerificationStatus.success
+          : ImageVerificationStatus.fail;
+      _verifyStatus = _computeOverallStatus();
     });
   }
 
@@ -442,20 +487,23 @@ class _ChallengeVerificationScreenState
     }
   }
 
-  // 사진 추가 후 검증 호출
+  // 업로드(전체 병렬) → CLIP 검사(첫 번째만) 순서로
   void _handleImageResult(dynamic result) async {
     if (result is File) {
       _cameraImages.add(result);
-      await _verifyAndTrack(result);
+      await _uploadAndTrack(result);
     } else if (result is Map<String, dynamic>) {
       _selectedAssets.clear();
       _selectedAssets.addAll(result['assets'] as List<AssetEntity>);
       _galleryImages.clear();
       _galleryImages.addAll(result['files'] as List<File>);
 
-      // 순차적으로 하지 않고 병렬로 동시 처리 (빠르게 처리하기 위해)
-      await Future.wait(_galleryImages.map((file) => _verifyAndTrack(file)));
+      await Future.wait(_galleryImages.map((file) => _uploadAndTrack(file)));
     }
+
+    // ✅ 업로드 다 끝난 뒤 첫 번째 사진만 CLIP 검사
+    await _runClipVerifyIfNeeded();
+
     setState(() {});
   }
 
