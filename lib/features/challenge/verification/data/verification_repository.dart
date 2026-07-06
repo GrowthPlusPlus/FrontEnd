@@ -13,8 +13,8 @@ class VerificationRepository {
 
   VerificationRepository(this._dio);
 
-  // 이미지를 서버에 임시 업로드하고 AI 검증을 요청
-  Future<int?> verifyImage(File imageFile, int challengeId) async {
+  // 1단계: 업로드만 (크기/포맷/손상 검사 + tempImageId 발급)
+  Future<int?> uploadImage(File imageFile, int challengeId) async {
     try {
       final formData = FormData.fromMap({
         "image": await MultipartFile.fromFile(
@@ -30,27 +30,44 @@ class VerificationRepository {
         queryParameters: {'challengeId': challengeId},
       );
 
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        debugPrint('✅ 이미지 요청 처리됨: ${response.data}');
-
-        final String? passed = response.data?['passed'];
-        final int? tempImageId = response.data?['tempImageId'];
-
-        // 'PASS'일 때만 성공으로 인정
-        if (passed == 'PASS') {
-          return tempImageId;
-        }
-
-        debugPrint('❌ 이미지 검증 통과 못함 (passed: $passed)');
-        return null;
+      // ✅ 204 = 성공, passed 필드 없어짐 — 상태 코드만으로 판단
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        debugPrint('✅ 이미지 업로드 성공: ${response.data}');
+        return response.data?['tempImageId'];
       }
       return null;
     } on DioException catch (e) {
-      debugPrint('❌ 이미지 검증 에러: ${e.response?.data}');
+      debugPrint('❌ 이미지 업로드 에러: ${e.response?.data}');
       return null;
     } catch (e) {
-      debugPrint('❌ 알 수 없는 에러 발생: $e');
+      debugPrint('❌ 알 수 없는 에러: $e');
       return null;
+    }
+  }
+
+  // 2단계: AI 챌린지 관련성 검사 (1장만 호출)
+  Future<bool> clipVerifyImage(int challengeId, int temporaryImageId) async {
+    try {
+      final response = await _dio.post(
+        '/api/image/clip',
+        data: {
+          "challengeId": challengeId,
+          "temporaryImageId": temporaryImageId,
+        },
+      );
+
+      // 204 = PASS, 400 = FAIL
+      final bool passed =
+          response.statusCode == 204 || response.statusCode == 200;
+      debugPrint(passed ? '✅ CLIP 검사 통과' : '❌ CLIP 검사 실패');
+      return passed;
+    } on DioException catch (e) {
+      // 400이 DioException으로 잡힐 수 있음
+      debugPrint('❌ CLIP 검사 실패: ${e.response?.statusCode}');
+      return false;
+    } catch (e) {
+      debugPrint('❌ 알 수 없는 에러: $e');
+      return false;
     }
   }
 

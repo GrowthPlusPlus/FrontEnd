@@ -198,7 +198,7 @@ class _MyChallengeSectionViewState
             return Column(
               children: [
                 MyChallengeCard(item: challenge),
-                if (!isLast) const Divider(height: 1, color: AppColors.gray5),
+                if (!isLast) Divider(height: 1, color: AppColors.gray5),
               ],
             );
           }).toList(),

@@ -6,23 +6,40 @@ part of 'verification_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$imageVerifyNotifierHash() =>
-    r'4dffeb198fa09f19bfe619e052f6d84b73e4c845';
+String _$imageUploadNotifierHash() =>
+    r'b00c39f7feec02c378325494fbd5ae4856c18912';
 
-/// See also [ImageVerifyNotifier].
-@ProviderFor(ImageVerifyNotifier)
-final imageVerifyNotifierProvider =
-    AutoDisposeNotifierProvider<ImageVerifyNotifier, AsyncValue<int?>>.internal(
-      ImageVerifyNotifier.new,
-      name: r'imageVerifyNotifierProvider',
+/// See also [ImageUploadNotifier].
+@ProviderFor(ImageUploadNotifier)
+final imageUploadNotifierProvider =
+    AutoDisposeNotifierProvider<ImageUploadNotifier, AsyncValue<int?>>.internal(
+      ImageUploadNotifier.new,
+      name: r'imageUploadNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$imageVerifyNotifierHash,
+          : _$imageUploadNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$ImageVerifyNotifier = AutoDisposeNotifier<AsyncValue<int?>>;
+typedef _$ImageUploadNotifier = AutoDisposeNotifier<AsyncValue<int?>>;
+String _$clipVerifyNotifierHash() =>
+    r'93878bc9c648e93d263d03ba26ef92f47f98b51f';
+
+/// See also [ClipVerifyNotifier].
+@ProviderFor(ClipVerifyNotifier)
+final clipVerifyNotifierProvider =
+    AutoDisposeNotifierProvider<ClipVerifyNotifier, AsyncValue<bool?>>.internal(
+      ClipVerifyNotifier.new,
+      name: r'clipVerifyNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$clipVerifyNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ClipVerifyNotifier = AutoDisposeNotifier<AsyncValue<bool?>>;
 String _$articleCreateNotifierHash() =>
     r'ea2a88bead8bf1b6b370bab02fb8ea49bcf1aff6';
 
