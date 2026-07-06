@@ -54,12 +54,17 @@ class CommentItem extends StatelessWidget {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(comment.writer.nickname, style: AppTypography.b1),
-                    CommentPopupMenu(
-                      postId: postId,
-                      comment: comment,
-                      feedProvider: feedProvider,
+                    SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CommentPopupMenu(
+                        postId: postId,
+                        comment: comment,
+                        feedProvider: feedProvider,
+                      ),
                     ),
                   ],
                 ),
