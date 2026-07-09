@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import './bottom_action_button.dart';
 
 // 최초 작성자: 강선욱
 
@@ -14,6 +13,7 @@ class SelectDialog extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
 
+  final Color? titleColor;
   final Color? contentColor;
   final Color? confirmBackgroundColor;
   final Color? confirmTextColor;
@@ -29,6 +29,7 @@ class SelectDialog extends StatelessWidget {
     this.cancelText = '취소',
     required this.onConfirm,
     required this.onCancel,
+    this.titleColor = AppColors.black,
     this.contentColor = AppColors.gray2,
     this.confirmBackgroundColor =
         AppColors.gray5, // 기본값은 BottomActionButton 내부 설정을 따름
@@ -82,7 +83,10 @@ class SelectDialog extends StatelessWidget {
                         vertical: 14,
                       ), // 터치 영역 확보
                     ),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onCancel();
+                    },
                     child: Text(cancelText, style: AppTypography.b1.copyWith()),
                   ),
                 ),
