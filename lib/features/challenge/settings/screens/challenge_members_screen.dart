@@ -14,7 +14,7 @@ import 'package:haenaem/core/utils/korean_string_utils.dart';
 import 'package:haenaem/shared/models/user.dart';
 import '../provider/challenge_member_provider.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
-import '../widgets/kick_confirm_dialog.dart';
+import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // 1. StatefulWidget으로 변경 (검색어 상태 관리를 위해)
@@ -299,12 +299,15 @@ class _MemberTile extends StatelessWidget {
               onTap: () {
                 showDialog(
                   context: context,
-                  builder: (context) => KickConfirmDialog(
-                    nickname: member.nickname,
+                  builder: (context) => SelectDialog(
+                    title: '강제 퇴장',
+                    content: '\'${member.nickname}\' 님을 강퇴하시겠습니까?',
+                    confirmText: '강제 퇴장',
+                    confirmTextColor: AppColors.notification,
                     onConfirm: () {
                       onKick();
-                      print('👋 \'${member.nickname}\' 강퇴 처리됨');
                     },
+                    onCancel: () {},
                   ),
                 );
               },
