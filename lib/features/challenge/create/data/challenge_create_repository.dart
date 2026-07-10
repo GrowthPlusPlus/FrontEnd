@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 import '../models/created_response.dart';
-import 'dart:io';
-import 'package:http_parser/http_parser.dart';
 
 part 'challenge_create_repository.g.dart';
 
@@ -14,7 +12,7 @@ class ChallengeCreateRepository {
 
   ChallengeCreateRepository(this._dio);
 
-  // 1. 챌린지 생성 POST 요청
+  // 챌린지 생성 POST 요청
   Future<CreatedResponse> createChallenge(Map<String, dynamic> data) async {
     try {
       final response = await _dio.post('/api/challenges/create', data: data);
@@ -36,47 +34,6 @@ class ChallengeCreateRepository {
       // 💡 여기서 모델 파싱 에러(타입 불일치 등)가 잡힙니다.
       debugPrint('❌ 데이터 파싱 에러 발생: $e');
       throw Exception('데이터 처리 중 오류가 발생했습니다.');
-    }
-  }
-
-  // 2. 인증 사진 검증 (생성 과정에서 AI 검증 등이 필요한 경우 사용)
-  Future<int?> verifyImage(File imageFile, int challengeId) async {
-    try {
-      final formData = FormData.fromMap({
-        "image": await MultipartFile.fromFile(
-          imageFile.path,
-          filename: imageFile.path.split('/').last,
-          contentType: MediaType('image', 'jpeg'),
-        ),
-      });
-
-      final response = await _dio.post(
-        '/api/image/verify',
-        data: formData,
-        queryParameters: {'challengeId': challengeId},
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        debugPrint('✅ 이미지 요청 처리됨: ${response.data}');
-
-        final String? passed = response.data?['passed'];
-        final int? tempImageId = response.data?['tempImageId'];
-
-        // 'PASS'일 때만 성공으로 인정
-        if (passed == 'PASS') {
-          return tempImageId;
-        }
-
-        debugPrint('❌ 이미지 검증 통과 못함 (passed: $passed)');
-        return null;
-      }
-      return null;
-    } on DioException catch (e) {
-      debugPrint('❌ 이미지 검증 에러: ${e.response?.data}');
-      return null;
-    } catch (e) {
-      debugPrint('❌ 알 수 없는 에러 발생: $e');
-      return null;
     }
   }
 }

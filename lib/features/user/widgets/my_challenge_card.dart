@@ -42,7 +42,7 @@ class MyChallengeCard extends StatelessWidget {
         color: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(width: 0.69, color: AppColors.gray5),
+          side: BorderSide(width: 0.69, color: AppColors.gray5),
         ),
       ),
       child: Column(

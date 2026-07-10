@@ -15,6 +15,7 @@ class ChallengeDetail {
   final User leader; // 방장 정보 (id, profileUrl, nickname)
   final int participantCount; // 참여자 수
   final List<User> todaySuccessUsers; // 오늘 인증 완료한 유저 리스트
+  final DateTime? joinDate;
 
   const ChallengeDetail({
     required this.startDate,
@@ -26,6 +27,7 @@ class ChallengeDetail {
     required this.leader,
     required this.participantCount,
     required this.todaySuccessUsers,
+    this.joinDate,
   });
 
   factory ChallengeDetail.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,9 @@ class ChallengeDetail {
       description: json['description'] as String,
       leader: User.fromJson(json['host'] as Map<String, dynamic>),
       participantCount: json['participantCount'] as int,
+      joinDate: json['joinDate'] != null
+          ? DateTime.parse(json['joinDate'] as String)
+          : null,
       todaySuccessUsers: (json['todaySuccessUsers'] as List)
           .map((e) => User.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -53,6 +58,7 @@ class ChallengeDetail {
     String? description,
     User? leader,
     int? participantCount,
+    DateTime? joinDate,
     List<User>? todaySuccessUsers,
   }) {
     return ChallengeDetail(
@@ -64,6 +70,7 @@ class ChallengeDetail {
       description: description ?? this.description,
       leader: leader ?? this.leader,
       participantCount: participantCount ?? this.participantCount,
+      joinDate: joinDate ?? this.joinDate,
       todaySuccessUsers: todaySuccessUsers ?? this.todaySuccessUsers,
     );
   }
