@@ -43,6 +43,7 @@ class HomeNotifier extends _$HomeNotifier {
       HomeResponse(
         myChallenges: updatedChallenges,
         notificationNumber: current.notificationNumber,
+        weekStatus: [],
       ),
     );
   }
