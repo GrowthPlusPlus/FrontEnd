@@ -450,13 +450,19 @@ class _ChallengeVerificationScreenState
       challengeDetailProvider(challengeId: widget.challengeId),
     );
     final bool isPhotoRequired = challengeAsync.value?.photoRequired ?? false;
+    debugPrint('🔍 [CLIP] isPhotoRequired: $isPhotoRequired');
     if (!isPhotoRequired) return;
 
     // 첫 번째 사진의 tempId 가져오기
     if (_newImages.isEmpty) return;
     final firstFile = _newImages.first;
     final int? firstTempId = _newImageIdMap[firstFile.path];
+    debugPrint('🔍 [CLIP] firstTempId: $firstTempId');
     if (firstTempId == null) return; // 업로드 실패한 사진이면 스킵
+
+    debugPrint(
+      '🔍 [CLIP] 검사 시작 — challengeId: ${widget.challengeId}, tempId: $firstTempId',
+    ); // ✅ 추가
 
     setState(() {
       _fileStatusMap[firstFile.path] = ImageVerificationStatus.loading;
@@ -466,6 +472,8 @@ class _ChallengeVerificationScreenState
     final bool passed = await ref
         .read(clipVerifyNotifierProvider.notifier)
         .verify(widget.challengeId, firstTempId);
+
+    debugPrint('🔍 [CLIP] 검사 결과: $passed');
 
     if (!mounted) return;
 
