@@ -31,8 +31,7 @@ class SelectDialog extends StatelessWidget {
     required this.onCancel,
     this.titleColor = AppColors.black,
     this.contentColor = AppColors.gray2,
-    this.confirmBackgroundColor =
-        AppColors.gray5, // 기본값은 BottomActionButton 내부 설정을 따름
+    this.confirmBackgroundColor = AppColors.gray5,
     this.confirmTextColor = AppColors.gray2,
     this.cancelBackgroundColor = AppColors.gray5,
     this.cancelTextColor = AppColors.gray2,
