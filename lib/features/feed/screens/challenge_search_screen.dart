@@ -13,6 +13,7 @@ import 'package:haenaem/shared/models/search_challenge_card.dart';
 import 'package:haenaem/shared/widgets/slider_indicator.dart';
 import '../widgets/recommended_challenge_card.dart';
 import '../widgets/gradation_banner.dart';
+import '../provider/recommended_challenge_provider.dart';
 
 class ChallengeSearchScreen extends ConsumerStatefulWidget {
   const ChallengeSearchScreen({super.key});
@@ -81,63 +82,39 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
   }
 
   // ── AI 추천 섹션 구현 ────────────────────────────
-  // TODO: api 수정 시 코드 수정
   Widget _buildRecommendationSection(User? currentUser) {
     final userName = currentUser?.nickname ?? "해냄";
+    final recommendedAsync = ref.watch(recommendedChallengesProvider);
 
-    // 🎨 [UI 전용] 피그마 컴포넌트에 딱 맞는 더미 데이터
-    final List<Map<String, dynamic>> dummyList = [
-      {
-        'title': '만보 걷기',
-        'description': '챌린지 설명',
-        'detail': '헬스장 운동 인증샷 업로드',
-        'participantCount': '142명',
-        'remainingDays': '완료까지 D-14',
-        'tags': ['갓생', '20대'],
-        'recommendReason':
-            '사용자가 운동에 관심이 많고 러닝 챌린지에 참여한 경험이 있기 때문에, 걷기 또한 운동의 일환으로 쉽게 접근할 수 있습니다. 만보 걷기는 일상에서 쉽게 실천할 수 있으며, 걸음 수를 기록하고 공유함으로써 성취감을 느낄 수 있습니다.',
-      },
-      {
-        'title': '아침 기상 인증',
-        'description': '매일 아침 7시 기상',
-        'detail': '침대 밖을 나온 사진 업로드',
-        'participantCount': '45명',
-        'remainingDays': '완료까지 D-7',
-        'tags': ['운동', '자기계발'],
-        'recommendReason':
-            '규칙적인 기상 습관을 원하셨던 요구사항과 미라클 모닝 태그 기록을 바탕으로 추천합니다. 아침 시간을 확보하여 하루를 주도적으로 시작해보세요!',
-      },
-      {
-        'title': '독서 30분',
-        'description': '책 읽는 습관 기르기',
-        'detail': '페이지 번호가 보이는 인증샷',
-        'participantCount': '88명',
-        'remainingDays': '완료까지 D-3',
-        'tags': ['취미', '독서'],
-        'recommendReason':
-            '최근 자기계발 카테고리에 높은 관심을 보이셨기 때문에 독서 챌린지를 제안합니다. 작은 목표부터 채워나가며 루틴을 완성할 수 있습니다.',
-      },
-    ];
-
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          GradationBanner(userName: userName),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "추천 챌린지",
-                style: AppTypography.h3.copyWith(color: AppColors.black),
+    return recommendedAsync.when(
+      data: (data) => SingleChildScrollView(
+        child: Column(
+          children: [
+            GradationBanner(userName: userName, summary: data.summary),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "추천 챌린지",
+                  style: AppTypography.h3.copyWith(color: AppColors.black),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          RecommendedChallengeCard(items: dummyList),
-        ],
+            const SizedBox(height: 10),
+            if (data.challenges.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text("아직 추천 챌린지가 없어요."),
+              )
+            else
+              RecommendedChallengeCard(items: data.challenges),
+          ],
+        ),
       ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text("추천 챌린지를 불러오지 못했어요: $err")),
     );
   }
 
