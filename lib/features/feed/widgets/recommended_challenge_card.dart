@@ -75,9 +75,14 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
               curve: Curves.easeInOut,
               alignment: Alignment.topCenter,
               child: isExpanded
-                  ? Text(
-                      currentItem.recommendReason,
-                      style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        currentItem.recommendReason,
+                        style: AppTypography.b2.copyWith(
+                          color: AppColors.gray1,
+                        ),
+                      ),
                     )
                   : const SizedBox.shrink(),
             ),
@@ -179,10 +184,18 @@ class _RecommendedChallengeTop extends StatelessWidget {
                   ),
                 ],
               ),
-              // description/detail 대신 API 기반 요약 문구
-              Text(
-                item.subtitle,
-                style: AppTypography.b1.copyWith(color: AppColors.gray1),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '챌린지 설명',
+                    style: AppTypography.b1.copyWith(color: AppColors.gray1),
+                  ),
+                  Text(
+                    item.content,
+                    style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                  ),
+                ],
               ),
             ],
           ),

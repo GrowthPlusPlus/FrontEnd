@@ -1,4 +1,5 @@
 // 최초 작성자 : 김채영
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -70,6 +71,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
+  Timer? _debounceTimer;
+
   // 모든 조건이 충족되었는지 확인
   bool get _isFormValid {
     return _nameController.text.trim().isNotEmpty && // 이름 입력
@@ -88,11 +91,10 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
     super.initState();
 
     _focusedDay = _today;
-    // 스크롤 리스너 추가
-    _scrollController.addListener(_onScroll);
+    _scrollController.addListener(_onScroll); // 스크롤 리스너 추가
 
-    // 텍스트 입력 시마다 버튼 활성화 여부를 판단
-    _nameController.addListener(_updateState);
+    // 텍스트 입력 시마다 버튼 활성화 여부 판단 + (사진 필수 선택 시) 이름 재검사
+    _nameController.addListener(_onNameChanged);
     _descriptionController.addListener(_updateState);
   }
 
@@ -104,11 +106,25 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   // 리스너 제거 및 해제
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _onNameChanged() {
+    setState(() {}); // 기존처럼 _isFormValid 즉시 반영
+
+    // 사진 필수가 선택된 상태에서만 재검사 (디바운스)
+    if (selectedType == 1) {
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+        _checkAutoVerifiable();
+      });
+    }
   }
 
   // 사진 첨부 필수를 선택했을 때, 현재 입력된 이름으로 AI 판별 난이도 사전 안내 조회

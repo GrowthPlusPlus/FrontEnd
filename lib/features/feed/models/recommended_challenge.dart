@@ -10,6 +10,7 @@ class RecommendedChallengeItem {
   final int remainingDays;
   final bool photoRequired;
   final List<ChallengeTagModel> tags;
+  final String content;
   final String recommendReason;
 
   const RecommendedChallengeItem({
@@ -20,6 +21,7 @@ class RecommendedChallengeItem {
     required this.remainingDays,
     required this.photoRequired,
     required this.tags,
+    required this.content,
     required this.recommendReason,
   });
 
@@ -35,13 +37,10 @@ class RecommendedChallengeItem {
       tags: (challenge['tags'] as List? ?? [])
           .map((t) => ChallengeTagModel.fromJson(t as Map<String, dynamic>))
           .toList(),
+      content: json['content'] as String? ?? '',
       recommendReason: json['recommendReason'] as String? ?? '',
     );
   }
-
-  /// UI용 보조 문구 (API에 없는 description/detail 대체)
-  String get subtitle =>
-      '주 $requiredWeeklyCount회 인증' + (photoRequired ? ' · 사진 인증 필요' : '');
 }
 
 /// combined API 전체 응답 (서술 요약 + 카드 리스트)

@@ -48,6 +48,9 @@ class VerificationRepository {
   // 2단계: AI 챌린지 관련성 검사 (1장만 호출)
   Future<bool> clipVerifyImage(int challengeId, int temporaryImageId) async {
     try {
+      debugPrint(
+        '🔍 [CLIP API] 요청: challengeId=$challengeId, tempId=$temporaryImageId',
+      );
       final response = await _dio.post(
         '/api/image/clip',
         data: {
@@ -56,17 +59,26 @@ class VerificationRepository {
         },
       );
 
-      // 204 = PASS, 400 = FAIL
-      final bool passed =
-          response.statusCode == 204 || response.statusCode == 200;
-      debugPrint(passed ? '✅ CLIP 검사 통과' : '❌ CLIP 검사 실패');
+      debugPrint('🔍 [CLIP API] 응답 상태코드: ${response.statusCode}'); // ✅ 추가
+      debugPrint('🔍 [CLIP API] 응답 바디: ${response.data}');
+
+      final String? result = response.data?.toString();
+      final bool passed = result == 'PASS' || result == 'REVIEW';
+
+      debugPrint(
+        passed
+            ? '✅ CLIP 검사 통과 (result: $result)'
+            : '❌ CLIP 검사 실패 (result: $result)',
+      );
       return passed;
     } on DioException catch (e) {
       // 400이 DioException으로 잡힐 수 있음
-      debugPrint('❌ CLIP 검사 실패: ${e.response?.statusCode}');
+      debugPrint(
+        '🔍 [CLIP API] DioException: ${e.response?.statusCode} / ${e.response?.data}',
+      );
       return false;
     } catch (e) {
-      debugPrint('❌ 알 수 없는 에러: $e');
+      debugPrint('🔍 [CLIP API] 알 수 없는 에러: $e');
       return false;
     }
   }
