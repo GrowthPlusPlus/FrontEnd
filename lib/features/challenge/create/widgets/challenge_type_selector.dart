@@ -8,11 +8,13 @@ import 'ai_notice_box.dart';
 class ChallengeTypeSelector extends StatelessWidget {
   final int selectedType;
   final ValueChanged<int> onChanged;
+  final bool? autoVerifiable;
 
   const ChallengeTypeSelector({
     super.key,
     required this.selectedType,
     required this.onChanged,
+    this.autoVerifiable,
   });
 
   @override
@@ -40,7 +42,7 @@ class ChallengeTypeSelector extends StatelessWidget {
         // 선택된 타입이 1(사진 필수)일 때만 AI 안내 박스 표시
         if (selectedType == 1) ...[
           const SizedBox(height: 12),
-          const AiNoticeBox(),
+          AiNoticeBox(autoVerifiable: autoVerifiable),
         ],
       ],
     );

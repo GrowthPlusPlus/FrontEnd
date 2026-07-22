@@ -46,22 +46,37 @@ void _refreshRelatedProviders(Ref ref, int challengeId) {
 
 // 인증 이미지 검증
 @riverpod
-class ImageVerifyNotifier extends _$ImageVerifyNotifier {
+class ImageUploadNotifier extends _$ImageUploadNotifier {
   @override
   AsyncValue<int?> build() => const AsyncValue.data(null);
 
-  Future<int?> verify(File file, int challengeId) async {
+  Future<int?> upload(File file, int challengeId) async {
     state = const AsyncValue.loading();
-
-    // [변경] 기존 challengeRepository 대신 신규 verificationRepository 사용
     final result = await AsyncValue.guard(
       () => ref
           .read(verificationRepositoryProvider)
-          .verifyImage(file, challengeId),
+          .uploadImage(file, challengeId),
     );
-
     state = result;
     return result.valueOrNull;
+  }
+}
+
+// AI 챌린지 관련성 검사 전용
+@riverpod
+class ClipVerifyNotifier extends _$ClipVerifyNotifier {
+  @override
+  AsyncValue<bool?> build() => const AsyncValue.data(null);
+
+  Future<bool> verify(int challengeId, int temporaryImageId) async {
+    state = const AsyncValue.loading();
+    final result = await AsyncValue.guard(
+      () => ref
+          .read(verificationRepositoryProvider)
+          .clipVerifyImage(challengeId, temporaryImageId),
+    );
+    state = result;
+    return result.valueOrNull ?? false;
   }
 }
 

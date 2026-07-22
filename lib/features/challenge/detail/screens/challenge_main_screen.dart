@@ -136,6 +136,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
             challengeId: widget.challengeId,
             streakCount: widget.streakCount,
             scrollController: _calendarScrollController,
+            joinDate: detailAsync.value?.joinDate ?? DateTime.now(),
           ),
           MemberView(
             challengeId: widget.challengeId,

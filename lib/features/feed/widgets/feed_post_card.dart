@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:haenaem/core/network/dio_provider.dart';
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart'; // 인증글 상세 불러오기
 import 'package:intl/intl.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -11,6 +12,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import '../provider/post_detail_provider.dart';
 import 'package:haenaem/shared/models/post.dart';
 import 'package:haenaem/features/feed/widgets/post_popup_menu.dart';
+import 'package:haenaem/shared/widgets/slider_indicator.dart';
 
 class FeedPostCard extends ConsumerWidget {
   final Post post;
@@ -223,7 +225,7 @@ class FeedPostCard extends ConsumerWidget {
   }
 }
 
-// ✅ 이미지 슬라이더와 인디케이터 상태를 관리하기 위한 내부 위젯
+// 이미지 슬라이더와 인디케이터 상태를 관리하기 위한 내부 위젯
 class _PostImageSlider extends StatefulWidget {
   final Post post;
 
@@ -234,7 +236,7 @@ class _PostImageSlider extends StatefulWidget {
 }
 
 class _PostImageSliderState extends State<_PostImageSlider> {
-  int _currentImagePage = 0; // 💡 인디케이터 상태 관리
+  int _currentImagePage = 0; // 인디케이터 상태 관리
 
   @override
   Widget build(BuildContext context) {
@@ -252,10 +254,17 @@ class _PostImageSliderState extends State<_PostImageSlider> {
             },
             itemBuilder: (context, index) {
               final String path = widget.post.pictureUrl[index].imageUrl;
-              // 💡 경로 처리: http로 시작하지 않으면 서버 주소 붙여주기
+
+              // 아래 부분은 백엔드 데이터가 어떤 형태로 들어오든 앱에서 이미지 에러(엑스박스) 안 나고 무조건 안전하게 주소를 완성해서 띄우기 위함
+              // dioProvider를 사용해 현재 활성화된 baseUrl을 동적으로 가져옵니다.
+              // Stateful 내부이므로 Consumer 위젯으로 감싸서 ref를 쓰거나, 아래처럼 1회성으로 읽어올 수 있습니다.
+              final container = ProviderScope.containerOf(context);
+              final dioBaseUrl = container.read(dioProvider).options.baseUrl;
+
+              // 경로 처리: http로 시작하지 않으면 동적 baseUrl을 붙여주기
               final String fullUrl = path.startsWith('http')
                   ? path
-                  : 'https://hanaem.onrender.com$path';
+                  : '$dioBaseUrl$path';
 
               return Image.network(
                 fullUrl,
@@ -280,26 +289,13 @@ class _PostImageSliderState extends State<_PostImageSlider> {
             },
           ),
         ),
-        // 💡 이미지가 2장 이상일 때만 하단에 페이지 점(Indicator) 표시
+        // 이미지가 2장 이상일 때만 하단에 페이지 점(Indicator) 표시
         if (widget.post.pictureUrl.length > 1)
           Padding(
             padding: const EdgeInsets.only(top: 10, bottom: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.post.pictureUrl.length, (index) {
-                return Container(
-                  width: 6,
-                  height: 6,
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    // 현재 페이지면 브랜드 컬러, 아니면 회색
-                    color: _currentImagePage == index
-                        ? AppColors.primaryAble
-                        : AppColors.gray4,
-                  ),
-                );
-              }),
+            child: SliderIndicator(
+              count: widget.post.pictureUrl.length,
+              currentIndex: _currentImagePage,
             ),
           ),
       ],

@@ -13,12 +13,14 @@ class CalendarView extends ConsumerStatefulWidget {
   final int challengeId;
   final int streakCount;
   final ScrollController scrollController;
+  final DateTime joinDate;
 
   const CalendarView({
     super.key,
     required this.challengeId,
     required this.streakCount,
     required this.scrollController,
+    required this.joinDate,
   });
 
   @override
@@ -29,16 +31,25 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
   late PageController _pageController;
   DateTime _focusedDay = DateTime.now();
 
-  final DateTime _firstDay = DateTime(2000, 1);
+  // 가입한 달의 1일 기준 (일자는 무시, 연-월만 비교용)
+  DateTime get _joinedMonth =>
+      DateTime(widget.joinDate.year, widget.joinDate.month);
+
+  // 지금 보고 있는 달이 가입한 달인지 여부
+  bool get _isAtJoinedMonth =>
+      _focusedDay.year == _joinedMonth.year &&
+      _focusedDay.month == _joinedMonth.month;
 
   @override
   void initState() {
     super.initState();
 
+    final now = DateTime.now();
     int initialPage =
-        (_focusedDay.year - _firstDay.year) * 12 +
-        _focusedDay.month -
-        _firstDay.month;
+        (now.year - widget.joinDate.year) * 12 +
+        (now.month - widget.joinDate.month);
+
+    _focusedDay = now;
     _pageController = PageController(initialPage: initialPage);
   }
 
@@ -121,15 +132,21 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                         onPageChanged: (index) {
                           setState(() {
                             _focusedDay = DateTime(
-                              _firstDay.year,
-                              _firstDay.month + index,
+                              widget.joinDate.year,
+                              widget.joinDate.month + index,
                             );
                           });
                         },
+                        // 가입 달부터 현재 달까지의 개수만큼만
+                        itemCount:
+                            (DateTime.now().year - widget.joinDate.year) * 12 +
+                            (DateTime.now().month - widget.joinDate.month) +
+                            1,
                         itemBuilder: (context, index) {
+                          // index 0 = 가입 달 기준으로 날짜 계산
                           final monthDate = DateTime(
-                            _firstDay.year,
-                            _firstDay.month + index,
+                            widget.joinDate.year,
+                            widget.joinDate.month + index,
                           );
 
                           // 개별 달의 데이터를 Provider로 구독
@@ -241,6 +258,11 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
         date.year > now.year ||
         (date.year == now.year && date.month >= now.month);
 
+    // 가입한 달 도달 여부 — 이 이상 이전으로 못 가게 막기
+    bool isAtStart =
+        date.year < _joinedMonth.year ||
+        (date.year == _joinedMonth.year && date.month <= _joinedMonth.month);
+
     return Row(
       children: [
         const SizedBox(width: 48),
@@ -249,11 +271,15 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              onPressed: _onPrevMonth,
+              onPressed: isAtStart ? null : _onPrevMonth, // 가입 달이면 비활성화
               icon: SvgPicture.asset(
                 'assets/images/icons/left_arrow_icon.svg',
                 width: 24,
                 height: 24,
+                colorFilter: ColorFilter.mode(
+                  isAtStart ? AppColors.gray3 : AppColors.black, // 색상도 비활성 표시
+                  BlendMode.srcIn,
+                ),
               ),
             ),
             const SizedBox(width: 20),

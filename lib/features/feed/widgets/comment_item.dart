@@ -75,40 +75,40 @@ class CommentItem extends StatelessWidget {
               ),
             ],
           ),
-
-          const SizedBox(height: 8),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0),
-                child: Text(comment.content, style: AppTypography.b2),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: Text(
-                      commentDate,
-                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
-                    ),
-                  ),
-                  if (comment.isEdited)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: Text(
-                        '수정됨',
-                        style: AppTypography.b2.copyWith(
-                          color: AppColors.gray3,
-                        ),
+          const SizedBox(width: 12),
+          // 댓글 내용 및 팝업 메뉴
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(comment.writer.nickname, style: AppTypography.b1),
+                    SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CommentPopupMenu(
+                        postId: postId,
+                        comment: comment,
+                        feedProvider: feedProvider,
                       ),
                     ),
-                ],
-              ),
-            ],
+                    if (comment.isEdited)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Text(
+                          '수정됨',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.gray3,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
