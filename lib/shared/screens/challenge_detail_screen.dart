@@ -8,7 +8,9 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import '../../features/feed/provider/challenge_participate_provider.dart';
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import 'package:haenaem/shared/widgets/challenge_detail_content.dart';
-import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
+// import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
+import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
+import 'package:haenaem/shared/widgets/confirm_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 
@@ -115,9 +117,38 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
           if (success && context.mounted) {
             showDialog(
               context: context,
-              builder: (context) => EnterConfirmDialog(
-                challengeId: widget.challengeId,
-                challengeTitle: widget.challengeTitle,
+              barrierDismissible: false,
+              builder: (dialogContext) => ConfirmDialog(
+                // 원래 쓰던 예쁜 녹색 체크 아이콘 그대로 주입!
+                icon: SizedBox(
+                  width: 42,
+                  height: 42,
+                  child: SvgPicture.asset(
+                    'assets/images/icons/round_check_icon.svg',
+                    width: 42,
+                    height: 42,
+                  ),
+                ),
+                title: '챌린지 참여 완료!',
+                content: '‘${widget.challengeTitle}’\n지금부터 함께 도전해요!',
+                buttonText: '확인',
+                // 확인 버튼 누르면 팝업 닫고 메인 챌린지 룸으로 화면 이동 타기
+                onConfirm: () {
+                  if (context.mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChallengeMainScreen(
+                          challengeId: widget.challengeId,
+                          challengeTitle: widget.challengeTitle,
+                        ),
+                      ),
+                      (route) =>
+                          route.settings.name == 'ChallengeSearchScreen' ||
+                          route.isFirst,
+                    );
+                  }
+                },
               ),
             );
           } else {

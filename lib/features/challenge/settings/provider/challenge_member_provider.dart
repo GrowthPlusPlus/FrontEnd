@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 // import '../../data/challenge_repository.dart';
 import '../data/challenge_member_repository.dart';
 import 'package:haenaem/shared/models/user.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
 
 part 'challenge_member_provider.g.dart';
 
@@ -56,8 +57,7 @@ class ChallengeMembers extends _$ChallengeMembers {
       // 1. Repository의 API 호출 실행
       await repository.delegateChallengeOwnerAuto(challengeId);
 
-      // 2. 위임이 성공했다면 멤버 리스트를 새로고침(invalidate) 해줍니다.
-      ref.invalidateSelf();
+      ref.read(homeNotifierProvider.notifier).refresh();
 
       debugPrint('✅ [Provider] 방장 위임 성공 및 리스트 새로고침 완료');
       return true;
