@@ -45,7 +45,19 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter></activity>
+            </intent-filter>
+            
+            <intent-filter android:label="haenaem_deep_link">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+        
+                <!-- 문자열 파싱 오차를 줄이기 위해 아래 구조로 명확히 작성 -->
+                <data android:scheme="haenaem" />
+                <data android:host="invite" />
+            </intent-filter>
+
+            </activity>
 
 <activity android:name="net.openid.appauth.RedirectUriReceiverActivity">
     <intent-filter>
