@@ -16,3 +16,14 @@ Future<ChallengeInviteResponse> challengeInvite(
   final repository = ref.watch(challengeInviteRepositoryProvider);
   return repository.getChallengeInviteInfo(challengeId);
 }
+
+// 딥링크로 들어온 inviteCode를 이용해 challengeId를 조회
+@riverpod
+Future<ChallengeDeepLinkResponse> challengeIdByInviteCode(
+  Ref ref,
+  String inviteCode,
+) async {
+  final repository = ref.watch(challengeInviteRepositoryProvider);
+
+  return repository.getChallengeIdByInviteCode(inviteCode);
+}
