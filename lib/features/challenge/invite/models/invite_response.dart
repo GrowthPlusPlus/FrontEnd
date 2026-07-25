@@ -19,3 +19,23 @@ class ChallengeInviteResponse {
     );
   }
 }
+
+class ChallengeDeepLinkResponse {
+  final int challengeId; // 챌린지 ID
+  final String challengeTitle; // 챌린지 제목
+  final bool alreadyParticipant; // 이미 참여 중인 유저인지 여부
+
+  ChallengeDeepLinkResponse({
+    required this.challengeId,
+    required this.challengeTitle,
+    required this.alreadyParticipant,
+  });
+
+  factory ChallengeDeepLinkResponse.fromJson(Map<String, dynamic> json) {
+    return ChallengeDeepLinkResponse(
+      challengeId: json['challengeId'] as int? ?? 0,
+      challengeTitle: json['challengeTitle'] as String? ?? '',
+      alreadyParticipant: json['alreadyParticipant'] as bool? ?? false,
+    );
+  }
+}
