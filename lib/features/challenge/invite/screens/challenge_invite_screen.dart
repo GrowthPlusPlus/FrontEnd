@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/challenge/invite/widgets/challenge_invite_content.dart';
 
