@@ -6,14 +6,14 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/shared/widgets/slider_indicator.dart';
 import 'package:haenaem/shared/widgets/tag_badge.dart';
 import 'package:expandable_page_view/expandable_page_view.dart';
+import '../models/recommended_challenge.dart';
+import 'package:haenaem/shared/screens/challenge_detail_screen.dart';
 
 // 챌린지 탐색 화면의 추천 챌린지 카드
 class RecommendedChallengeCard extends StatefulWidget {
   const RecommendedChallengeCard({super.key, required this.items});
 
-  // 임시 더미 데이터 (title, description, detail, participantCount,
-  // remainingDays, tags 키를 가진 Map 리스트)
-  final List<Map<String, dynamic>> items;
+  final List<RecommendedChallengeItem> items;
 
   @override
   State<RecommendedChallengeCard> createState() =>
@@ -75,10 +75,14 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
               curve: Curves.easeInOut,
               alignment: Alignment.topCenter,
               child: isExpanded
-                  ? Text(
-                      currentItem['recommendReason'] as String? ??
-                          '사용자가 운동에 관심이 많고 러닝 챌린지에 참여한 경험이 있기 때문에, 걷기 또한 운동의 일환으로 쉽게 접근할 수 있습니다. 만보 걷기는 일상에서 쉽게 실천할 수 있으며, 걸음 수를 기록하고 공유함으로써 성취감을 느낄 수 있습니다.',
-                      style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        currentItem.recommendReason,
+                        style: AppTypography.b2.copyWith(
+                          color: AppColors.gray1,
+                        ),
+                      ),
                     )
                   : const SizedBox.shrink(),
             ),
@@ -120,23 +124,21 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
 class _RecommendedChallengeTop extends StatelessWidget {
   const _RecommendedChallengeTop({required this.item});
 
-  final Map<String, dynamic> item;
+  final RecommendedChallengeItem item;
 
   @override
   Widget build(BuildContext context) {
-    final tags = item['tags'] as List<String>;
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
-      spacing: 10, // 콘텐츠 ↔ 화살표 아이콘
+      spacing: 10,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 12, // 제목 블록 내부 간격
+            spacing: 12,
             children: [
               Text(
-                item['title'] as String,
+                item.title,
                 style: AppTypography.b3.copyWith(color: AppColors.black),
               ),
               Column(
@@ -144,7 +146,7 @@ class _RecommendedChallengeTop extends StatelessWidget {
                 spacing: 4,
                 children: [
                   Row(
-                    spacing: 16, // 인원수 ↔ D-day
+                    spacing: 16,
                     children: [
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -158,9 +160,8 @@ class _RecommendedChallengeTop extends StatelessWidget {
                               BlendMode.srcIn,
                             ),
                           ),
-
                           Text(
-                            item['participantCount'] as String,
+                            '${item.participantNumber}명',
                             style: AppTypography.b2.copyWith(
                               color: AppColors.gray2,
                             ),
@@ -168,7 +169,7 @@ class _RecommendedChallengeTop extends StatelessWidget {
                         ],
                       ),
                       Text(
-                        item['remainingDays'] as String,
+                        '완료까지 D-${item.remainingDays}',
                         style: AppTypography.b2.copyWith(
                           color: AppColors.gray2,
                         ),
@@ -176,8 +177,10 @@ class _RecommendedChallengeTop extends StatelessWidget {
                     ],
                   ),
                   Row(
-                    spacing: 5, // 태그 간 간격
-                    children: tags.map((tag) => TagBadge(label: tag)).toList(),
+                    spacing: 5,
+                    children: item.tags
+                        .map((tag) => TagBadge(label: tag.tag))
+                        .toList(),
                   ),
                 ],
               ),
@@ -185,11 +188,11 @@ class _RecommendedChallengeTop extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item['description'] as String,
+                    '챌린지 설명',
                     style: AppTypography.b1.copyWith(color: AppColors.gray1),
                   ),
                   Text(
-                    item['detail'] as String,
+                    item.content,
                     style: AppTypography.b2.copyWith(color: AppColors.gray1),
                   ),
                 ],
@@ -197,7 +200,29 @@ class _RecommendedChallengeTop extends StatelessWidget {
             ],
           ),
         ),
-        SvgPicture.asset('assets/images/icons/thick_right_arrow_icon.svg'),
+        // 챌린지 상세 화면으로 이동
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChallengeDetailScreen(
+                  challengeId: item.challengeId,
+                  challengeTitle: item.title,
+                ),
+              ),
+            );
+          },
+          child: SizedBox(
+            child: SvgPicture.asset(
+              'assets/images/icons/thick_right_arrow_icon.svg',
+              colorFilter: const ColorFilter.mode(
+                AppColors.gray2,
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

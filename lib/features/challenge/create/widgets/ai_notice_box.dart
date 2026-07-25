@@ -6,7 +6,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 // 사진 첨부 필수를 누를 경우 안내 박스
 class AiNoticeBox extends StatelessWidget {
-  const AiNoticeBox({super.key});
+  const AiNoticeBox({super.key, this.autoVerifiable});
+
+  // null: 아직 검사 전(또는 검사 실패), true/false: 검사 결과
+  final bool? autoVerifiable;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +35,23 @@ class AiNoticeBox extends StatelessWidget {
           ),
           const SizedBox(width: 5),
           Expanded(
-            child: Text(
-              '정확한 인증을 위해 AI 검증 단계를 거치게 됩니다.\n환경에 따라 인식이 지연되거나 재촬영이 필요할 수 있습니다.',
-              style: AppTypography.c1.copyWith(color: AppColors.gray1),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '정확한 인증을 위해 AI 검증 단계를 거치게 됩니다.\n환경에 따라 인식이 지연되거나 재촬영이 필요할 수 있습니다.',
+                  style: AppTypography.c1.copyWith(color: AppColors.gray1),
+                ),
+                if (autoVerifiable == false) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '현재 입력한 챌린지 이름은 AI가 자동으로 판별하기 어려운 주제예요. 인증 시 지연되거나 재촬영이 필요할 가능성이 높아요.',
+                    style: AppTypography.c1.copyWith(
+                      color: AppColors.primaryAble,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

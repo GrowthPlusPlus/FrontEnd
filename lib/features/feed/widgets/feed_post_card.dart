@@ -99,9 +99,30 @@ class FeedPostCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  post.title,
-                  style: AppTypography.b3.copyWith(color: AppColors.black),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        post.title,
+                        style: AppTypography.b3.copyWith(
+                          color: AppColors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (post.isEdited)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                        child: Text(
+                          '수정됨',
+                          style: AppTypography.b2.copyWith(
+                            color: AppColors.gray3,
+                          ), // 조금 연한 회색 스타일 적용
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4), // 간격 추가
                 Text(

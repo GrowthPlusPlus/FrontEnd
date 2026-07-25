@@ -10,6 +10,7 @@ import 'package:haenaem/features/notification/provider/notification_provider.dar
 import 'package:haenaem/shared/models/home_challenge_card.dart';
 import '../widgets/challenge_card.dart';
 import '../widgets/day_chip.dart';
+import 'package:haenaem/features/home/models/home_response.dart';
 
 // 최초 작성자 : 강선욱
 // 홈 화면 빌드 클래스
@@ -34,13 +35,6 @@ class HomeScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, stack) => Center(child: Text('데이터 에러: $err')),
           data: (data) {
-            // 모든 챌린지가 isDone이면 오늘 완료로 판단
-            final todayIsDone =
-                data.myChallenges.isNotEmpty &&
-                data.myChallenges.every((c) => c.isDone);
-            // 하나라도 warning이면 오늘 위험으로 판단
-            final todayIsWarning = data.myChallenges.any((c) => c.warning);
-
             return Stack(
               children: [
                 Column(
@@ -79,11 +73,29 @@ class HomeScreen extends ConsumerWidget {
                               date.year == now.year &&
                               date.month == now.month &&
                               date.day == now.day;
+                          // 1. 날짜를 API와 동일한 포맷 'yyyy-MM-dd'로 변환
+                          final dateString =
+                              '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+                          // 2. weekStatus 배열에서 해당 날짜와 일치하는 상태 찾기
+                          final matchedStatus = data.weekStatus
+                              .firstWhere(
+                                (ws) => ws.date == dateString,
+                                orElse: () => const WeekStatus(
+                                  date: '',
+                                  status: 'GRAY',
+                                ), // 없으면 기본값
+                              )
+                              .status;
+
+                          debugPrint(
+                            '📅 [Calendar Match] 날짜: $dateString | 오늘여부: $isToday | 부여된 상태: $matchedStatus',
+                          );
+
                           return DayChip(
                             date: date,
                             isSelected: isToday,
-                            isDone: isToday ? todayIsDone : false,
-                            isWarning: isToday ? todayIsWarning : false,
+                            status: matchedStatus, // 새로 받아온 상태값 전달
                           );
                         }).toList(),
                       ),

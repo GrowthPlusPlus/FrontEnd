@@ -1,4 +1,5 @@
 // 최초 작성자 : 김채영
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -17,7 +18,7 @@ import 'dart:convert';
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
-// import 'package:haenaem/features/challenge/create/widgets/ai_notice_box.dart';
+import 'package:haenaem/features/challenge/create/widgets/ai_notice_box.dart';
 import 'package:haenaem/features/challenge/create/widgets/plus_button.dart';
 // import 'package:haenaem/features/challenge/create/widgets/challenge_select_button.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_calendar_bottom_sheet.dart';
@@ -28,6 +29,7 @@ import 'package:haenaem/features/challenge/create/widgets/challenge_visibility_s
 import 'package:haenaem/features/challenge/create/widgets/challenge_type_selector.dart';
 import 'package:haenaem/features/challenge/detail/screens/challenge_main_screen.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
+import 'package:haenaem/features/challenge/create/provider/challenge_preview_provider.dart';
 
 // -- 챌린지 생성 화면 --
 class ChallengeCreateScreen extends ConsumerStatefulWidget {
@@ -42,6 +44,10 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   final List<ChallengeTagModel> _selectedTagModels = []; // 선택된 태그를 모델 리스트로 관리
   int selectedType = 0; // 현재 선택된 방식을 저장 (0: 미선택, 1: 사진 필수, 2: 체크 자유)
   int selectedVisibility = 0; // 1: 비공개, 2: 공개, 3: 친구 공개
+
+  // AI 사진 검증 사전 안내용 상태
+  bool? _autoVerifiable; // null: 미검사, true/false: 검사 결과
+  bool _isCheckingPreview = false;
 
   // 스크롤 제어를 위한 컨트롤러 추가 - 사진 첨부 필수 버튼을 누르면 notice가 뿅 나타나게
   final ScrollController _scrollController = ScrollController();
@@ -59,9 +65,13 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   String? _selectedDuration; // 인증 기간
   String? _selectedFrequency; // 인증 빈도
 
+  bool _isSubmitting = false;
+
   // 인증 기간 직접 입력 컨트롤러
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+
+  Timer? _debounceTimer;
 
   // 모든 조건이 충족되었는지 확인
   bool get _isFormValid {
@@ -81,11 +91,10 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
     super.initState();
 
     _focusedDay = _today;
-    // 스크롤 리스너 추가
-    _scrollController.addListener(_onScroll);
+    _scrollController.addListener(_onScroll); // 스크롤 리스너 추가
 
-    // 텍스트 입력 시마다 버튼 활성화 여부를 판단
-    _nameController.addListener(_updateState);
+    // 텍스트 입력 시마다 버튼 활성화 여부 판단 + (사진 필수 선택 시) 이름 재검사
+    _nameController.addListener(_onNameChanged);
     _descriptionController.addListener(_updateState);
   }
 
@@ -97,11 +106,51 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   // 리스너 제거 및 해제
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _onNameChanged() {
+    setState(() {}); // 기존처럼 _isFormValid 즉시 반영
+
+    // 사진 필수가 선택된 상태에서만 재검사 (디바운스)
+    if (selectedType == 1) {
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+        _checkAutoVerifiable();
+      });
+    }
+  }
+
+  // 사진 첨부 필수를 선택했을 때, 현재 입력된 이름으로 AI 판별 난이도 사전 안내 조회
+  Future<void> _checkAutoVerifiable() async {
+    final title = _nameController.text.trim();
+    if (title.isEmpty) {
+      setState(() => _autoVerifiable = null);
+      return;
+    }
+
+    setState(() => _isCheckingPreview = true);
+    try {
+      final result = await ref
+          .read(challengePreviewNotifierProvider.notifier)
+          .checkTitle(title);
+
+      debugPrint('🔍 [AI Notice] title: "$title" → autoVerifiable: $result');
+
+      if (mounted) setState(() => _autoVerifiable = result);
+    } catch (e) {
+      debugPrint('🔍 [AI Notice] 검사 실패: $e');
+      // 사전 검사 실패는 안내를 못 보여줄 뿐, 생성 흐름에는 영향 없음
+      if (mounted) setState(() => _autoVerifiable = null);
+    } finally {
+      if (mounted) setState(() => _isCheckingPreview = false);
+    }
   }
 
   Map<String, dynamic> _buildRequestData() {
@@ -136,30 +185,40 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
   // 챌린지 생성 데이터 제출 준비 로직
   void _submitChallenge() async {
-    final requestData = _buildRequestData(); // ✅ 데이터 가공 분리
-    debugPrint('🚀 서버 전송 데이터: ${jsonEncode(requestData)}');
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
 
-    final notifier = ref.read(challengeCreateNotifierProvider.notifier);
-    final response = await notifier.create(requestData);
+    try {
+      // 1️⃣ AI 사진 검증 관련 로직은 AiNoticeBox에서 이미 안내 완료 (여기선 호출 X)
 
-    if (response != null && mounted) {
-      debugPrint('✅ 생성된 실제 ID: ${response.id}');
-      ref.read(homeNotifierProvider.notifier).refresh();
-      ref.invalidate(myInProgressChallengesProvider);
+      // 2️⃣ 기존 챌린지 생성 로직
+      final requestData = _buildRequestData();
+      debugPrint('🚀 서버 전송 데이터: ${jsonEncode(requestData)}');
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChallengeMainScreen(
-            challengeId: response.id,
-            challengeTitle: response.title,
-            challengeLink: response.challengeLink,
-            isJustCreated: true,
+      final notifier = ref.read(challengeCreateNotifierProvider.notifier);
+      final response = await notifier.create(requestData);
+
+      if (response != null && mounted) {
+        debugPrint('✅ 생성된 실제 ID: ${response.id}');
+        ref.read(homeNotifierProvider.notifier).refresh();
+        ref.invalidate(myInProgressChallengesProvider);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChallengeMainScreen(
+              challengeId: response.id,
+              challengeTitle: response.title,
+              challengeLink: response.challengeLink,
+              isJustCreated: true,
+            ),
           ),
-        ),
-      );
-    } else if (mounted) {
-      displayToast(context, '챌린지 생성 중 오류가 발생했습니다.');
+        );
+      } else if (mounted) {
+        displayToast(context, '챌린지 생성 중 오류가 발생했습니다.');
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -367,11 +426,14 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
               ChallengeTypeSelector(
                 selectedType: selectedType,
+                autoVerifiable: _autoVerifiable,
                 onChanged: (type) {
                   setState(() => selectedType = type);
 
-                  // 사진 첨부 필수를 눌렀을 때만 하단으로 스크롤 이동
+                  // 사진 첨부 필수를 눌렀을 때만 하단으로 스크롤 이동 + AI 이름 검사
                   if (type == 1) {
+                    _checkAutoVerifiable();
+
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       _scrollController.animateTo(
                         _scrollController.position.maxScrollExtent,
@@ -402,7 +464,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
         label: '만들기',
         showShadow: _showShadow, // 상태 전달
         onPressed:
-            _isFormValid // 모든 필드가 입력되었을 때만 활성화
+            (_isFormValid && !_isSubmitting) // 제출 중이면 비활성화
             ? () {
                 _submitChallenge(); // 데이터 수집 및 팝업 실행!
               }

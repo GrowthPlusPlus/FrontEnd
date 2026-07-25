@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import 'package:haenaem/features/challenge/widgets/DeleteConfirmDialog.dart';
+import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/shared/models/post.dart';
 //import 'package:haenaem/features/challenge/models/challenge_model.dart';
@@ -191,9 +191,41 @@ class PostPopupMenu extends ConsumerWidget {
         final bool? confirmed = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (context) => const DeleteConfirmDialog(
+          builder: (context) => SelectDialog(
             title: '인증글 삭제',
-            message: '정말로 이 게시물을 삭제하시겠습니까?\n삭제된 게시물은 복구할 수 없습니다.',
+            content: '작성하신 인증글을 삭제하시겠습니까?\n삭제된 인증글은 되돌릴 수 없습니다.',
+            confirmText: '삭제',
+            confirmTextColor: AppColors.notification,
+            cancelText: '취소',
+            onConfirm: () async {
+              try {
+                // 💡 삭제 시도
+                final success = await ref
+                    .read(postDeleteNotifierProvider.notifier)
+                    .removeArticle(post.id, post.challengeId);
+
+                if (success && context.mounted) {
+                  displayToast(context, "인증글이 삭제되었습니다.");
+
+                  // 만약 상세페이지라면 뒤로가기
+                  Navigator.pop(context);
+                }
+              } catch (e) {
+                // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
+                String errorMessage = "삭제에 실패했습니다.";
+
+                if (e.toString().contains("PAST_POST_CANNOT_DELETE")) {
+                  errorMessage = "지나간 날짜의 인증글은 삭제할 수 없습니다. ✊";
+                }
+
+                if (context.mounted) {
+                  displayToast(context, errorMessage);
+                }
+              }
+            },
+            onCancel: () {
+              Navigator.of(context).pop(true);
+            },
           ),
         );
 
@@ -211,7 +243,7 @@ class PostPopupMenu extends ConsumerWidget {
               Navigator.pop(context);
             }
           } catch (e) {
-            // 💡 [핵심] 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 처리
+            // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
             String errorMessage = "삭제에 실패했습니다.";
 
             if (e.toString().contains("PAST_POST_CANNOT_DELETE")) {
@@ -224,7 +256,6 @@ class PostPopupMenu extends ConsumerWidget {
           }
         }
         break;
-
       case 'view_challenge':
         debugPrint('보내는 ID: ${post.challengeId}');
         Navigator.push(

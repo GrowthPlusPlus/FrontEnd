@@ -26,7 +26,7 @@ import '../widgets/ai_success_box.dart';
 import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
 import '../widgets/verification_submit_button.dart';
-import 'package:haenaem/features/challenge/verification/widgets/verification_cancel_dialog.dart';
+import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
 
@@ -450,13 +450,19 @@ class _ChallengeVerificationScreenState
       challengeDetailProvider(challengeId: widget.challengeId),
     );
     final bool isPhotoRequired = challengeAsync.value?.photoRequired ?? false;
+    debugPrint('🔍 [CLIP] isPhotoRequired: $isPhotoRequired');
     if (!isPhotoRequired) return;
 
     // 첫 번째 사진의 tempId 가져오기
     if (_newImages.isEmpty) return;
     final firstFile = _newImages.first;
     final int? firstTempId = _newImageIdMap[firstFile.path];
+    debugPrint('🔍 [CLIP] firstTempId: $firstTempId');
     if (firstTempId == null) return; // 업로드 실패한 사진이면 스킵
+
+    debugPrint(
+      '🔍 [CLIP] 검사 시작 — challengeId: ${widget.challengeId}, tempId: $firstTempId',
+    ); // ✅ 추가
 
     setState(() {
       _fileStatusMap[firstFile.path] = ImageVerificationStatus.loading;
@@ -466,6 +472,8 @@ class _ChallengeVerificationScreenState
     final bool passed = await ref
         .read(clipVerifyNotifierProvider.notifier)
         .verify(widget.challengeId, firstTempId);
+
+    debugPrint('🔍 [CLIP] 검사 결과: $passed');
 
     if (!mounted) return;
 
@@ -633,12 +641,20 @@ class _ChallengeVerificationScreenState
     final bool? shouldExit = await showDialog<bool>(
       context: context,
       barrierColor: const Color(0x7F1A1D1B),
-      builder: (context) => VerificationCancelDialog(
+      builder: (context) => SelectDialog(
         title: isEditMode ? '수정을 취소하시겠어요?' : '작성을 취소하시겠어요?',
-        message: isEditMode
-            ? '지금 나가면 수정 중인 내용은\n저장되지 않고 삭제됩니다.'
-            : '지금 나가면 작성 중인 내용은\n저장되지 않고 삭제됩니다.',
-        cancelLabel: isEditMode ? '수정 취소' : '작성 취소',
+        content: isEditMode
+            ? '지금 나가면 수정 중인 내용은\n저장되지 않고 모두 삭제됩니다.'
+            : '지금 나가면 작성 중인 내용은\n저장되지 않고 모두 삭제됩니다.',
+        confirmText: isEditMode ? '수정 취소' : '작성 취소',
+        confirmTextColor: AppColors.notification,
+        onConfirm: () {
+          Navigator.pop(context);
+        },
+        cancelText: '계속 작성하기',
+        onCancel: () {
+          Navigator.of(context).pop(false);
+        },
       ),
     );
 
