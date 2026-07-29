@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-import './bottom_action_button.dart';
 
 // 최초 작성자: 강선욱
 
 class ConfirmDialog extends StatelessWidget {
+  final Widget? icon;
   final String? title;
   final String content;
   final String buttonText;
@@ -13,6 +13,7 @@ class ConfirmDialog extends StatelessWidget {
 
   const ConfirmDialog({
     super.key,
+    this.icon,
     this.title,
     required this.content,
     this.buttonText = '확인',
@@ -22,33 +23,49 @@ class ConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (icon != null) ...[icon!, const SizedBox(height: 12)],
             if (title != null) ...[
               Text(
                 title!,
-                style: AppTypography.h3.copyWith(color: AppColors.black),
+                style: AppTypography.h2.copyWith(color: AppColors.black),
               ),
-              const SizedBox(height: 12),
             ],
             Text(
               content,
-              style: AppTypography.b1.copyWith(color: AppColors.gray3),
+              style: AppTypography.b3.copyWith(color: AppColors.gray1),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 36),
 
-            BottomActionButton(
-              text: buttonText,
-              onPressed: () {
+            GestureDetector(
+              onTap: () {
                 Navigator.of(context).pop();
                 if (onConfirm != null) onConfirm!();
               },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryAble, // 해냄 메인 활성화 색상
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    buttonText,
+                    style: AppTypography.b1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

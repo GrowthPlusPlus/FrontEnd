@@ -29,7 +29,7 @@ class _EditArticleDialogState extends State<EditArticleDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('인증글 수정', style: AppTypography.h3),
+            const Text('댓글 수정', style: AppTypography.h3),
             const SizedBox(height: 15),
             TextField(
               controller: _controller,

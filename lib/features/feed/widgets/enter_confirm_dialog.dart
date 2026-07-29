@@ -69,8 +69,10 @@ class EnterConfirmDialog extends ConsumerWidget {
                 onPressed: () => Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ChallengeMainScreen(challengeId: challengeId),
+                    builder: (context) => ChallengeMainScreen(
+                      challengeId: challengeId,
+                      challengeTitle: challengeTitle,
+                    ),
                   ),
                   (route) =>
                       route.settings.name ==

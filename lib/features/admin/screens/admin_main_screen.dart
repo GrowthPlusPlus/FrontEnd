@@ -77,6 +77,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                 title: '로그아웃',
                 content: '관리자 계정을 로그아웃하고\n로그인 화면으로 돌아가시겠습니까?',
                 confirmText: '로그아웃',
+                confirmTextColor: Colors.white,
+                confirmBackgroundColor: AppColors.notification,
                 cancelText: '취소',
                 onConfirm: () async {
                   // 1. 토큰 삭제
@@ -95,6 +97,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                     (route) => false,
                   );
                 },
+                onCancel: () {},
               ),
             );
           },

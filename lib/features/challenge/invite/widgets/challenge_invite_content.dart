@@ -13,7 +13,7 @@ import '../provider/challenge_invite_provider.dart';
 import '../models/invite_friend.dart';
 // import 'package:haenaem/features/challenge/data/challenge_repository.dart';
 // import 'package:haenaem/features/challenge/models/challenge_model.dart';
-// import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 // [공통 위젯] 챌린지 초대 본문 (링크 공유 + 친구 검색 + 리스트)
@@ -66,15 +66,29 @@ class _ChallengeInviteContentState
     });
   }
 
+  // 시스템 공유창을 띄우는 메서드
+  void _shareSystemLink(String currentLink) async {
+    final String shareMessage =
+        "[해냄] 새로운 챌린지에 초대받았어요!\n아래 링크를 눌러 함께 도전해 보세요!\n\n$currentLink";
+
+    // iPad 등 태블릿 기기에서 공유 창이 뜰 위치를 계산해 튕김 현상 방지
+    final box = context.findRenderObject() as RenderBox?;
+
+    await Share.share(
+      shareMessage,
+      subject: '해냄 챌린지 초대',
+      sharePositionOrigin: box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // 챌린지 전용 초대 정보 Provider 사용
     final inviteInfoAsync = ref.watch(
       challengeInviteProvider(widget.challengeId),
     );
-
-    // [디버깅 로그] 현재 상태 찍어보기
-    debugPrint('🎨 [UI 상태] $inviteInfoAsync');
 
     return inviteInfoAsync.when(
       data: (info) {
@@ -213,7 +227,7 @@ class _ChallengeInviteContentState
                     color: AppColors.gray5,
                     iconPath: 'assets/images/icons/share_icon.svg',
                     onTap: () {
-                      // TODO: SharePlus 등 공유 로직
+                      _shareSystemLink(link);
                     },
                   ),
                 ),
