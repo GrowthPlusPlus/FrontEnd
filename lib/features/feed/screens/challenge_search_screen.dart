@@ -110,6 +110,7 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
               )
             else
               RecommendedChallengeCard(items: data.challenges),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
           ],
         ),
       ),
