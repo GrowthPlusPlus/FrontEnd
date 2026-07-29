@@ -8,7 +8,8 @@ import '../../../core/utils/korean_string_utils.dart';
 import '../../../shared/models/user.dart';
 import '../../../shared/widgets/animated_toast.dart';
 import '../provider/friend_list_provider.dart';
-import '../widgets/delete_confirm_dialog.dart';
+// import '../widgets/delete_confirm_dialog.dart';
+import 'package:haenaem/shared/widgets/select_dialog.dart';
 import '../widgets/friend_edit_tile.dart';
 import 'package:haenaem/shared/widgets/custom_search_bar.dart';
 
@@ -70,37 +71,49 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
   void showDeleteDialog(User user) {
     showDialog(
       context: context,
-      builder: (dialogContext) => DeleteConfirmDialog(
-        userNickname: user.nickname,
-        onDelete: () async {
+      builder: (dialogContext) => SelectDialog(
+        title: '친구 삭제',
+        content: '${user.nickname} 님을 삭제하시겠습니까?',
+        confirmText: '삭제하기',
+        confirmTextColor: AppColors.notification,
+        cancelText: '취소',
+
+        // [취소] 클릭 시 단순히 다이얼로그 닫기
+        onCancel: () => Navigator.of(dialogContext).pop(),
+
+        // [삭제] 클릭 시 중간 단계 없이 곧바로 비즈니스 로직 가동
+        onConfirm: () async {
           try {
-            // 새로 생성한 Provider의 Notifier를 통한 삭제 로직 호출
+            // 1. Notifier를 통한 서버 삭제 API 호출
             await ref
                 .read(friendListProvider.notifier)
                 .removeFriend(user.nickname);
 
             if (!mounted) return;
 
-            // 삭제 성공 시 로컬 리스트에서 제거 및 UI 업데이트
+            // 2. 삭제 성공 시 로컬 리스트에서 제거 및 UI 즉시 업데이트
             setState(() {
               totalList.removeWhere((u) => u.nickname == user.nickname);
               filterList(searchController.text);
             });
 
-            // 다이얼로그가 아직 열려있는지 확인 후 닫기
+            // 3. 안전하게 다이얼로그 닫기
             if (dialogContext.mounted) {
-              Navigator.pop(dialogContext);
+              Navigator.of(dialogContext).pop();
             }
 
-            displayToast(context, '${user.nickname} 님이 삭제되었습니다.');
-          } catch (e) {
-            if (!mounted) return;
-            // 다이얼로그가 아직 열려있는지 확인 후 닫기
-            if (dialogContext.mounted) {
-              Navigator.pop(dialogContext);
+            if (context.mounted) {
+              displayToast(context, '${user.nickname} 님이 삭제되었습니다.');
             }
-            displayToast(context, '삭제에 실패했습니다. 다시 시도해 주세요.');
-            debugPrint('친구 삭제 실패: $e'); // 디버그 로그
+          } catch (e) {
+            // 에러 발생 시 다이얼로그를 닫고 토스트 알림
+            if (dialogContext.mounted) {
+              Navigator.of(dialogContext).pop();
+            }
+            if (context.mounted) {
+              displayToast(context, '삭제에 실패했습니다. 다시 시도해 주세요.');
+            }
+            debugPrint('친구 삭제 실패: $e');
           }
         },
       ),

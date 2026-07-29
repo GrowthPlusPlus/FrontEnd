@@ -68,7 +68,8 @@ dependencies:
   google_sign_in: ^7.2.0
   dio: ^5.9.1
   flutter_dotenv: ^6.0.1
-  gal: ^2.3.2
+  app_links: ^7.0.0
+  gal: ^2.3.3
 
 dev_dependencies:
   flutter_test:

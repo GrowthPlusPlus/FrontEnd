@@ -6,10 +6,10 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/shared/widgets/select_dialog.dart';
 import '../provider/challenge_member_provider.dart';
-// import '../data/challenge_member_repository.dart';
+import '../provider/challenge_delete_provider.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
+import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
 
-// import '../widgets/delegate_dialog.dart';
-import '../widgets/delete_challenge_dialog.dart';
 import 'challenge_members_screen.dart';
 
 // 챌린지 설정화면
@@ -164,6 +164,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                   content: '다른 멤버에게 챌린지장을 위임하고\n정말 이 챌린지에서 나가시겠습니까?',
                   confirmText: '나가기',
                   confirmBackgroundColor: AppColors.notification,
+                  confirmTextColor: Colors.white,
                   cancelText: '취소',
                   onConfirm: () async {
                     final currentFilter = MemberFilter(
@@ -180,6 +181,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                       Navigator.pop(context); // 챌린지 화면 나가기 (이전 화면으로 돌아감)
                     }
                   },
+                  onCancel: () {},
                 ),
               );
             },
@@ -202,8 +204,34 @@ class ChallengeSettingsScreen extends ConsumerWidget {
             onTap: () {
               showDialog(
                 context: context,
-                builder: (context) =>
-                    DeleteChallengeDialog(challengeId: challengeId),
+                builder: (context) => SelectDialog(
+                  emoji: '🚨', // 간단하게 아이콘 대신 이모지로 대체할 경우
+                  title: '챌린지를 삭제하시겠습니까?',
+                  titleColor: AppColors.notification, // 제목 빨간색 스타일 반영
+                  content:
+                      '이 작업은 되돌릴 수 없습니다.\n\n삭제 시 영향:\n• 모든 멤버가 퇴장됩니다.\n• 성취 그래프와 인증 기록이 삭제됩니다.\n• 챌린지 정보가 완전히 제거됩니다.',
+                  confirmText: '영구 삭제',
+                  confirmBackgroundColor: AppColors.notification,
+                  confirmTextColor: Colors.white,
+                  cancelText: '취소',
+                  cancelTextColor: AppColors.gray2,
+                  onConfirm: () async {
+                    // 기존 다이얼로그에 있던 삭제 로직 그대로 이식
+                    final success = await ref
+                        .read(challengeDeleteNotifierProvider.notifier)
+                        .removeChallenge(challengeId);
+
+                    if (success && context.mounted) {
+                      // 상태 갱신
+                      ref.read(homeNotifierProvider.notifier).refresh();
+                      ref.invalidate(myInProgressChallengesProvider);
+
+                      // 홈으로 이동
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    }
+                  },
+                  onCancel: () {},
+                ),
               );
             },
           ),

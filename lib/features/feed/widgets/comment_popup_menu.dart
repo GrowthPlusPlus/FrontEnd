@@ -8,7 +8,9 @@ import 'package:haenaem/core/theme/app_typography.dart';
 //import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
 import 'package:haenaem/features/feed/models/comment.dart';
 import 'package:haenaem/features/feed/provider/comment_provider.dart';
-import 'package:haenaem/features/challenge/widgets/DeleteConfirmDialog.dart';
+import 'package:haenaem/features/feed/widgets/feed_post_card.dart';
+import 'package:haenaem/shared/widgets/select_dialog.dart';
+import '../provider/feed_provider.dart';
 import 'edit_article_dialog.dart';
 import 'package:haenaem/features/report/screens/report_screen.dart';
 import 'package:haenaem/features/report/provider/report_provider.dart';
@@ -135,12 +137,39 @@ class CommentPopupMenu extends ConsumerWidget {
         final bool? confirmed = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (context) => const DeleteConfirmDialog(
-            title: '댓글 삭제', // 댓글에 맞는 제목
-            message: '작성하신 댓글을 삭제하시겠습니까?\n삭제된 댓글은 되돌릴 수 없습니다.',
+          builder: (context) => SelectDialog(
+            title: '댓글을 삭제하시겠습니까?',
+            content: '작성하신 댓글을 삭제하시겠습니까?\n삭제된 댓글은 되돌릴 수 없습니다.',
+            confirmText: '삭제',
+            confirmTextColor: AppColors.notification,
+            cancelText: '취소',
+            onCancel: () {
+              Navigator.of(context).pop(true);
+            },
+            onConfirm: () async {
+              try {
+                // 💡 삭제 시도
+                final success = await ref
+                    .read(commentDeleteNotifierProvider.notifier)
+                    .removeComment(postId: postId, commentId: comment.id);
+
+                if (success && context.mounted) {
+                  displayToast(context, "댓글이 삭제되었습니다.");
+                }
+              } catch (e) {
+                // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
+                String errorMessage = "삭제에 실패했습니다.";
+
+                if (context.mounted) {
+                  displayToast(context, errorMessage);
+                }
+              }
+            },
           ),
         );
-        FocusManager.instance.primaryFocus?.unfocus(); // 뜬금없이 나오는 키보드 문제 디버깅
+
+        // 뜬금없이 나오는 키보드 문제 디버깅용 유지
+        FocusManager.instance.primaryFocus?.unfocus();
 
         if (confirmed == true) {
           // 댓글 삭제 API 호출
@@ -149,7 +178,6 @@ class CommentPopupMenu extends ConsumerWidget {
               .removeComment(postId: postId, commentId: comment.id);
 
           if (success && context.mounted) {
-            // 피드 화면 댓글 수 감소를 위해 필요한 코드
             if (feedProvider != null) {
               ref
                   .read(feedProvider.notifier)
@@ -157,8 +185,6 @@ class CommentPopupMenu extends ConsumerWidget {
             }
 
             displayToast(context, "댓글이 삭제되었습니다.");
-            // ref.invalidate는 이미 Notifier 내부에서 처리되므로
-            // UI가 자동으로 업데이트된다.
           }
         }
         break;

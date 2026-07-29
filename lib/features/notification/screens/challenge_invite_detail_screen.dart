@@ -10,7 +10,8 @@ import 'package:haenaem/shared/widgets/challenge_detail_content.dart';
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import '../../../shared/widgets/bottom_action_button.dart';
 import '../provider/notification_provider.dart';
-import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
+// import 'package:haenaem/features/feed/widgets/enter_confirm_dialog.dart';
+import 'package:haenaem/shared/widgets/confirm_dialog.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 class ChallengeInviteDetailScreen extends ConsumerWidget {
@@ -130,9 +131,23 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
                 // 💡 4. 참여 완료 다이얼로그 띄우기!
                 showDialog(
                   context: context,
-                  builder: (context) => EnterConfirmDialog(
-                    challengeId: challengeId,
-                    challengeTitle: challengeTitle,
+                  builder: (context) => ConfirmDialog(
+                    icon: SizedBox(
+                      width: 42,
+                      height: 42,
+                      child: SvgPicture.asset(
+                        'assets/images/icons/round_check_icon.svg',
+                        width: 42,
+                        height: 42,
+                      ),
+                    ),
+                    title: '챌린지 참여 완료',
+                    content: '\'$challengeTitle\'\n지금부터 함께 도전해요!',
+                    buttonText: '확인',
+                    // 혹시 확인 버튼을 누른 뒤 홈으로 보내거나 추가 액션이 필요하다면 여기에 주입 가능합니다.
+                    onConfirm: () {
+                      print('✅ \'$challengeTitle\' 참여 완료 팝업 닫힘');
+                    },
                   ),
                 );
               }

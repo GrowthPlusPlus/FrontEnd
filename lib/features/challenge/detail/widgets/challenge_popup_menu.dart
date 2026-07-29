@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/challenge/invite/screens/challenge_invite_screen.dart';
-import 'package:haenaem/features/challenge/detail/widgets/exit_confirm_dialog.dart';
+import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:haenaem/features/challenge/detail/widgets/notification_settings_dialog.dart';
 import 'package:haenaem/features/challenge/settings/screens/challenge_settings_screen.dart';
 // import 'package:haenaem/features/challenge/provider/challenge_provider.dart'; // 추가
@@ -156,30 +156,33 @@ class ChallengePopupMenu extends ConsumerWidget {
         );
         break;
       case 'leave':
-        // 참여자 전용: 나가기 컨펌 다이얼로그
-        final bool? confirmed = await showDialog<bool>(
-          // await로 변경
+        showDialog(
           context: context,
-          builder: (context) => ExitConfirmDialog(challengeId: challengeId),
+          builder: (dialogContext) => SelectDialog(
+            emoji: '🥺',
+            title: '챌린지를 나가시겠어요?',
+            content: '지금까지의 진행 상황이 모두 사라지며,\n복구할 수 없습니다.',
+            contentColor: AppColors.notification,
+            confirmText: '취소',
+            cancelText: '나가기',
+            cancelBackgroundColor: AppColors.notification, // 나가기 버튼은 경고색으로 강조
+            cancelTextColor: Colors.white,
+            onCancel: () async {
+              debugPrint('나가기 버튼 눌림');
+              final success = await ref
+                  .read(challengeLeaveNotifierProvider.notifier)
+                  .leaveChallenge(challengeId);
+
+              if (success && context.mounted) {
+                displayToast(context, '챌린지에서 성공적으로 나갔습니다.');
+                Navigator.pop(context);
+              } else if (context.mounted) {
+                displayToast(context, '나가기 처리 중 오류가 발생했습니다.');
+              }
+            },
+            onConfirm: () {},
+          ),
         );
-
-        if (confirmed == true) {
-          // 사용자가 '나가기'를 확정했을 때의 로직
-          // 💡 ChallengeLeaveNotifier를 통해 API 호출
-          final bool success = await ref
-              .read(challengeLeaveNotifierProvider.notifier)
-              .leaveChallenge(challengeId);
-
-          if (success && context.mounted) {
-            // 성공 시 메시지 표시 및 화면 이동 처리
-            displayToast(context, '챌린지에서 성공적으로 나갔습니다.');
-            // 홈 화면으로 이동
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          } else if (context.mounted) {
-            // 실패 시 에러 메시지
-            displayToast(context, '나가기 처리 중 오류가 발생했습니다.');
-          }
-        }
         break;
     }
   }
