@@ -9,7 +9,6 @@ import 'package:expandable_page_view/expandable_page_view.dart';
 import '../models/recommended_challenge.dart';
 import 'package:haenaem/shared/screens/challenge_detail_screen.dart';
 
-// 챌린지 탐색 화면의 추천 챌린지 카드
 class RecommendedChallengeCard extends StatefulWidget {
   const RecommendedChallengeCard({super.key, required this.items});
 
@@ -22,21 +21,17 @@ class RecommendedChallengeCard extends StatefulWidget {
 
 class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
   int _currentIndex = 0;
-
-  // 각 카드의 '추천 이유 보기' 상태를 한꺼번에 추적하기 위한 Map 상태
-  // {인덱스: 열림여부} — 카드별 "추천 이유" 펼침 상태
   final Map<int, bool> _expandedStates = {};
 
   @override
   Widget build(BuildContext context) {
-    // 현재 카드가 열려있는지 확인 (기본값은 false)
     final isExpanded = _expandedStates[_currentIndex] ?? false;
     final currentItem = widget.items[_currentIndex];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       child: Container(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 0),
+        // ✅ 패딩 제거 → 이미지가 카드 전체 너비를 꽉 채움(풀블리드)
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
           color: Colors.white,
@@ -56,8 +51,7 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── 카드 상단: 항상 PageView 유지 → 언제든 좌우 스와이프 가능 ──
-            //    내용 길이에 맞춰 카드 높이 자동 조절 ──
+            // ── 이미지 + 콘텐츠(제목/통계/태그/설명) → 페이지별로 스와이프 ──
             ExpandablePageView.builder(
               itemCount: widget.items.length,
               onPageChanged: (index) {
@@ -69,45 +63,50 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
                 return _RecommendedChallengeTop(item: widget.items[index]);
               },
             ),
-            // ── "추천 이유" 펼침 영역: 현재 인덱스 기준으로만 표시 ──
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: isExpanded
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 12),
+            // ── "추천 이유" 펼침 + 토글 버튼: 여기서부터만 좌우 패딩 적용 ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.topCenter,
+                    child: isExpanded
+                        ? Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                              currentItem.recommendReason,
+                              style: AppTypography.b2.copyWith(
+                                color: AppColors.gray1,
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _expandedStates[_currentIndex] = !isExpanded;
+                        });
+                      },
                       child: Text(
-                        currentItem.recommendReason,
+                        isExpanded ? '추천 이유 닫기' : '추천 이유 보기',
+                        textAlign: TextAlign.right,
                         style: AppTypography.b2.copyWith(
                           color: AppColors.gray1,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-
-            // ── 추천 이유 토글 버튼 (현재 페이지 기준) ──
-            Align(
-              alignment: Alignment.centerRight,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    _expandedStates[_currentIndex] = !isExpanded;
-                  });
-                },
-                child: Text(
-                  isExpanded ? '추천 이유 닫기' : '추천 이유 보기',
-                  textAlign: TextAlign.right,
-                  style: AppTypography.b2.copyWith(
-                    color: AppColors.gray1,
-                    decoration: TextDecoration.underline,
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
-            // 인디케이터 - 카드 안, 콘텐츠 아래 고정
             SliderIndicator(
               count: widget.items.length,
               currentIndex: _currentIndex,
@@ -120,7 +119,7 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
   }
 }
 
-// 카드 상단 고정 콘텐츠(제목/통계/태그/설명) — ExpandablePageView 안에서만 쓰임
+// 카드 상단: 이미지(풀블리드) + 콘텐츠(제목/통계/태그/설명/화살표)
 class _RecommendedChallengeTop extends StatelessWidget {
   const _RecommendedChallengeTop({required this.item});
 
@@ -128,62 +127,117 @@ class _RecommendedChallengeTop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      spacing: 10,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
+        // ── 이미지 ──
+        SizedBox(
+          width: double.infinity,
+          height: 120,
+          child: item.imageUrl.isNotEmpty
+              ? Image.network(
+                  item.imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return Container(
+                      color: AppColors.gray4,
+                      child: const Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: AppColors.gray4,
+                    child: const Icon(Icons.image_not_supported_outlined),
+                  ),
+                )
+              : Container(color: AppColors.gray4),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 12,
             children: [
+              // ── 제목 ──
               Text(
                 item.title,
                 style: AppTypography.b3.copyWith(color: AppColors.black),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 4,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 10,
                 children: [
-                  Row(
-                    spacing: 16,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/images/icons/person_icon.svg',
-                            width: 16,
-                            height: 16,
-                            colorFilter: const ColorFilter.mode(
-                              AppColors.gray2,
-                              BlendMode.srcIn,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 4,
+                      children: [
+                        Row(
+                          spacing: 16,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/images/icons/person_icon.svg',
+                                  width: 16,
+                                  height: 16,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.gray2,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                                Text(
+                                  '${item.participantNumber}명',
+                                  style: AppTypography.b2.copyWith(
+                                    color: AppColors.gray2,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          Text(
-                            '${item.participantNumber}명',
-                            style: AppTypography.b2.copyWith(
-                              color: AppColors.gray2,
+                            Text(
+                              '완료까지 D-${item.remainingDays}',
+                              style: AppTypography.b2.copyWith(
+                                color: AppColors.gray2,
+                              ),
                             ),
+                          ],
+                        ),
+                        Row(
+                          spacing: 5,
+                          children: item.tags
+                              .map((tag) => TagBadge(label: tag.tag))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChallengeDetailScreen(
+                            challengeId: item.challengeId,
+                            challengeTitle: item.title,
                           ),
-                        ],
-                      ),
-                      Text(
-                        '완료까지 D-${item.remainingDays}',
-                        style: AppTypography.b2.copyWith(
-                          color: AppColors.gray2,
+                        ),
+                      );
+                    },
+                    child: SizedBox(
+                      child: SvgPicture.asset(
+                        'assets/images/icons/thick_right_arrow_icon.svg',
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.gray2,
+                          BlendMode.srcIn,
                         ),
                       ),
-                    ],
-                  ),
-                  Row(
-                    spacing: 5,
-                    children: item.tags
-                        .map((tag) => TagBadge(label: tag.tag))
-                        .toList(),
+                    ),
                   ),
                 ],
               ),
+              // ── 설명: 화살표와 별도, 전체 너비 사용 ──
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -198,29 +252,6 @@ class _RecommendedChallengeTop extends StatelessWidget {
                 ],
               ),
             ],
-          ),
-        ),
-        // 챌린지 상세 화면으로 이동
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChallengeDetailScreen(
-                  challengeId: item.challengeId,
-                  challengeTitle: item.title,
-                ),
-              ),
-            );
-          },
-          child: SizedBox(
-            child: SvgPicture.asset(
-              'assets/images/icons/thick_right_arrow_icon.svg',
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray2,
-                BlendMode.srcIn,
-              ),
-            ),
           ),
         ),
       ],

@@ -1,5 +1,6 @@
 import 'package:haenaem/shared/models/challenge_base.dart';
 import 'package:haenaem/shared/models/user.dart';
+import 'package:flutter/foundation.dart';
 
 // 최초 작성자: 강선욱
 // 챌린지 상세 모델
@@ -31,6 +32,7 @@ class ChallengeDetail {
   });
 
   factory ChallengeDetail.fromJson(Map<String, dynamic> json) {
+    debugPrint('🕵️ ChallengeDetail raw json: $json');
     return ChallengeDetail(
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
