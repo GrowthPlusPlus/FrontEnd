@@ -1,13 +1,20 @@
 // 최초 작성자 : 강선욱
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gal/gal.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/provider/post_provider.dart';
+import '../provider/calendar_share_provider.dart';
 import '../provider/stats_provider.dart';
 import '../widgets/calendar_grid.dart';
 import '../widgets/calendar_post_card.dart';
+import '../widgets/calendar_share_preview.dart';
+import 'package:haenaem/shared/widgets/confirm_dialog.dart';
 
 class CalendarView extends ConsumerStatefulWidget {
   final int challengeId;
@@ -66,6 +73,160 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
+  }
+
+  // 1. 공유 버튼 클릭 이벤트 핸들러
+  Future<void> _handleShare() async {
+    // 로딩 중 및 안내 문구 표시 다이얼로그
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AppColors.black),
+                SizedBox(height: 16),
+                Text(
+                  '이미지를 생성하고 있습니다...\n(약 5~10초 정도 소요될 수 있습니다)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.black,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final imageUrl = await ref
+          .read(calendarShareNotifierProvider.notifier)
+          .generateCalendarShareImage(
+            challengeId: widget.challengeId,
+            year: _focusedDay.year,
+            month: _focusedDay.month,
+          );
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // 로딩 팝업 닫기
+
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        _showSharePreviewModal(imageUrl);
+      } else {
+        _showRetrySnackBar('이미지 생성 준비 중입니다. 다시 시도 버튼을 눌러주세요.');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // 로딩 팝업 닫기
+      _showRetrySnackBar('이미지 생성 시간이 지연되었습니다.');
+    }
+  }
+
+  // 재시도 버튼이 포함된 스낵바
+  void _showRetrySnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: '다시 시도',
+          textColor: Colors.yellowAccent,
+          onPressed: () {
+            _handleShare(); // 바로 다시 시도
+          },
+        ),
+      ),
+    );
+  }
+
+  // 모달 위젯을 띄우는 함수
+  void _showSharePreviewModal(String imageUrl) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.75), // 어두운 백그라운드
+      builder: (modalContext) {
+        return CalendarSharePreview(
+          imageUrl: imageUrl,
+          onSave: () => _saveImageToGallery(imageUrl, modalContext),
+          onShare: () => _shareToExternalApp(imageUrl),
+        );
+      },
+    );
+  }
+
+  // 이미지 저장 액션
+  Future<void> _saveImageToGallery(
+    String imageUrl,
+    BuildContext modalContext,
+  ) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final savePath =
+          '${tempDir.path}/calendar_share_${DateTime.now().millisecondsSinceEpoch}.png';
+
+      await Dio().download(imageUrl, savePath);
+      await Gal.putImage(savePath);
+
+      if (!mounted) return;
+
+      showDialog(
+        context: modalContext,
+        builder: (dialogContext) => const ConfirmDialog(
+          title: '저장 완료',
+          content: '갤러리에 성공적으로 저장되었습니다!',
+          buttonText: '확인',
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      // 💡 에러 발생 시에도 ConfirmDialog로 표시
+      showDialog(
+        context: modalContext,
+        builder: (dialogContext) => ConfirmDialog(
+          title: '저장 실패',
+          content: '이미지 저장 중 오류가 발생했습니다.\n($e)',
+          buttonText: '확인',
+        ),
+      );
+    }
+  }
+
+  // 외부 공유 액션 (OS Native Share Sheet)
+  Future<void> _shareToExternalApp(String imageUrl) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final savePath =
+          '${tempDir.path}/calendar_share_${DateTime.now().millisecondsSinceEpoch}.png';
+
+      await Dio().download(imageUrl, savePath);
+      await Share.shareXFiles([
+        XFile(savePath),
+      ], text: '내 챌린지 달성 기록을 확인해보세요! 🔥');
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('공유 중 오류가 발생했습니다.');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -304,7 +465,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
         ),
         const Spacer(),
         IconButton(
-          onPressed: () {},
+          onPressed: _handleShare,
           icon: SvgPicture.asset(
             'assets/images/icons/share_icon.svg',
             width: 24,
