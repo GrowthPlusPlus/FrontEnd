@@ -9,6 +9,8 @@ import '../data/monthly_weekly_repository.dart';
 import '../widgets/haenaem_grass.dart';
 import '../widgets/pie_graph.dart';
 import '../widgets/line_graph/line_graph.dart';
+import '../widgets/line_graph/line_graph.dart';
+import '../widgets/ai_coaching_section.dart';
 
 // 통계화면 프레임 (안에다 위젯을 넣는 구조)
 class StatisticsScreen extends ConsumerWidget {
@@ -141,6 +143,9 @@ class StatisticsScreen extends ConsumerWidget {
               data: (data) =>
                   LineGraph(monthlyData: data.monthly, weeklyData: data.weekly),
             ),
+            const SizedBox(height: 20),
+            // AI 코칭 카드 (나의 해냄 포인트 / 이것만 해내면 완벽해요 / 다음 단계 해내기)
+            const AiCoachingSection(),
             const SizedBox(height: 20),
           ],
         ),

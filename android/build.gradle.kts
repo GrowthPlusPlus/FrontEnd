@@ -1,7 +1,23 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+    afterEvaluate {
+        extensions.findByName("android")?.let { androidExt ->
+            (androidExt as? com.android.build.gradle.BaseExtension)?.apply {
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
+            }
+        }
+    }
+    tasks.withType<KotlinCompile>().configureEach {
+        kotlinOptions {
+            jvmTarget = "17"
+        }
     }
 }
 
