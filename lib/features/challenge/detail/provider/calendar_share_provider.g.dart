@@ -1,26 +1,30 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'home_provider.dart';
+part of 'calendar_share_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$homeNotifierHash() => r'd5dd07cc28fea300801a81d31b6a56e2f2ac41b2';
+String _$calendarShareNotifierHash() =>
+    r'a589e400c789c5b0d0594d0f2c8d86dc8359f6dd';
 
-/// See also [HomeNotifier].
-@ProviderFor(HomeNotifier)
-final homeNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<HomeNotifier, HomeResponse>.internal(
-      HomeNotifier.new,
-      name: r'homeNotifierProvider',
+/// See also [CalendarShareNotifier].
+@ProviderFor(CalendarShareNotifier)
+final calendarShareNotifierProvider =
+    AutoDisposeNotifierProvider<
+      CalendarShareNotifier,
+      AsyncValue<String?>
+    >.internal(
+      CalendarShareNotifier.new,
+      name: r'calendarShareNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$homeNotifierHash,
+          : _$calendarShareNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$HomeNotifier = AutoDisposeAsyncNotifier<HomeResponse>;
+typedef _$CalendarShareNotifier = AutoDisposeNotifier<AsyncValue<String?>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

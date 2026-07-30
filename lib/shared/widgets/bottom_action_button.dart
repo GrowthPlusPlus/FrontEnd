@@ -7,19 +7,24 @@ import 'package:haenaem/core/theme/app_typography.dart';
 class BottomActionButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
+  final IconData? icon;
 
   // 커스텀 파라미터 추가
   final Color? backgroundColor; // 버튼 배경색
   final Color? textColor; // 글자 색상
   final Color? borderColor; // 테두리 색상 (null이면 테두리 없음)
+  final bool
+  showContainerDecoration; // 💡 Outer Gradient/Padding 적용 여부 (기본값: true)
 
   const BottomActionButton({
     super.key,
     required this.text,
     this.onPressed,
+    this.icon,
     this.backgroundColor,
     this.textColor,
     this.borderColor,
+    this.showContainerDecoration = true,
   });
 
   @override
@@ -27,6 +32,43 @@ class BottomActionButton extends StatelessWidget {
     // 기본값 설정: 파라미터가 없으면 기존 디자인 시스템 색상 사용
     final Color effectiveBgColor = backgroundColor ?? AppColors.primaryAble;
     final Color effectiveTextColor = textColor ?? Colors.white;
+
+    final Widget buttonWidget = ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: effectiveBgColor,
+        minimumSize: const Size(double.infinity, 60),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: borderColor != null
+              ? BorderSide(color: borderColor!, width: 2)
+              : BorderSide.none,
+        ),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 20, color: effectiveTextColor),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              text,
+              style: AppTypography.b1.copyWith(color: effectiveTextColor),
+              maxLines: 1,
+              softWrap: false,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (!showContainerDecoration) {
+      return buttonWidget;
+    }
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -43,35 +85,8 @@ class BottomActionButton extends StatelessWidget {
         ),
       ),
       child: SafeArea(
-        top: false, // 상단 여백은 필요 없으므로 하단만 보호
-        child: Padding(
-          // 💡 하단 여백 30을 유지하되 시스템 바가 있는 경우 자동으로 합산됨
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-          child: ElevatedButton(
-            onPressed: onPressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: effectiveBgColor,
-              minimumSize: const Size(double.infinity, 60),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                // 테두리 조건부 렌더링
-                side: borderColor != null
-                    ? BorderSide(color: borderColor!, width: 2)
-                    : BorderSide.none,
-              ),
-            ),
-            child: FittedBox(
-              fit: BoxFit.scaleDown, // 상위 박스를 넘어가면 비율을 유지하며 축소
-              child: Text(
-                text,
-                style: AppTypography.h3.copyWith(color: effectiveTextColor),
-                maxLines: 1, // 절대 줄바꿈이 일어나서 깨지지 않도록 방어
-                softWrap: false,
-              ),
-            ),
-          ),
-        ),
+        top: false,
+        child: Padding(padding: EdgeInsets.zero, child: buttonWidget),
       ),
     );
   }
