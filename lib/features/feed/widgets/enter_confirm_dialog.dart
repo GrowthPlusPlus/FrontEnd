@@ -21,12 +21,13 @@ class EnterConfirmDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     final state = ref.watch(challengeParticipateNotifierProvider);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
+      surfaceTintColor: appColors.whiteToBlack,
       insetPadding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(15, 25, 15, 15),
@@ -41,24 +42,28 @@ class EnterConfirmDialog extends ConsumerWidget {
                 'assets/images/icons/round_check_icon.svg',
                 width: 42,
                 height: 42,
+                colorFilter: ColorFilter.mode(
+                  appColors.primaryAble,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
             const SizedBox(height: 10),
             // 제목
             Text(
               '챌린지 참여 완료!',
-              style: AppTypography.h2.copyWith(color: AppColors.black),
+              style: AppTypography.h2.copyWith(color: appColors.blackToWhite),
             ),
             const SizedBox(height: 3),
             // 챌린지 명 넣기
             Text(
               '‘$challengeTitle’',
-              style: AppTypography.b3.copyWith(color: AppColors.gray1),
+              style: AppTypography.b3.copyWith(color: appColors.gray1),
               textAlign: TextAlign.center,
             ),
             Text(
               '지금부터 함께 도전해요!',
-              style: AppTypography.b1.copyWith(color: AppColors.gray1),
+              style: AppTypography.b1.copyWith(color: appColors.gray1),
             ),
             const SizedBox(height: 24),
             // 확인 버튼
@@ -81,8 +86,8 @@ class EnterConfirmDialog extends ConsumerWidget {
                       route.isFirst, // 못 찾으면(다른 경로로 들어온 경우) 기존처럼 맨 처음까지
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryAble,
-                  foregroundColor: Colors.white,
+                  backgroundColor: appColors.primaryAble,
+                  foregroundColor: appColors.whiteToBlack,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -90,7 +95,9 @@ class EnterConfirmDialog extends ConsumerWidget {
                 ),
                 child: Text(
                   '확인',
-                  style: AppTypography.b1.copyWith(color: Colors.white),
+                  style: AppTypography.b1.copyWith(
+                    color: appColors.whiteToBlack,
+                  ),
                 ),
               ),
             ),

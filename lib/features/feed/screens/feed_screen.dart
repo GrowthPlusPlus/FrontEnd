@@ -57,15 +57,17 @@ class _FeedScreenState extends State<FeedScreen>
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
           '피드',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
         actions: [
@@ -87,8 +89,8 @@ class _FeedScreenState extends State<FeedScreen>
                 'assets/images/icons/search_icon.svg',
                 width: 24,
                 height: 24,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.black,
+                colorFilter: ColorFilter.mode(
+                  appColors.blackToWhite,
                   BlendMode.srcIn,
                 ),
               ),
@@ -97,9 +99,9 @@ class _FeedScreenState extends State<FeedScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primaryAble,
-          unselectedLabelColor: AppColors.gray4,
-          indicatorColor: AppColors.primaryAble,
+          labelColor: appColors.primaryAble,
+          unselectedLabelColor: appColors.gray4,
+          indicatorColor: appColors.primaryAble,
           indicatorWeight: 1,
           indicatorSize: TabBarIndicatorSize.tab,
           labelStyle: AppTypography.b1,

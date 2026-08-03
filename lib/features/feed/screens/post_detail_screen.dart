@@ -28,15 +28,17 @@ class PostDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 상세 정보 및 댓글 구독
     final detailAsync = ref.watch(postDetailProvider(postId: postId));
     final commentsAsync = ref.watch(postCommentsProvider(postId: postId));
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
+        surfaceTintColor: appColors.whiteToBlack,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
@@ -44,12 +46,16 @@ class PostDetailScreen extends ConsumerWidget {
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           '피드',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),
@@ -84,7 +90,8 @@ class PostDetailScreen extends ConsumerWidget {
                           child: Center(child: Text('댓글 로드 실패')),
                         ),
                         data: (comments) {
-                          if (comments.isEmpty) return _buildEmptyComments();
+                          if (comments.isEmpty)
+                            return _buildEmptyComments(appColors);
                           return ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -113,11 +120,11 @@ class PostDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyComments() {
-    return const Padding(
+  Widget _buildEmptyComments(AppColorsExtension appColors) {
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 60),
       child: Center(
-        child: Text('첫 댓글을 남겨보세요!', style: TextStyle(color: AppColors.gray2)),
+        child: Text('첫 댓글을 남겨보세요!', style: TextStyle(color: appColors.gray2)),
       ),
     );
   }

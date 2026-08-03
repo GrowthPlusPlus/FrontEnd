@@ -28,6 +28,7 @@ class FeedPostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     /*
     final displayDate = post.updatedAt ?? post.createdAt;
 
@@ -106,7 +107,7 @@ class FeedPostCard extends ConsumerWidget {
                       child: Text(
                         post.title,
                         style: AppTypography.b3.copyWith(
-                          color: AppColors.black,
+                          color: appColors.blackToWhite,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -118,7 +119,7 @@ class FeedPostCard extends ConsumerWidget {
                         child: Text(
                           '수정됨',
                           style: AppTypography.b2.copyWith(
-                            color: AppColors.gray3,
+                            color: appColors.gray3,
                           ), // 조금 연한 회색 스타일 적용
                         ),
                       ),
@@ -127,7 +128,7 @@ class FeedPostCard extends ConsumerWidget {
                 const SizedBox(height: 4), // 간격 추가
                 Text(
                   post.content,
-                  style: AppTypography.b1.copyWith(color: AppColors.gray1),
+                  style: AppTypography.b1.copyWith(color: appColors.gray1),
                   // 사진이 없을 때는 본문을 더 길게 보여줘도 좋습니다.
                   maxLines: post.hasImage ? 3 : 10,
                   overflow: TextOverflow.ellipsis,
@@ -170,8 +171,8 @@ class FeedPostCard extends ConsumerWidget {
                         height: 20,
                         colorFilter: ColorFilter.mode(
                           post.isLiked
-                              ? AppColors.notification
-                              : AppColors.gray2,
+                              ? appColors.notification
+                              : appColors.gray2,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -180,8 +181,8 @@ class FeedPostCard extends ConsumerWidget {
                         post.likeCount.toString(),
                         style: AppTypography.b2.copyWith(
                           color: post.isLiked
-                              ? AppColors.notification
-                              : AppColors.gray2,
+                              ? appColors.notification
+                              : appColors.gray2,
                         ),
                       ),
                     ],
@@ -191,11 +192,12 @@ class FeedPostCard extends ConsumerWidget {
                 _buildIconInfo(
                   'assets/images/icons/comment_icon.svg',
                   post.commentCount.toString(),
+                  appColors,
                 ),
                 const Spacer(),
                 Text(
                   formattedDate,
-                  style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                  style: AppTypography.b2.copyWith(color: appColors.gray2),
                 ),
               ],
             ),
@@ -207,19 +209,19 @@ class FeedPostCard extends ConsumerWidget {
 
   Widget _buildIconInfo(
     String iconPath,
-    String count, {
-    Color color = AppColors.gray2,
-  }) {
+    String count,
+    AppColorsExtension appColors,
+  ) {
     return Row(
       children: [
         SvgPicture.asset(
           iconPath,
           width: 20,
           height: 20,
-          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(appColors.gray2, BlendMode.srcIn),
         ),
         const SizedBox(width: 4),
-        Text(count, style: AppTypography.b2.copyWith(color: color)),
+        Text(count, style: AppTypography.b2.copyWith(color: appColors.gray2)),
       ],
     );
   }
@@ -240,6 +242,8 @@ class _PostImageSliderState extends State<_PostImageSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Column(
       children: [
         SizedBox(
@@ -273,15 +277,15 @@ class _PostImageSliderState extends State<_PostImageSlider> {
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Container(
-                    color: AppColors.gray5,
+                    color: appColors.gray5,
                     child: const Center(child: CircularProgressIndicator()),
                   );
                 },
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: AppColors.gray5,
-                    child: const Center(
-                      child: Icon(Icons.broken_image, color: AppColors.gray3),
+                    color: appColors.gray5,
+                    child: Center(
+                      child: Icon(Icons.broken_image, color: appColors.gray3),
                     ),
                   );
                 },

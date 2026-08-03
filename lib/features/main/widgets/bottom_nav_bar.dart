@@ -20,6 +20,7 @@ class MainBottomNavBar extends StatelessWidget {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
 
     return BottomNavigationBar(
+      backgroundColor: appColors.whiteToBlack,
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex,
       selectedItemColor: appColors.blackToWhite,

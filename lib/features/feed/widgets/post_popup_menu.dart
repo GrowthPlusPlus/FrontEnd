@@ -27,6 +27,8 @@ class PostPopupMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 💡 Post 객체 내부 데이터 상태 확인용 로그
     debugPrint('--- [Post Data Check] ---');
     debugPrint('Post ID: ${post.id}');
@@ -60,16 +62,17 @@ class PostPopupMenu extends ConsumerWidget {
       constraints: const BoxConstraints(maxWidth: 206),
       offset: const Offset(0, 40), // 버튼 아래로 띄우기
       shape: RoundedRectangleBorder(
-        side: const BorderSide(width: 1, color: AppColors.gray4),
+        side: BorderSide(width: 1, color: appColors.gray4),
         borderRadius: BorderRadius.circular(10),
       ),
-      color: Colors.white,
+      color: appColors.whiteToBlack,
       elevation: 4, // 그림자 효과
 
       icon: SvgPicture.asset(
         'assets/images/icons/dots_vert_icon.svg',
         width: 24,
         height: 24,
+        colorFilter: ColorFilter.mode(appColors.blackToWhite, BlendMode.srcIn),
       ),
 
       // 내 글이냐 아니냐에 따라 아이템 리스트만 교체
@@ -82,6 +85,7 @@ class PostPopupMenu extends ConsumerWidget {
                 '수정하기',
                 'assets/images/icons/edit_icon.svg',
                 'edit',
+                appColors,
               ),
               _buildDivider(),
               _buildPopupItem(
@@ -89,6 +93,7 @@ class PostPopupMenu extends ConsumerWidget {
                 'assets/images/icons/small_trash_icon.svg',
                 'delete',
                 isDanger: true,
+                appColors,
               ),
             ];
           } else {
@@ -99,6 +104,7 @@ class PostPopupMenu extends ConsumerWidget {
                 '챌린지 보기',
                 'assets/images/icons/eye.svg',
                 'view_challenge',
+                appColors,
               ),
             ];
           }
@@ -109,6 +115,7 @@ class PostPopupMenu extends ConsumerWidget {
               '챌린지 보기',
               'assets/images/icons/eye.svg',
               'view_challenge',
+              appColors,
             ),
             _buildDivider(),
             _buildPopupItem(
@@ -116,21 +123,26 @@ class PostPopupMenu extends ConsumerWidget {
               'assets/images/icons/complaint.svg',
               'report',
               isDanger: true,
+              appColors,
             ),
           ];
         }
       },
-      onSelected: (value) => _handleMenuSelection(context, ref, value),
+      onSelected: (value) =>
+          _handleMenuSelection(context, ref, value, appColors),
     );
   }
 
   PopupMenuItem<String> _buildPopupItem(
     String title,
     String iconPath,
-    String value, {
+    String value,
+    AppColorsExtension appColors, {
     bool isDanger = false,
   }) {
-    final Color textColor = isDanger ? AppColors.notification : AppColors.black;
+    final Color textColor = isDanger
+        ? appColors.notification
+        : appColors.blackToWhite;
 
     return PopupMenuItem<String>(
       value: value,
@@ -170,6 +182,7 @@ class PostPopupMenu extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String value,
+    AppColorsExtension appColors,
   ) async {
     FocusManager.instance.primaryFocus?.unfocus();
 
@@ -195,7 +208,7 @@ class PostPopupMenu extends ConsumerWidget {
             title: '인증글 삭제',
             content: '작성하신 인증글을 삭제하시겠습니까?\n삭제된 인증글은 되돌릴 수 없습니다.',
             confirmText: '삭제',
-            confirmTextColor: AppColors.notification,
+            confirmTextColor: appColors.notification,
             cancelText: '취소',
             onConfirm: () async {
               try {

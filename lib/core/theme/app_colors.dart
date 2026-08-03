@@ -88,7 +88,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       gray4: AppColors.gray2, // gray4 -> gray2
       gray5: Color(0xFF2A2A2A), // gray5 -> d-gray5
       primaryAble: Color(0xFF0EBC6A), // primarygreen -> d-primarygreen
-      selected: Color(0xFF264F36), // selected -> d-selected
+      selected: Color(0xFF1D2C23), // selected -> d-selected
       disable: Color(0xFF697C73), // disable -> d-disable
       success: Color(0xFF1A3A1E), // success -> d-success
       warning: Color(0xFF3A2522), // warning -> d-warning
