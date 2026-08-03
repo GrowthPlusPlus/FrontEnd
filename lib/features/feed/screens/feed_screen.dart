@@ -21,21 +21,6 @@ class _FeedScreenState extends State<FeedScreen>
   late TabController _tabController;
   final ScrollController _friendScrollController = ScrollController();
   final ScrollController _exploreScrollController = ScrollController();
-  int _previousIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {
-          _previousIndex = _tabController.index;
-        });
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -43,17 +28,6 @@ class _FeedScreenState extends State<FeedScreen>
     _friendScrollController.dispose();
     _exploreScrollController.dispose();
     super.dispose();
-  }
-
-  // 최상단 이동 애니메이션 함수
-  void _scrollToTop(ScrollController controller) {
-    if (controller.hasClients) {
-      controller.animateTo(
-        0,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOut,
-      );
-    }
   }
 
   @override
