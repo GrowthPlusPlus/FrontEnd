@@ -24,13 +24,14 @@ class ReportReasonTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          // color: isSelected ? AppColors.selected : AppColors.gray5,
-          color: AppColors.gray5,
+          color: appColors.gray5,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -47,14 +48,14 @@ class ReportReasonTile extends StatelessWidget {
                       Text(
                         title,
                         style: AppTypography.b3.copyWith(
-                          color: AppColors.gray1,
+                          color: appColors.gray1,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.gray3,
+                          color: appColors.gray3,
                         ),
                       ),
                     ],
@@ -66,7 +67,7 @@ class ReportReasonTile extends StatelessWidget {
                   isSelected
                       ? Icons.radio_button_checked
                       : Icons.radio_button_unchecked,
-                  color: isSelected ? AppColors.primaryAble : AppColors.gray4,
+                  color: isSelected ? appColors.primaryAble : appColors.gray4,
                   size: 24,
                 ),
               ],
@@ -83,16 +84,18 @@ class ReportReasonTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   // color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.gray4),
+                  border: Border.all(color: appColors.gray4),
                 ),
                 child: TextField(
                   controller: textController,
                   maxLines: 3,
-                  style: AppTypography.b2.copyWith(color: AppColors.black),
+                  style: AppTypography.b2.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                   decoration: InputDecoration(
                     hintText: '예: 챌린지 주제와 상관없는 사진을 반복적으로 올립니다.',
                     hintStyle: AppTypography.b2.copyWith(
-                      color: AppColors.gray3,
+                      color: appColors.gray3,
                     ),
                     border: InputBorder.none,
                     isDense: true,
