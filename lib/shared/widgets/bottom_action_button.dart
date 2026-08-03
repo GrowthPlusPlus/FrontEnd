@@ -29,9 +29,11 @@ class BottomActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 기본값 설정: 파라미터가 없으면 기존 디자인 시스템 색상 사용
-    final Color effectiveBgColor = backgroundColor ?? AppColors.primaryAble;
-    final Color effectiveTextColor = textColor ?? Colors.white;
+    final Color effectiveBgColor = backgroundColor ?? appColors.primaryAble;
+    final Color effectiveTextColor = textColor ?? appColors.whiteToBlack;
 
     final Widget buttonWidget = ElevatedButton(
       onPressed: onPressed,

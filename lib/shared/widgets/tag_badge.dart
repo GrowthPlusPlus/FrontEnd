@@ -11,18 +11,20 @@ class TagBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       height: 28, // 고정 높이
       padding: const EdgeInsets.symmetric(horizontal: 11),
       decoration: ShapeDecoration(
-        color: AppColors.selected,
+        color: appColors.selected,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
       child: Center(
         widthFactor: 1.0,
         child: Text(
           label,
-          style: AppTypography.b2.copyWith(color: AppColors.primaryAble),
+          style: AppTypography.b2.copyWith(color: appColors.primaryAble),
         ),
       ),
     );
