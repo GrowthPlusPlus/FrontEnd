@@ -7,6 +7,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
 import '../provider/feed_provider.dart';
 import 'package:haenaem/features/feed/views/share_feed_view.dart';
+import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -95,34 +96,11 @@ class _FeedScreenState extends State<FeedScreen>
             ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primaryAble,
-          unselectedLabelColor: AppColors.gray4,
-          indicatorColor: AppColors.primaryAble,
-          indicatorWeight: 1,
-          indicatorSize: TabBarIndicatorSize.tab,
-          labelStyle: AppTypography.b1,
-          unselectedLabelStyle: AppTypography.b1,
-          onTap: (index) {
-            if (_previousIndex == index) {
-              if (index == 0) {
-                _scrollToTop(_friendScrollController);
-              } else {
-                _scrollToTop(_exploreScrollController);
-              }
-            }
-          },
-          tabs: const [
-            Tab(text: '친구'),
-            Tab(text: '둘러보기'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: CustomTabBar(
+        tabs: const ['친구', '둘러보기'],
+        scrollControllers: [_friendScrollController, _exploreScrollController],
         children: [
-          // 탭별로 다른 Provider와 컨트롤러를 주입
           ShareFeedView(
             scrollController: _friendScrollController,
             provider: friendFeedProvider,
