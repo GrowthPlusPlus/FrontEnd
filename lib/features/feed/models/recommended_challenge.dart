@@ -11,6 +11,7 @@ class RecommendedChallengeItem {
   final bool photoRequired;
   final List<ChallengeTagModel> tags;
   final String content;
+  final String imageUrl;
   final String recommendReason;
 
   const RecommendedChallengeItem({
@@ -22,6 +23,7 @@ class RecommendedChallengeItem {
     required this.photoRequired,
     required this.tags,
     required this.content,
+    required this.imageUrl,
     required this.recommendReason,
   });
 
@@ -38,6 +40,7 @@ class RecommendedChallengeItem {
           .map((t) => ChallengeTagModel.fromJson(t as Map<String, dynamic>))
           .toList(),
       content: json['content'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String? ?? '',
       recommendReason: json['recommendReason'] as String? ?? '',
     );
   }

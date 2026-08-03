@@ -11,6 +11,7 @@ import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import 'package:haenaem/features/statistics/data/activity_repository.dart';
 import 'package:haenaem/features/statistics/data/distribution_repository.dart';
 import 'package:haenaem/features/statistics/data/monthly_weekly_repository.dart';
+import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
 
 part 'verification_provider.g.dart';
 
@@ -42,6 +43,11 @@ void _refreshRelatedProviders(Ref ref, int challengeId) {
   ref.invalidate(activityRepositoryProvider);
   ref.invalidate(distributionRepositoryProvider);
   ref.invalidate(monthlyWeeklyRepositoryProvider);
+
+  // 내 페이지 "나의 챌린지" 박스 + 전체 리스트 화면 갱신
+  ref.invalidate(myInProgressChallengesProvider);
+  ref.invalidate(mySuccessChallengesProvider);
+  ref.invalidate(myFailedChallengesProvider);
 }
 
 // 인증 이미지 검증
