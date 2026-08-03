@@ -86,16 +86,18 @@ class _CustomTabBarState extends State<CustomTabBar>
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Column(
       children: [
         TabBar(
           controller: _tabController,
-          labelColor: AppColors.primaryAble,
-          unselectedLabelColor: AppColors.gray2,
-          indicatorColor: AppColors.primaryAble,
+          labelColor: appColors.primaryAble,
+          unselectedLabelColor: appColors.gray2,
+          indicatorColor: appColors.primaryAble,
           indicatorWeight: 1,
           indicatorSize: TabBarIndicatorSize.tab,
-          labelStyle: AppTypography.b1.copyWith(color: AppColors.primaryAble),
+          labelStyle: AppTypography.b1.copyWith(color: appColors.primaryAble),
           tabs: widget.tabs.map((t) => Tab(text: t)).toList(),
           onTap: (index) {
             // 이미 선택된 탭을 다시 눌렀을 때 스크롤 최상단 이동
