@@ -156,7 +156,7 @@ class MyChallengeCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(23),
       child: LinearProgressIndicator(
-        value: progress,
+        value: (progress / 100).clamp(0.0, 1.0),
         minHeight: 4,
         backgroundColor: AppColors.gray5,
         valueColor: AlwaysStoppedAnimation<Color>(color),

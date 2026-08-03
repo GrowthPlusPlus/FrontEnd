@@ -34,7 +34,7 @@ class MyPageMenuView extends ConsumerWidget {
         MyPageMenuItem(
           title: '로그아웃',
           onTap: () async {
-            final bool? shouldLogout = await showDialog<bool>(
+            await showDialog<bool>(
               context: context,
               barrierDismissible: false,
               builder: (context) => SelectDialog(
@@ -42,7 +42,7 @@ class MyPageMenuView extends ConsumerWidget {
                 content: '로그아웃 하시겠습니까?',
                 cancelText: '취소',
                 confirmText: '로그아웃',
-                onCancel: () => Navigator.of(context).pop(false),
+                onCancel: () {},
                 onConfirm: () async {
                   try {
                     try {
@@ -71,32 +71,6 @@ class MyPageMenuView extends ConsumerWidget {
                 },
               ),
             );
-
-            if (shouldLogout == true) {
-              try {
-                // FCM 토큰 삭제 (이제 ref를 정상적으로 인식합니다!)
-                try {
-                  await ref.read(fcmServiceProvider).deleteFcmToken();
-                } catch (e) {
-                  debugPrint('FCM 토큰 삭제 실패 (로그아웃은 계속 진행): $e');
-                }
-
-                // 로그아웃 API 호출 및 로컬 데이터 삭제
-                await AuthService.logout();
-
-                // 안전하게 전역 앱 루트 초기화 및 AuthGate로 전환 (AppRoot 임포트 완료!)
-                if (context.mounted) {
-                  // AppRoot.restart(context);
-
-                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const AuthGate()),
-                    (route) => false,
-                  );
-                }
-              } catch (e) {
-                debugPrint('로그아웃 처리 중 치명적 오류 발생: $e');
-              }
-            }
           },
         ),
         const SizedBox(height: 10),
