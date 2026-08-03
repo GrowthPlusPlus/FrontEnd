@@ -8,6 +8,7 @@ import '../views/report_view.dart';
 import '../provider/admin_auth_provider.dart';
 import 'package:haenaem/features/auth/login/login_screen.dart';
 import 'package:haenaem/shared/widgets/select_dialog.dart';
+import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 
 // 최초 작성자: 강선욱
 // 관리자 메인 페이지
@@ -110,33 +111,10 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
           style: AppTypography.h3.copyWith(color: AppColors.black),
         ),
         centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primaryAble,
-          unselectedLabelColor: AppColors.gray4,
-          indicatorColor: AppColors.primaryAble,
-          indicatorWeight: 1,
-          indicatorSize: TabBarIndicatorSize.tab,
-          labelStyle: AppTypography.b1,
-          unselectedLabelStyle: AppTypography.b1,
-          onTap: (index) {
-            // 같은 탭을 다시 탭하면 최상단으로 스크롤
-            if (_previousIndex == index) {
-              if (index == 0) {
-                _scrollToTop(_articleScrollController);
-              } else {
-                _scrollToTop(_commentScrollController);
-              }
-            }
-          },
-          tabs: const [
-            Tab(text: '게시글'),
-            Tab(text: '댓글'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: CustomTabBar(
+        tabs: const ['게시글', '댓글'],
+        scrollControllers: [_articleScrollController, _commentScrollController],
         children: [
           ArticleView(scrollController: _articleScrollController),
           CommentView(scrollController: _commentScrollController),
