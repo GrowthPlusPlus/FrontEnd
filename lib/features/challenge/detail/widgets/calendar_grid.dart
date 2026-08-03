@@ -115,23 +115,29 @@ class _CalendarCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         alignment: Alignment.center,
         decoration: BoxDecoration(
           // 인증: 초록색 / 미인증: 회색
-          color: isCertified ? AppColors.primaryAble : AppColors.gray5,
+          color: isCertified ? appColors.primaryAble : appColors.gray5,
           borderRadius: BorderRadius.circular(5),
           // 오늘이면서 미인증인 경우 테두리 표시
           border: (isToday && !isCertified)
-              ? Border.all(color: AppColors.gray2, width: 1)
+              ? Border.all(color: appColors.gray2, width: 1)
               : null,
           // 인증 사진이 있으면 썸네일로 표시
           image: (isCertified && imageUrl != null)
               ? DecorationImage(
                   image: NetworkImage(imageUrl!),
                   fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withValues(alpha: 0.2),
+                    BlendMode.darken,
+                  ),
                 )
               : null,
         ),
@@ -139,7 +145,7 @@ class _CalendarCell extends StatelessWidget {
           '$day',
           style: TextStyle(
             // 인증: 흰색 / 미인증: 회색
-            color: isCertified ? Colors.white : AppColors.gray2,
+            color: isCertified ? AppColors.white : appColors.gray2,
             fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
           ),
         ),

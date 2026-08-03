@@ -79,9 +79,9 @@ class BottomActionButton extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.white.withValues(alpha: 0),
-            Colors.white.withValues(alpha: 0.9),
-            Colors.white,
+            appColors.whiteToBlack.withValues(alpha: 0),
+            appColors.whiteToBlack.withValues(alpha: 0.9),
+            appColors.whiteToBlack,
           ],
           stops: const [0.0, 0.3, 1.0],
         ),

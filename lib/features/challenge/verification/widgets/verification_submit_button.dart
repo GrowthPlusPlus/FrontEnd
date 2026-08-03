@@ -18,10 +18,12 @@ class VerificationSubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final bool isEnabled = onPressed != null;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         boxShadow: showShadow
             ? [
                 const BoxShadow(
@@ -42,12 +44,12 @@ class VerificationSubmitButton extends StatelessWidget {
               height: 56,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isEnabled ? AppColors.primaryAble : AppColors.disable,
+                color: isEnabled ? appColors.primaryAble : appColors.disable,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 label,
-                style: AppTypography.h3.copyWith(color: Colors.white),
+                style: AppTypography.h3.copyWith(color: appColors.whiteToBlack),
               ),
             ),
           ),

@@ -26,6 +26,8 @@ class ChallengePopupMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // WidgetRef 추가
     return PopupMenuButton<String>(
       popUpAnimationStyle: const AnimationStyle(
@@ -36,11 +38,12 @@ class ChallengePopupMenu extends ConsumerWidget {
         'assets/images/icons/dots_vert_icon.svg',
         width: 24,
         height: 24,
+        colorFilter: ColorFilter.mode(appColors.blackToWhite, BlendMode.srcIn),
       ),
-      color: Colors.white,
+      color: appColors.whiteToBlack,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: AppColors.gray4, width: 1),
+        side: BorderSide(color: appColors.gray4, width: 1),
       ),
       offset: const Offset(0, 40),
 
@@ -51,12 +54,14 @@ class ChallengePopupMenu extends ConsumerWidget {
             '알림 설정',
             'assets/images/icons/notification_icon.svg',
             'notification',
+            appColors,
           ),
           const PopupMenuDivider(height: 1),
           _buildPopupItem(
             '챌린지 초대',
             'assets/images/icons/share_icon.svg',
             'invite',
+            appColors,
           ),
           const PopupMenuDivider(height: 1),
 
@@ -66,6 +71,7 @@ class ChallengePopupMenu extends ConsumerWidget {
               '챌린지 설정',
               'assets/images/icons/black_settings_icon.svg', // 방장용 설정 아이콘
               'settings',
+              appColors,
             )
           else
             _buildPopupItem(
@@ -73,12 +79,13 @@ class ChallengePopupMenu extends ConsumerWidget {
               'assets/images/icons/exit_icon.svg',
               'leave',
               isDanger: true,
+              appColors,
             ),
         ];
       },
 
       onSelected: (String value) =>
-          _handleMenuSelection(context, ref, value), // ref 전달
+          _handleMenuSelection(context, ref, value, appColors), // ref 전달
     );
   }
 
@@ -86,10 +93,13 @@ class ChallengePopupMenu extends ConsumerWidget {
   PopupMenuItem<String> _buildPopupItem(
     String title,
     String iconPath,
-    String value, {
+    String value,
+    AppColorsExtension appColors, {
     bool isDanger = false,
   }) {
-    final Color itemColor = isDanger ? AppColors.notification : AppColors.black;
+    final Color itemColor = isDanger
+        ? appColors.notification
+        : appColors.blackToWhite;
 
     return PopupMenuItem<String>(
       value: value,
@@ -118,6 +128,7 @@ class ChallengePopupMenu extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String value,
+    AppColorsExtension appColors,
   ) async {
     // async 추가
     switch (value) {
@@ -162,11 +173,11 @@ class ChallengePopupMenu extends ConsumerWidget {
             emoji: '🥺',
             title: '챌린지를 나가시겠어요?',
             content: '지금까지의 진행 상황이 모두 사라지며,\n복구할 수 없습니다.',
-            contentColor: AppColors.notification,
+            contentColor: appColors.notification,
             confirmText: '취소',
             cancelText: '나가기',
-            cancelBackgroundColor: AppColors.notification, // 나가기 버튼은 경고색으로 강조
-            cancelTextColor: Colors.white,
+            cancelBackgroundColor: appColors.notification, // 나가기 버튼은 경고색으로 강조
+            cancelTextColor: appColors.whiteToBlack, // 나가기 버튼 텍스트는 흰색
             onCancel: () async {
               debugPrint('나가기 버튼 눌림');
               final success = await ref

@@ -142,12 +142,14 @@ class _CustomGalleryScreenState extends State<CustomGalleryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
+          icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
         ),
         title: GestureDetector(
           onTap: _showFolderList, // 클릭 시 폴더 목록 표시
@@ -158,7 +160,7 @@ class _CustomGalleryScreenState extends State<CustomGalleryScreen> {
                 (_selectedPath?.isAll == true)
                     ? '갤러리'
                     : (_selectedPath?.name ?? '갤러리'),
-                style: AppTypography.h3.copyWith(color: AppColors.black),
+                style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
               ),
               const SizedBox(width: 4),
               SvgPicture.asset(
@@ -200,13 +202,13 @@ class _CustomGalleryScreenState extends State<CustomGalleryScreen> {
               '완료',
               style: AppTypography.b1.copyWith(
                 color: _selectedAssets.isNotEmpty
-                    ? AppColors.black
-                    : AppColors.gray3,
+                    ? appColors.blackToWhite
+                    : appColors.gray3,
               ),
             ),
           ),
         ],
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         scrolledUnderElevation: 0,
         elevation: 0,
       ),
@@ -257,7 +259,7 @@ class _CustomGalleryScreenState extends State<CustomGalleryScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: isSelected
-                                ? AppColors.primaryAble
+                                ? appColors.primaryAble
                                 : Colors.transparent,
                             border: Border.all(color: Colors.white, width: 2),
                           ),
@@ -266,7 +268,7 @@ class _CustomGalleryScreenState extends State<CustomGalleryScreen> {
                               ? Text(
                                   '$selectOrder',
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.white,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),

@@ -17,21 +17,23 @@ class InformationView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final challengeAsync = ref.watch(
       challengeDetailProvider(challengeId: challengeId),
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       body: challengeAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryAble),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: appColors.primaryAble),
         ),
         error: (error, stack) => Center(
           child: Text(
             '데이터를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
             textAlign: TextAlign.center,
-            style: AppTypography.b1.copyWith(color: AppColors.gray2),
+            style: AppTypography.b1.copyWith(color: appColors.gray2),
           ),
         ),
         data: (challenge) => ChallengeDetailContent(

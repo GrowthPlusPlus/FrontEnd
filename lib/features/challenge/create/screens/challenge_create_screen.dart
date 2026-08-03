@@ -336,6 +336,10 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
           ),
         ),
         title: Text(

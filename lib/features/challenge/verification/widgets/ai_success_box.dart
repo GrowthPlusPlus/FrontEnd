@@ -10,11 +10,13 @@ class AiSuccessBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: AppColors.selected,
+        color: appColors.selected,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Row(
@@ -24,6 +26,10 @@ class AiSuccessBox extends StatelessWidget {
             'assets/images/icons/success_check.svg',
             width: 24,
             height: 24,
+            colorFilter: ColorFilter.mode(
+              appColors.primaryAble,
+              BlendMode.srcIn,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -34,12 +40,12 @@ class AiSuccessBox extends StatelessWidget {
                 Text(
                   '챌린지 내용과 적합합니다!',
                   style: AppTypography.b2.copyWith(
-                    color: AppColors.primaryAble,
+                    color: appColors.primaryAble,
                   ),
                 ),
                 Text(
                   '인증 사진이 검증되었습니다. 인증을 완료하세요.',
-                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  style: AppTypography.c1.copyWith(color: appColors.gray2),
                 ),
               ],
             ),
