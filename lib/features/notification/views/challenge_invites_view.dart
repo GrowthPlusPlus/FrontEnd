@@ -13,23 +13,29 @@ class ChallengeInvitesView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 데이터 감지
     final state = ref.watch(challengeInviteProvider);
     final notifier = ref.read(challengeInviteProvider.notifier);
 
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primaryAble),
+      return Center(
+        child: CircularProgressIndicator(color: appColors.primaryAble),
       );
     }
 
     if (state.invites.isEmpty) {
-      return const Center(child: Text('받은 챌린지 초대가 없습니다.'));
+      return Center(
+        child: Text(
+          '받은 챌린지 초대가 없습니다.',
+          style: TextStyle(color: appColors.gray2),
+        ),
+      );
     }
 
     return RefreshIndicator(
       onRefresh: () => notifier.fetchInvites(),
-      color: AppColors.primaryAble,
+      color: appColors.primaryAble,
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 10, bottom: 40),
         itemCount: state.invites.length,

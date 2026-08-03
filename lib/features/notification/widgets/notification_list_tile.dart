@@ -23,21 +23,23 @@ class NotificationListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       // isRead 값에 따라 배경색 분기 처리
-      color: isRead ? Colors.white : AppColors.selected,
+      color: isRead ? appColors.whiteToBlack : appColors.selected,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildIconBox(),
+          _buildIconBox(appColors), // 아이콘 또는 프로필 이미지 렌더링
           const SizedBox(width: 16),
           // 긴 텍스트가 화면을 넘어갈 때 줄바꿈되도록 Expanded 사용
           Expanded(
             child: Text(
               message,
-              style: AppTypography.b1.copyWith(color: AppColors.black),
+              style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
             ),
           ),
         ],
@@ -46,14 +48,14 @@ class NotificationListTile extends StatelessWidget {
   }
 
   // 아이콘 또는 프로필 이미지 렌더링 영역
-  Widget _buildIconBox() {
+  Widget _buildIconBox(AppColorsExtension appColors) {
     // 1. 프로필 타입일 경우 (친구 페이지 로직 적용)
     if (iconType == NotiIconType.profile) {
       return Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.gray5,
+          color: appColors.gray5,
           shape: BoxShape.circle,
           image: profileImageUrl != null && profileImageUrl!.startsWith('http')
               ? DecorationImage(
@@ -79,7 +81,7 @@ class NotificationListTile extends StatelessWidget {
     }
 
     // 2. 시스템 알림 (성공, 실패, 일반) 로직
-    Color bgColor = AppColors.gray5;
+    Color bgColor = appColors.gray5;
     Widget iconWidget = const Icon(
       Icons.eco,
       color: Colors.white,
@@ -90,7 +92,7 @@ class NotificationListTile extends StatelessWidget {
       bgColor = AppColors.blue;
       iconWidget = const Icon(Icons.star, color: Colors.white, size: 20);
     } else if (iconType == NotiIconType.fail) {
-      bgColor = AppColors.notification;
+      bgColor = appColors.notification;
       iconWidget = const Icon(Icons.close, color: Colors.white, size: 20);
     }
 

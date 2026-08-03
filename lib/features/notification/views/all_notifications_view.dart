@@ -66,16 +66,19 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     final state = ref.watch(notificationProvider);
 
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primaryAble),
+      return Center(
+        child: CircularProgressIndicator(color: appColors.primaryAble),
       );
     }
 
     if (state.notifications.isEmpty) {
-      return const Center(child: Text('새로운 알림이 없습니다.'));
+      return Center(
+        child: Text('새로운 알림이 없습니다.', style: TextStyle(color: appColors.gray2)),
+      );
     }
 
     // 날짜별로 그룹화
@@ -112,11 +115,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
         listItems.add(
           InkWell(
             onTap: () {
-              // 1. 클릭 시 읽음 처리 (그냥 하얀색으로 바뀜)
-              // TODO API 구현된 게 없으므로 임시 설정
-              // ref.read(notificationProvider.notifier).markAsRead(noti);
-
-              // 2. 알림 타입(type)별 페이지 이동 분기
+              // 알림 타입(type)별 페이지 이동 분기
               if (noti.type == 'FRIEND_REQUEST') {
                 // 친구 요청 알림 -> 소셜(친구추가) 페이지로 이동
                 Navigator.push(
@@ -196,17 +195,17 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
 
     return RefreshIndicator(
       onRefresh: () => ref.read(notificationProvider.notifier).refresh(),
-      color: AppColors.primaryAble,
+      color: appColors.primaryAble,
       child: ListView.builder(
         controller: _scrollController,
         itemCount: listItems.length + (state.isFetchingMore ? 1 : 0),
         itemBuilder: (context, index) {
           // 마지막 아이템이고 추가 로딩 중이면 로딩 인디케이터 표시
           if (index == listItems.length) {
-            return const Padding(
+            return Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primaryAble),
+                child: CircularProgressIndicator(color: appColors.primaryAble),
               ),
             );
           }

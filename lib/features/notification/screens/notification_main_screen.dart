@@ -33,20 +33,23 @@ class _NotificationMainScreenState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return DefaultTabController(
       length: 2, // 탭 개수
       child: Scaffold(
+        backgroundColor: appColors.whiteToBlack,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.black),
+            icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: const Text('알림', style: AppTypography.h3),
-          bottom: const TabBar(
-            indicatorColor: AppColors.primaryAble,
+          bottom: TabBar(
+            indicatorColor: appColors.primaryAble,
             indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: AppColors.primaryAble,
-            unselectedLabelColor: AppColors.gray2,
+            labelColor: appColors.primaryAble,
+            unselectedLabelColor: appColors.gray2,
             labelStyle: AppTypography.b1,
             tabs: [
               Tab(text: '모두'),
