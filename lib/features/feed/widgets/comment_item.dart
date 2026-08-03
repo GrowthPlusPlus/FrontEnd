@@ -22,87 +22,100 @@ class CommentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String commentDate = DateFormat('yyyy.MM.dd HH:mm').format(comment.date);
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
+    // 피그마 디자인에 맞춰 날짜 포맷 변경
+    String commentDate = DateFormat('yyyy년 MM월 dd일 HH:mm').format(comment.date);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // 💡 무한 루프 방지: 최소 크기만 확보
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+      child: Row(
+        // 💡 중요: 아바타와 텍스트가 모두 위쪽을 기준으로 정렬되도록 수정
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1층: 프로필 이미지 + 닉네임 (세로 중앙 정렬) + 우측 팝업 메뉴
-          Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.center, // 💡 이름이 이미지 중간 위치에 오도록 설정
-            children: [
-              // 프로필 이미지
-              CircleAvatar(
-                radius: 18,
-                backgroundImage:
-                    (comment.writer.profileUrl != null &&
-                        comment.writer.profileUrl!.isNotEmpty)
-                    ? NetworkImage(comment.writer.profileUrl!) as ImageProvider
-                    : null,
-                child:
-                    (comment.writer.profileUrl == null ||
-                        comment.writer.profileUrl!.isEmpty)
-                    ? SvgPicture.asset(
-                        'assets/images/icons/default_profile_icon.svg',
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-
-              // 유저 닉네임
-              Expanded(
-                child: Text(
-                  comment.writer.nickname,
-                  style: AppTypography.b1,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-              // 우측 팝업 메뉴 (크기를 제한하여 레이아웃 루프 차단)
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: CommentPopupMenu(
-                  postId: postId,
-                  comment: comment,
-                  feedProvider: feedProvider,
-                ),
-              ),
-            ],
+          // 1. 좌측: 프로필 이미지
+          CircleAvatar(
+            radius: 20, // 40x40 크기
+            backgroundImage:
+                (comment.writer.profileUrl != null &&
+                    comment.writer.profileUrl!.isNotEmpty)
+                ? NetworkImage(comment.writer.profileUrl!) as ImageProvider
+                : null,
+            backgroundColor: appColors.gray5,
+            child:
+                (comment.writer.profileUrl == null ||
+                    comment.writer.profileUrl!.isEmpty)
+                ? SvgPicture.asset(
+                    'assets/images/icons/default_profile_icon.svg',
+                    width: 40,
+                    height: 40,
+                  )
+                : null,
           ),
-          const SizedBox(width: 12),
-          // 댓글 내용 및 팝업 메뉴
+
+          const SizedBox(width: 10), // 피그마 spacing: 10 적용
+          // 2. 우측: 닉네임, 내용, 날짜 (Expanded는 여기서 가로 공간만 차지하므로 안전함)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min, // 💡 세로 무한 루프 에러 완전 차단
               children: [
+                // 2-1. 상단 헤더: 닉네임 + 서브텍스트 + 팝업 메뉴
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(comment.writer.nickname, style: AppTypography.b1),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            comment.writer.nickname,
+                            style: AppTypography.b3.copyWith(
+                              color: appColors.blackToWhite,
+                            ),
+                          ),
+                          const SizedBox(height: 2), // 피그마 spacing: 6 적용
+                          // 2-2. 본문 내용 (누락되었던 content 복구)
+                          Text(
+                            comment.content,
+                            style: AppTypography.b2.copyWith(
+                              color: appColors.blackToWhite,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 우측 팝업 메뉴
                     SizedBox(
-                      height: 24,
-                      width: 24,
                       child: CommentPopupMenu(
                         postId: postId,
                         comment: comment,
                         feedProvider: feedProvider,
                       ),
                     ),
+                  ],
+                ),
+
+                const SizedBox(height: 8), // 내용과 날짜 사이 간격
+                // 2-3. 하단 날짜
+                Row(
+                  children: [
+                    Text(
+                      commentDate,
+                      style: AppTypography.c1.copyWith(
+                        color: appColors.gray2,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(width: 20), // 날짜와 '수정됨' 사이 간격
                     if (comment.isEdited)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Text(
-                          '수정됨',
-                          style: AppTypography.b2.copyWith(
-                            color: AppColors.gray3,
-                          ),
+                      Text(
+                        '수정됨',
+                        style: AppTypography.c1.copyWith(
+                          color: appColors.gray3,
                         ),
                       ),
                   ],
