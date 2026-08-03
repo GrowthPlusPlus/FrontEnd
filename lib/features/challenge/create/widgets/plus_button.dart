@@ -19,6 +19,8 @@ class PlusButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final bool isEnabled = onPressed != null;
 
     // 💡 라벨이 '완료'인 경우 플러스 아이콘을 숨기기 위한 조건
@@ -26,7 +28,7 @@ class PlusButton extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         boxShadow: showShadow
             ? [
                 const BoxShadow(
@@ -50,7 +52,7 @@ class PlusButton extends StatelessWidget {
               height: 60,
               alignment: Alignment.center,
               decoration: ShapeDecoration(
-                color: isEnabled ? AppColors.primaryAble : AppColors.disable,
+                color: isEnabled ? appColors.primaryAble : appColors.disable,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -64,8 +66,8 @@ class PlusButton extends StatelessWidget {
                       'assets/images/icons/plus.svg',
                       width: 20,
                       height: 20,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
+                      colorFilter: ColorFilter.mode(
+                        appColors.whiteToBlack,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -73,7 +75,9 @@ class PlusButton extends StatelessWidget {
                   ],
                   Text(
                     label,
-                    style: AppTypography.h3.copyWith(color: Colors.white),
+                    style: AppTypography.h3.copyWith(
+                      color: appColors.whiteToBlack,
+                    ),
                   ),
                 ],
               ),

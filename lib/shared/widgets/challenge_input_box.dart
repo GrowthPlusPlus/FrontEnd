@@ -31,6 +31,8 @@ class ChallengeInputBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -38,9 +40,9 @@ class ChallengeInputBox extends StatelessWidget {
         height: height,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors.whiteToBlack,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.gray4, width: 1),
+          border: Border.all(color: appColors.gray4, width: 1),
         ),
         // 박스 내부 내용물 배치
         child: Row(
@@ -57,8 +59,8 @@ class ChallengeInputBox extends StatelessWidget {
                       leadingIconPath!,
                       width: 15,
                       height: 15,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.gray3,
+                      colorFilter: ColorFilter.mode(
+                        appColors.gray3,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -75,7 +77,7 @@ class ChallengeInputBox extends StatelessWidget {
                           enabled: true,
                           onTap: onTap,
                           style: AppTypography.b2.copyWith(
-                            color: AppColors.black,
+                            color: appColors.blackToWhite,
                           ),
 
                           // 챌린지 설명 hintText 위로 올리기
@@ -90,7 +92,7 @@ class ChallengeInputBox extends StatelessWidget {
                           decoration: InputDecoration(
                             hintText: hintText,
                             hintStyle: AppTypography.b2.copyWith(
-                              color: textColor ?? AppColors.gray3,
+                              color: textColor ?? appColors.gray3,
                             ),
                             border: InputBorder.none,
                             isDense: true,

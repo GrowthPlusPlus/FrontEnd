@@ -324,8 +324,10 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
         // 뒤로 가기 버튼
         leading: IconButton(
@@ -338,13 +340,13 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
         ),
         title: Text(
           "챌린지 만들기",
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.white,
-        backgroundColor: Colors.white,
+        surfaceTintColor: appColors.whiteToBlack,
+        backgroundColor: appColors.whiteToBlack,
       ),
 
       // 입력 폼
@@ -373,8 +375,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
                 hintText: _dateHintText,
                 // 선택된 날짜가 없으면 gray3, 날짜가 선택되면 black으로 설정
                 textColor: _selectedDay == null
-                    ? AppColors.gray3
-                    : AppColors.black,
+                    ? appColors.gray3
+                    : appColors.blackToWhite,
                 iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: _showCalendarBottomSheet,
               ),
@@ -385,8 +387,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
               ChallengeInputBox(
                 hintText: _selectedDuration ?? '인증 기간을 선택하세요',
                 textColor: _selectedDuration == null
-                    ? AppColors.gray3
-                    : AppColors.black,
+                    ? appColors.gray3
+                    : appColors.blackToWhite,
                 iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: showDurationBottomSheet,
               ),
@@ -397,8 +399,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
               ChallengeInputBox(
                 hintText: _selectedFrequency ?? '인증 빈도를 선택하세요',
                 textColor: _selectedFrequency == null
-                    ? AppColors.gray3
-                    : AppColors.black,
+                    ? appColors.gray3
+                    : appColors.blackToWhite,
                 iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: showFrequencyBottomSheet,
               ),

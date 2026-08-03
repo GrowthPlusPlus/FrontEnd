@@ -64,6 +64,8 @@ class _ChallengeDurationBottomSheetState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return CustomBottomSheet(
       title: "인증 기간 선택",
       heightFactor: isCustomMode ? 0.80 : 0.55,
@@ -73,6 +75,7 @@ class _ChallengeDurationBottomSheetState
             // 1. 기본 기간 리스트
             ...["7일", "30일", "50일", "100일", "365일"].map((item) {
               return _buildListItem(
+                appColors,
                 label: item,
                 isSelected: _tempSelectedDuration == item && !isCustomMode,
                 onTap: () {
@@ -86,15 +89,16 @@ class _ChallengeDurationBottomSheetState
             // 2. 직접 입력 섹션
             Container(
               width: double.infinity,
-              color: isCustomMode ? AppColors.selected : Colors.transparent,
+              color: isCustomMode ? appColors.selected : Colors.transparent,
               child: Column(
                 children: [
                   _buildListItem(
+                    appColors,
                     label: "직접 입력",
                     isSelected: isCustomMode,
                     onTap: () => setState(() => isCustomMode = true),
                   ),
-                  if (isCustomMode) _buildCustomInputForm(),
+                  if (isCustomMode) _buildCustomInputForm(appColors),
                 ],
               ),
             ),
@@ -105,7 +109,7 @@ class _ChallengeDurationBottomSheetState
   }
 
   // 직접 입력 폼 위젯
-  Widget _buildCustomInputForm() {
+  Widget _buildCustomInputForm(AppColorsExtension appColors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 23),
       child: Column(
@@ -114,20 +118,20 @@ class _ChallengeDurationBottomSheetState
           Text(
             '• 1일 이상의 기간을 입력해주세요\n• 1~365일까지 설정할 수 있습니다.',
             style: AppTypography.b2.copyWith(
-              color: AppColors.gray2,
+              color: appColors.gray2,
               height: 1.5,
             ),
           ),
           const SizedBox(height: 24),
           Text(
             '인증 기간 (일)',
-            style: AppTypography.c1.copyWith(color: AppColors.gray2),
+            style: AppTypography.c1.copyWith(color: appColors.gray2),
           ),
           const SizedBox(height: 8),
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: AppColors.gray3, width: 0.75),
+                bottom: BorderSide(color: appColors.gray3, width: 0.75),
               ),
             ),
             child: Row(
@@ -141,7 +145,7 @@ class _ChallengeDurationBottomSheetState
                     decoration: InputDecoration(
                       hintText: "숫자를 입력하세요",
                       hintStyle: AppTypography.b1.copyWith(
-                        color: AppColors.gray3,
+                        color: appColors.gray3,
                       ),
                       border: InputBorder.none,
                       isDense: true,
@@ -150,7 +154,7 @@ class _ChallengeDurationBottomSheetState
                 ),
                 Text(
                   '일',
-                  style: AppTypography.b1.copyWith(color: AppColors.gray1),
+                  style: AppTypography.b1.copyWith(color: appColors.gray1),
                 ),
               ],
             ),
@@ -169,13 +173,13 @@ class _ChallengeDurationBottomSheetState
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isButtonEnabled
-                    ? AppColors.primaryAble
-                    : AppColors.disable,
+                    ? appColors.primaryAble
+                    : appColors.disable,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '완료',
-                style: AppTypography.b1.copyWith(color: Colors.white),
+                style: AppTypography.b1.copyWith(color: appColors.whiteToBlack),
               ),
             ),
           ),
@@ -186,7 +190,8 @@ class _ChallengeDurationBottomSheetState
   }
 
   // 내부 리스트 아이템 빌더
-  Widget _buildListItem({
+  Widget _buildListItem(
+    AppColorsExtension appColors, {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
@@ -196,12 +201,12 @@ class _ChallengeDurationBottomSheetState
       child: Container(
         width: double.infinity,
         height: 54,
-        color: isSelected ? AppColors.selected : Colors.transparent,
+        color: isSelected ? appColors.selected : Colors.transparent,
         alignment: Alignment.center,
         child: Text(
           label,
           style: AppTypography.b1.copyWith(
-            color: isSelected ? AppColors.primaryAble : AppColors.black,
+            color: isSelected ? appColors.primaryAble : appColors.blackToWhite,
           ),
         ),
       ),

@@ -63,6 +63,8 @@ class _ChallengeTagBottomSheetState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final tagsAsync = ref.watch(allTagsProvider);
 
     // 💡 화면 전체 높이의 95% 계산
@@ -71,8 +73,8 @@ class _ChallengeTagBottomSheetState
 
     return Container(
       height: targetHeight, // 높이를 95%로 고정
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -116,17 +118,14 @@ class _ChallengeTagBottomSheetState
                     Text(
                       '챌린지 태그 선택',
                       style: AppTypography.h3.copyWith(
-                        color: const Color(0xFF1A1D1B),
+                        color: appColors.blackToWhite,
                       ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Text(
+                      icon: Text(
                         '×',
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: Color(0xFF616161),
-                        ),
+                        style: TextStyle(fontSize: 28, color: appColors.gray2),
                       ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -136,13 +135,13 @@ class _ChallengeTagBottomSheetState
               ),
 
               // 2. 서브 타이틀
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 2),
                 child: Text(
                   '태그를 통해 관심 분야를 알려주세요\n1~2개를 골라주세요',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF1A1D1B),
+                    color: appColors.blackToWhite,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     height: 1.5,
@@ -183,7 +182,7 @@ class _ChallengeTagBottomSheetState
                             Text(
                               TagMapper.getKoreanCategory(categoryKey),
                               style: AppTypography.b2.copyWith(
-                                color: AppColors.black,
+                                color: appColors.blackToWhite,
                               ),
                             ),
                             const SizedBox(height: 10),

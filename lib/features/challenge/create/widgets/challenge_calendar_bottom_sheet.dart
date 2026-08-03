@@ -39,6 +39,8 @@ class _ChallengeCalendarBottomSheetState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     bool isFirstMonth =
         _focusedDay.year == _today.year && _focusedDay.month == _today.month;
 
@@ -64,7 +66,7 @@ class _ChallengeCalendarBottomSheetState
                   width: 44.62,
                   height: 44.62,
                   decoration: ShapeDecoration(
-                    color: const Color(0xFFE8F5E9), // 해냄-green-selected
+                    color: appColors.selected,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -73,7 +75,7 @@ class _ChallengeCalendarBottomSheetState
                   child: Text(
                     '${date.day}',
                     style: AppTypography.b1.copyWith(
-                      color: const Color(0xFF009951), // 해냄-green-primary-able
+                      color: appColors.primaryAble, // 해냄-green-primary-able
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -89,7 +91,9 @@ class _ChallengeCalendarBottomSheetState
                   child: Center(
                     child: Text(
                       '${date.day}',
-                      style: AppTypography.b1.copyWith(color: AppColors.black),
+                      style: AppTypography.b1.copyWith(
+                        color: appColors.blackToWhite,
+                      ),
                     ),
                   ),
                 ),
@@ -102,14 +106,16 @@ class _ChallengeCalendarBottomSheetState
             headerPadding: const EdgeInsets.only(top: 0, bottom: 5),
             formatButtonVisible: false,
             titleCentered: true,
-            titleTextStyle: AppTypography.h3.copyWith(color: AppColors.black),
+            titleTextStyle: AppTypography.h3.copyWith(
+              color: appColors.blackToWhite,
+            ),
             leftChevronIcon: _buildChevron(
               'assets/images/icons/tab_previous.svg',
-              isFirstMonth ? AppColors.gray3 : AppColors.black,
+              isFirstMonth ? appColors.gray3 : appColors.blackToWhite,
             ),
             rightChevronIcon: _buildChevron(
               'assets/images/icons/tab_next.svg',
-              AppColors.black,
+              appColors.blackToWhite,
             ),
             leftChevronMargin: const EdgeInsets.only(left: 50),
             rightChevronMargin: const EdgeInsets.only(right: 50),
@@ -135,7 +141,7 @@ class _ChallengeCalendarBottomSheetState
             ),
 
             disabledTextStyle: AppTypography.b1.copyWith(
-              color: AppColors.gray3,
+              color: appColors.gray3,
             ),
 
             // 오늘 날짜 디자인
@@ -144,22 +150,28 @@ class _ChallengeCalendarBottomSheetState
               shape: BoxShape.rectangle,
               borderRadius: BorderRadius.circular(8),
             ),
-            todayTextStyle: AppTypography.b1.copyWith(color: AppColors.black),
+            todayTextStyle: AppTypography.b1.copyWith(
+              color: appColors.blackToWhite,
+            ),
 
             // 선택된 날짜 디자인
             selectedDecoration: BoxDecoration(
-              color: AppColors.selected,
+              color: appColors.selected,
               shape: BoxShape.rectangle,
               borderRadius: BorderRadius.circular(8),
             ),
             selectedTextStyle: AppTypography.b1.copyWith(
-              color: AppColors.primaryAble,
+              color: appColors.primaryAble,
               fontWeight: FontWeight.bold,
             ),
 
-            defaultTextStyle: AppTypography.b1.copyWith(color: AppColors.black),
-            weekendTextStyle: AppTypography.b1.copyWith(color: AppColors.black),
-            outsideTextStyle: AppTypography.b1.copyWith(color: AppColors.gray3),
+            defaultTextStyle: AppTypography.b1.copyWith(
+              color: appColors.blackToWhite,
+            ),
+            weekendTextStyle: AppTypography.b1.copyWith(
+              color: appColors.blackToWhite,
+            ),
+            outsideTextStyle: AppTypography.b1.copyWith(color: appColors.gray3),
           ),
 
           // 과거 날짜 선택 차단
