@@ -7,9 +7,12 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     fontFamily: 'Pretendard',
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: AppColors.white,
     brightness: Brightness.light, // 다크모드 판별을 위해 필요
-    // 스피너랑 커서 우리 앱 초록색으로 변경
+    // ThemeExtension 등록
+    extensions: [AppColorsExtension.light()],
+
+    // 스피너랑 커서 앱 초록색으로 변경
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: AppColors.primaryAble,
     ),
@@ -21,8 +24,8 @@ class AppTheme {
 
     // 상단 AppBar 테마 설정
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white, // 스크롤 시 색상 변함 방지
+      backgroundColor: AppColors.white,
+      surfaceTintColor: AppColors.white, // 스크롤 시 색상 변함 방지
       elevation: 0,
       //scrolledUnderElevation: 0,     // 스크롤 시 그림자 생김 방지
       centerTitle: true,
@@ -30,36 +33,38 @@ class AppTheme {
 
     // 하단 NavigationBar 테마 설정
     navigationBarTheme: const NavigationBarThemeData(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: AppColors.white,
+      surfaceTintColor: AppColors.white,
       elevation: 0,
     ),
 
     // 하단 BottomNavigationBar 테마 설정 (Legacy 방식)
     // NavigationBar가 아닌 BottomNavigationBar를 쓸 경우를 대비
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       elevation: 0,
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: AppColors.white,
+      unselectedItemColor: AppColors.gray3,
     ),
   );
 
-  // 🖤 다크모드 기본 골격
-  // TODO: 화면 점검하면서 색상값 다듬기
+  // 다크모드
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     fontFamily: 'Pretendard',
     scaffoldBackgroundColor: const Color(0xFF121212),
     brightness: Brightness.dark,
 
+    // ThemeExtension 등록
+    extensions: [AppColorsExtension.dark()],
+
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: AppColors.primaryAble,
+      color: Color(0xFF0EBC6A), // 다크모드 primarygreen
     ),
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: AppColors.primaryAble,
-      selectionHandleColor: AppColors.primaryAble,
-      selectionColor: AppColors.primaryAble.withValues(alpha: 0.3),
+      cursorColor: const Color(0xFF0EBC6A),
+      selectionHandleColor: const Color(0xFF0EBC6A),
+      selectionColor: const Color(0xFF0EBC6A).withValues(alpha: 0.3),
     ),
 
     appBarTheme: const AppBarTheme(
@@ -78,7 +83,7 @@ class AppTheme {
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Color(0xFF1E1E1E),
       elevation: 0,
-      selectedItemColor: Colors.white,
+      selectedItemColor: AppColors.white,
       unselectedItemColor: Colors.grey,
     ),
   );
