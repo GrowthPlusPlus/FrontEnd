@@ -14,16 +14,18 @@ class FriendAddScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return DefaultTabController(
       length: 3,
       initialIndex: initialTabIndex, // 초기 탭 인덱스 설정
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: appColors.whiteToBlack,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.black),
+            icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
             onPressed: () => Navigator.pop(context),
           ),
           centerTitle: true,
@@ -31,9 +33,9 @@ class FriendAddScreen extends StatelessWidget {
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(48),
             child: TabBar(
-              indicatorColor: AppColors.primaryAble,
-              labelColor: AppColors.primaryAble,
-              unselectedLabelColor: AppColors.gray2,
+              indicatorColor: appColors.primaryAble,
+              labelColor: appColors.primaryAble,
+              unselectedLabelColor: appColors.gray2,
               labelStyle: AppTypography.b1.copyWith(
                 fontWeight: FontWeight.w500,
               ),

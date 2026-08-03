@@ -20,6 +20,7 @@ class FriendEditTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     return UserListTile(
       user: user,
       trailing: IconButton(
@@ -27,8 +28,8 @@ class FriendEditTile extends StatelessWidget {
         icon: SvgPicture.asset(
           'assets/images/icons/big_trash_icon.svg',
           width: 24,
-          colorFilter: const ColorFilter.mode(
-            AppColors.notification,
+          colorFilter: ColorFilter.mode(
+            appColors.notification,
             BlendMode.srcIn,
           ),
         ),

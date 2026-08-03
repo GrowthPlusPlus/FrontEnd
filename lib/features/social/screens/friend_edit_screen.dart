@@ -68,14 +68,14 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
   }
 
   // 삭제 확인 다이얼로그 표시
-  void showDeleteDialog(User user) {
+  void showDeleteDialog(User user, AppColorsExtension appColors) {
     showDialog(
       context: context,
       builder: (dialogContext) => SelectDialog(
         title: '친구 삭제',
         content: '${user.nickname} 님을 삭제하시겠습니까?',
         confirmText: '삭제하기',
-        confirmTextColor: AppColors.notification,
+        confirmTextColor: appColors.notification,
         cancelText: '취소',
 
         // [취소] 클릭 시 단순히 다이얼로그 닫기
@@ -122,13 +122,15 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
+          icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
           onPressed: () => Navigator.pop(context, totalList),
         ),
         centerTitle: true,
@@ -137,7 +139,7 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
       body: Column(
         children: [
           _buildSearchHeader(),
-          Expanded(child: _buildEditListView()),
+          Expanded(child: _buildEditListView(appColors)),
         ],
       ),
     );
@@ -157,7 +159,7 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
   }
 
   // 편집 리스트 빌드
-  Widget _buildEditListView() {
+  Widget _buildEditListView(AppColorsExtension appColors) {
     if (filteredList.isEmpty) {
       return const Center(child: Text('검색 결과가 없습니다.', style: AppTypography.b2));
     }
@@ -168,7 +170,7 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
         final user = filteredList[index];
         return FriendEditTile(
           user: user,
-          onDeleteTap: () => showDeleteDialog(user),
+          onDeleteTap: () => showDeleteDialog(user, appColors),
         );
       },
     );
