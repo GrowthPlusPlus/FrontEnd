@@ -31,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      // backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       body: SafeArea(
         child: homeDataAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -197,6 +197,12 @@ class HomeScreen extends ConsumerWidget {
   // FAB 빌더
   Widget _buildFAB(BuildContext context) {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+    Color FABColor = Theme.of(context).brightness == Brightness.light
+        ? AppColors.white
+        : appColors.primaryAble;
+    Color FABplusColor = Theme.of(context).brightness == Brightness.light
+        ? appColors.primaryAble
+        : AppColors.black;
 
     return Positioned(
       right: 20,
@@ -208,9 +214,9 @@ class HomeScreen extends ConsumerWidget {
             builder: (context) => const ChallengeCreateScreen(),
           ),
         ),
-        backgroundColor: appColors.blackToWhite,
+        backgroundColor: FABColor,
         shape: const CircleBorder(),
-        child: Icon(Icons.add, size: 32, color: appColors.primaryAble),
+        child: Icon(Icons.add, size: 32, color: FABplusColor),
       ),
     );
   }

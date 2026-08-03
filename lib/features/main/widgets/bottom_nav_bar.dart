@@ -17,37 +17,43 @@ class MainBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex,
-      selectedItemColor: AppColors.black,
-      unselectedItemColor: AppColors.gray3,
+      selectedItemColor: appColors.blackToWhite,
+      unselectedItemColor: appColors.gray3,
       selectedLabelStyle: AppTypography.c2,
       unselectedLabelStyle: AppTypography.c2,
       onTap: onTap,
       items: [
-        _buildNavItem('home_icon_off.svg', '홈'),
-        _buildNavItem('graph_icon.svg', '통계'),
-        _buildNavItem('feed_icon.svg', '피드'),
-        _buildNavItem('friend_icon_off.svg', '친구'),
-        _buildNavItem('user_icon.svg', '내 페이지'),
+        _buildNavItem('home_icon_off.svg', '홈', appColors),
+        _buildNavItem('graph_icon.svg', '통계', appColors),
+        _buildNavItem('feed_icon.svg', '피드', appColors),
+        _buildNavItem('friend_icon_off.svg', '친구', appColors),
+        _buildNavItem('user_icon.svg', '내 페이지', appColors),
       ],
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(String iconName, String label) {
+  BottomNavigationBarItem _buildNavItem(
+    String iconName,
+    String label,
+    AppColorsExtension appColors,
+  ) {
     return BottomNavigationBarItem(
       icon: SvgPicture.asset(
         'assets/images/icons/$iconName',
         width: 24,
         height: 24,
-        colorFilter: const ColorFilter.mode(AppColors.gray3, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(appColors.gray3, BlendMode.srcIn),
       ),
       activeIcon: SvgPicture.asset(
         'assets/images/icons/$iconName',
         width: 24,
         height: 24,
-        colorFilter: const ColorFilter.mode(AppColors.black, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(appColors.blackToWhite, BlendMode.srcIn),
       ),
       label: label,
     );
