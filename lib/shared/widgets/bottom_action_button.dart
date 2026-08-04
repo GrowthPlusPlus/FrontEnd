@@ -88,7 +88,7 @@ class _BottomActionButtonState extends State<BottomActionButton> {
             ],
             Text(
               widget.text,
-              style: AppTypography.b1.copyWith(color: effectiveTextColor),
+              style: AppTypography.h3.copyWith(color: effectiveTextColor),
               maxLines: 1,
               softWrap: false,
             ),
