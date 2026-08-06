@@ -19,22 +19,33 @@ class MainBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
 
-    return BottomNavigationBar(
-      backgroundColor: appColors.whiteToBlack,
-      type: BottomNavigationBarType.fixed,
-      currentIndex: currentIndex,
-      selectedItemColor: appColors.blackToWhite,
-      unselectedItemColor: appColors.gray3,
-      selectedLabelStyle: AppTypography.c2,
-      unselectedLabelStyle: AppTypography.c2,
-      onTap: onTap,
-      items: [
-        _buildNavItem('home_icon_off.svg', '홈', appColors),
-        _buildNavItem('graph_icon.svg', '통계', appColors),
-        _buildNavItem('feed_icon.svg', '피드', appColors),
-        _buildNavItem('friend_icon_off.svg', '친구', appColors),
-        _buildNavItem('user_icon.svg', '내 페이지', appColors),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        // 상단에만 외곽선 추가
+        border: Border(
+          top: BorderSide(
+            color: appColors.gray5, // 원하는 테두리 색상으로 변경 가능
+            width: 1.0, // 테두리 두께 설정
+          ),
+        ),
+      ),
+      child: BottomNavigationBar(
+        backgroundColor: appColors.whiteToBlack,
+        type: BottomNavigationBarType.fixed,
+        currentIndex: currentIndex,
+        selectedItemColor: appColors.blackToWhite,
+        unselectedItemColor: appColors.gray3,
+        selectedLabelStyle: AppTypography.c2,
+        unselectedLabelStyle: AppTypography.c2,
+        onTap: onTap,
+        items: [
+          _buildNavItem('home_icon_off.svg', '홈', appColors),
+          _buildNavItem('graph_icon.svg', '통계', appColors),
+          _buildNavItem('feed_icon.svg', '피드', appColors),
+          _buildNavItem('friend_icon_off.svg', '친구', appColors),
+          _buildNavItem('user_icon.svg', '내 페이지', appColors),
+        ],
+      ),
     );
   }
 
