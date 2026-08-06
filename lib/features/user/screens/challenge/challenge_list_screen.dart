@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
 import '../../widgets/my_challenge_card.dart'; // 💡 공통 카드 위젯 추가
 import 'package:haenaem/features/user/models/my_page_challenge_card.dart';
+import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 
 // 클래스의 용도: 챌린지 목록을 진행중, 완료, 실패 탭으로 구분하여 보여주는 화면
 class ChallengeListScreen extends ConsumerWidget {
@@ -47,57 +48,26 @@ class ChallengeListScreen extends ConsumerWidget {
             style: AppTypography.h3.copyWith(color: AppColors.black),
           ),
         ),
-        body: Column(
+        body: CustomTabBar(
+          tabs: const ['진행중', '완료', '실패'],
           children: [
-            _buildTabBar(),
-            Expanded(
-              child: Container(
-                color: AppColors.gray5,
-                child: TabBarView(
-                  children: [
-                    inProgressAsync.when(
-                      data: (list) => _buildFilteredListView(list),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, __) => Center(child: Text('로드 실패: $err')),
-                    ),
-                    successAsync.when(
-                      data: (list) => _buildFilteredListView(list),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, __) => Center(child: Text('로드 실패: $err')),
-                    ),
-                    failedAsync.when(
-                      data: (list) => _buildFilteredListView(list),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, __) => Center(child: Text('로드 실패: $err')),
-                    ),
-                  ],
-                ),
-              ),
+            inProgressAsync.when(
+              data: (list) => _buildFilteredListView(list),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, __) => Center(child: Text('로드 실패: $err')),
+            ),
+            successAsync.when(
+              data: (list) => _buildFilteredListView(list),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, __) => Center(child: Text('로드 실패: $err')),
+            ),
+            failedAsync.when(
+              data: (list) => _buildFilteredListView(list),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, __) => Center(child: Text('로드 실패: $err')),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTabBar() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: AppColors.gray4, width: 1)),
-      ),
-      child: const TabBar(
-        indicatorColor: AppColors.primaryAble,
-        labelColor: AppColors.primaryAble,
-        unselectedLabelColor: AppColors.gray2,
-        tabs: [
-          Tab(text: '진행중'),
-          Tab(text: '완료'),
-          Tab(text: '실패'),
-        ],
       ),
     );
   }
@@ -107,11 +77,17 @@ class ChallengeListScreen extends ConsumerWidget {
       return const Center(child: Text('해당하는 챌린지가 없습니다.'));
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      itemCount: list.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) => MyChallengeCard(item: list[index]),
+    return Container(
+      color: AppColors.gray5,
+      child: list.isEmpty
+          ? const Center(child: Text('해당하는 챌린지가 없습니다.'))
+          : ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              itemCount: list.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) =>
+                  MyChallengeCard(item: list[index]),
+            ),
     );
   }
 }
