@@ -25,7 +25,8 @@ import '../widgets/verification_info_box.dart';
 import '../widgets/ai_success_box.dart';
 import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
-import '../widgets/verification_submit_button.dart';
+// import '../widgets/verification_submit_button.dart';
+import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
@@ -735,9 +736,8 @@ class _ChallengeVerificationScreenState
           ],
         ),
         // 하단 버튼 통합
-        bottomNavigationBar: VerificationSubmitButton(
-          label: isEditMode ? '수정하기' : '인증하기',
-          showShadow: _showShadow,
+        bottomNavigationBar: BottomActionButton(
+          text: isEditMode ? '수정하기' : '인증하기',
           onPressed: _isFormValid ? _onSave : null,
         ),
       ),

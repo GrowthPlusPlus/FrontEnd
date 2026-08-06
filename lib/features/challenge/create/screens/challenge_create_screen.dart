@@ -19,8 +19,9 @@ import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 import 'package:haenaem/features/challenge/create/widgets/ai_notice_box.dart';
-import 'package:haenaem/features/challenge/create/widgets/plus_button.dart';
+// import 'package:haenaem/features/challenge/create/widgets/plus_button.dart';
 // import 'package:haenaem/features/challenge/create/widgets/challenge_select_button.dart';
+import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_calendar_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_duration_bottom_sheet.dart';
 import 'package:haenaem/features/challenge/create/widgets/challenge_frequency_bottom_sheet.dart';
@@ -460,13 +461,11 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
       ),
 
       // 하단 버튼 배치
-      bottomNavigationBar: PlusButton(
-        label: '만들기',
-        showShadow: _showShadow, // 상태 전달
-        onPressed:
-            (_isFormValid && !_isSubmitting) // 제출 중이면 비활성화
+      bottomNavigationBar: BottomActionButton(
+        text: '만들기',
+        onPressed: (_isFormValid && !_isSubmitting)
             ? () {
-                _submitChallenge(); // 데이터 수집 및 팝업 실행!
+                _submitChallenge();
               }
             : null,
       ),

@@ -8,7 +8,8 @@ import 'package:haenaem/shared/models/tag_model.dart';
 import 'package:haenaem/shared/provider/tag_provider.dart';
 // import 'package:haenaem/features/challenge/models/challenge_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:haenaem/features/challenge/create/widgets/plus_button.dart';
+// import 'package:haenaem/features/challenge/create/widgets/plus_button.dart';
+import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/custom_bottom_sheet.dart';
 import 'package:haenaem/shared/widgets/app_tag_chip.dart';
 
@@ -220,9 +221,9 @@ class _ChallengeTagBottomSheetState
                 ),
               ),
 
-              PlusButton(
-                label: "완료",
-                showShadow: _showShadow, // 스크롤 상태 전달
+              BottomActionButton(
+                text: "완료",
+                // showShadow: _showShadow, // 스크롤 상태 전달
                 onPressed: isButtonEnabled
                     ? () {
                         widget.onCompleted(_tempSelectedModels);

@@ -211,41 +211,4 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
             },
     );
   }
-
-  // return BottomActionButton(
-  //   // 1. 텍스트 분기
-  //   text: isMemberTab ? '내 순위 확인하기' : '인증하기',
-
-  //   // 2. 배경색: 멤버 탭이면 흰색, 아니면 기본색(초록)
-  //   backgroundColor: isMemberTab ? Colors.white : AppColors.primaryAble,
-
-  //   // 3. 글자색: 멤버 탭이면 초록색, 아니면 흰색
-  //   textColor: isMemberTab ? AppColors.primaryAble : Colors.white,
-
-  //   // 4. 테두리색: 멤버 탭일 때만 초록색 테두리 추가
-  //   borderColor: isMemberTab ? AppColors.primaryAble : null,
-
-  //   onPressed: () {
-  //     if (isMemberTab) {
-  //       // 랭킹 페이지 이동 로직
-  //       Navigator.push(
-  //         context,
-  //         MaterialPageRoute(
-  //           builder: (context) =>
-  //               MemberRankingScreen(challengeId: widget.challengeId),
-  //         ),
-  //       );
-  //     } else {
-  //       // 인증 페이지 이동 로직
-  //       Navigator.push(
-  //         context,
-  //         MaterialPageRoute(
-  //           builder: (context) =>
-  //               ChallengeVerificationScreen(challengeId: widget.challengeId),
-  //         ),
-  //       );
-  //     }
-  //   },
-  // );
-  // }
 }
