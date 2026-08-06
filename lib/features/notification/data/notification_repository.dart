@@ -1,5 +1,7 @@
 // 최초 작성자: 정승빈
+import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
 import 'package:haenaem/features/notification/models/invite_challenge_card.dart';
@@ -25,6 +27,25 @@ class NotificationRepository {
         '/api/notification',
         queryParameters: {'page': page},
       );
+
+      // debugPrint('====================================================');
+      // debugPrint('🔔 [GET /api/notification] (page: $page) 요청 성공!');
+      // debugPrint('Status Code: ${response.statusCode}');
+
+      // try {
+      //   final encoder = const JsonEncoder.withIndent('  ');
+      //   final prettyJson = encoder.convert(response.data);
+
+      //   debugPrint('Response Body:');
+      //   // 긴 JSON 문자열이 중간에 잘리지 않도록 줄 단위로 출력
+      //   for (final line in prettyJson.split('\n')) {
+      //     debugPrint(line);
+      //   }
+      // } catch (_) {
+      //   debugPrint('Response Body: ${response.data}');
+      // }
+      // debugPrint('====================================================');
+
       return response.data;
     } on DioException catch (e) {
       throw Exception('알림 목록 조회 실패: ${e.response?.statusCode}');
