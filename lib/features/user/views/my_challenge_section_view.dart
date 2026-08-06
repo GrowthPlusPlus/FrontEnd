@@ -29,29 +29,31 @@ class _MyChallengeSectionViewState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.gray4, width: 1),
+        border: Border.all(color: appColors.gray4, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildHeader(),
-          const Divider(height: 1, color: AppColors.gray4),
-          _buildChallengeListArea(),
+          _buildHeader(appColors),
+          Divider(height: 1, color: appColors.gray4),
+          _buildChallengeListArea(appColors),
         ],
       ),
     );
   }
 
   // --- 헤더 영역 (제목 + 더보기 + 탭) ---
-  Widget _buildHeader() {
+  Widget _buildHeader(AppColorsExtension appColors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: AppColors.gray5,
+      color: appColors.gray5,
       child: Column(
         children: [
           Row(
@@ -59,19 +61,19 @@ class _MyChallengeSectionViewState
             children: [
               Text(
                 '나의 챌린지',
-                style: AppTypography.h3.copyWith(color: Colors.black),
+                style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
               ),
-              _buildMoreButton(),
+              _buildMoreButton(appColors),
             ],
           ),
           const SizedBox(height: 8),
-          _buildStatusTabs(),
+          _buildStatusTabs(appColors),
         ],
       ),
     );
   }
 
-  Widget _buildMoreButton() {
+  Widget _buildMoreButton(AppColorsExtension appColors) {
     return InkWell(
       onTap: () => Navigator.push(
         context,
@@ -80,7 +82,7 @@ class _MyChallengeSectionViewState
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('더보기', style: AppTypography.b1.copyWith(color: AppColors.gray3)),
+          Text('더보기', style: AppTypography.b1.copyWith(color: appColors.gray3)),
           SvgPicture.asset(
             'assets/images/icons/right_arrow_icon.svg',
             width: 20,
@@ -92,33 +94,41 @@ class _MyChallengeSectionViewState
   }
 
   // --- 탭 버튼 영역 ---
-  Widget _buildStatusTabs() {
+  Widget _buildStatusTabs(AppColorsExtension appColors) {
     return Row(
       children: [
         _buildTabButton(
           '진행중',
           MyPageTab.inProgress,
           'assets/images/icons/inprogress.svg',
+          appColors,
         ),
         const SizedBox(width: 8),
         _buildTabButton(
           '완료',
           MyPageTab.success,
           'assets/images/icons/success_check.svg',
+          appColors,
         ),
         const SizedBox(width: 8),
         _buildTabButton(
           '실패',
           MyPageTab.fail,
           'assets/images/icons/fail_circle.svg',
+          appColors,
         ),
       ],
     );
   }
 
-  Widget _buildTabButton(String label, MyPageTab tab, String svgPath) {
+  Widget _buildTabButton(
+    String label,
+    MyPageTab tab,
+    String svgPath,
+    AppColorsExtension appColors,
+  ) {
     final bool isSelected = selectedTab == tab;
-    final Color activeColor = _getTabColor(tab);
+    final Color activeColor = _getTabColor(tab, appColors);
 
     return Expanded(
       child: InkWell(
@@ -126,9 +136,9 @@ class _MyChallengeSectionViewState
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: isSelected ? activeColor : Colors.white,
+            color: isSelected ? activeColor : appColors.whiteToBlack,
             borderRadius: BorderRadius.circular(9),
-            border: isSelected ? null : Border.all(color: AppColors.gray4),
+            border: isSelected ? null : Border.all(color: appColors.gray4),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -138,7 +148,7 @@ class _MyChallengeSectionViewState
                 width: 16,
                 height: 16,
                 colorFilter: ColorFilter.mode(
-                  isSelected ? Colors.white : AppColors.gray3,
+                  isSelected ? appColors.whiteToBlack : appColors.gray3,
                   BlendMode.srcIn,
                 ),
               ),
@@ -146,7 +156,7 @@ class _MyChallengeSectionViewState
               Text(
                 label,
                 style: AppTypography.b2.copyWith(
-                  color: isSelected ? Colors.white : AppColors.gray3,
+                  color: isSelected ? appColors.whiteToBlack : appColors.gray3,
                 ),
               ),
             ],
@@ -156,19 +166,19 @@ class _MyChallengeSectionViewState
     );
   }
 
-  Color _getTabColor(MyPageTab tab) {
+  Color _getTabColor(MyPageTab tab, AppColorsExtension appColors) {
     switch (tab) {
       case MyPageTab.inProgress:
         return AppColors.blue;
       case MyPageTab.success:
-        return AppColors.primaryAble;
+        return appColors.primaryAble;
       case MyPageTab.fail:
-        return AppColors.notification;
+        return appColors.notification;
     }
   }
 
   // --- 챌린지 리스트 데이터 처리 영역 ---
-  Widget _buildChallengeListArea() {
+  Widget _buildChallengeListArea(AppColorsExtension appColors) {
     final challengesAsync = _getChallengesProvider();
 
     return challengesAsync.when(
@@ -185,9 +195,9 @@ class _MyChallengeSectionViewState
           return Container(
             height: 100,
             alignment: Alignment.center,
-            child: const Text(
+            child: Text(
               '해당하는 챌린지가 없습니다.',
-              style: TextStyle(color: AppColors.gray2),
+              style: TextStyle(color: appColors.gray2),
             ),
           );
         }
@@ -198,7 +208,7 @@ class _MyChallengeSectionViewState
             return Column(
               children: [
                 MyChallengeCard(item: challenge),
-                if (!isLast) Divider(height: 1, color: AppColors.gray5),
+                if (!isLast) Divider(height: 1, color: appColors.gray5),
               ],
             );
           }).toList(),

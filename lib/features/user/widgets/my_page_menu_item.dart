@@ -6,20 +6,22 @@ import '../../../core/theme/app_typography.dart';
 // 반복되는 메뉴 버튼들을 독립적인 위젯으로 분리
 class MyPageMenuItem extends StatelessWidget {
   final String title;
-  final Color textColor;
+  final Color? textColor;
   final VoidCallback onTap;
   final bool showArrow;
 
   const MyPageMenuItem({
     super.key,
     required this.title,
-    this.textColor = AppColors.black,
+    this.textColor,
     required this.onTap,
     this.showArrow = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -27,13 +29,18 @@ class MyPageMenuItem extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.gray5,
+          color: appColors.gray5,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: AppTypography.b1.copyWith(color: textColor)),
+            Text(
+              title,
+              style: AppTypography.b1.copyWith(
+                color: textColor ?? appColors.blackToWhite,
+              ),
+            ),
           ],
         ),
       ),

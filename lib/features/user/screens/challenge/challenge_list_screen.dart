@@ -16,6 +16,8 @@ class ChallengeListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final inProgressAsync = ref.watch(
       myInProgressChallengesProvider(onlyTwo: false),
     );
@@ -25,9 +27,9 @@ class ChallengeListScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: appColors.whiteToBlack,
           elevation: 0,
           centerTitle: true,
           leading: IconButton(
@@ -36,23 +38,23 @@ class ChallengeListScreen extends ConsumerWidget {
               'assets/images/icons/arrow_left.svg',
               width: 24,
               height: 24,
-              colorFilter: const ColorFilter.mode(
-                AppColors.black,
+              colorFilter: ColorFilter.mode(
+                appColors.blackToWhite,
                 BlendMode.srcIn,
               ),
             ),
           ),
           title: Text(
             '나의 챌린지',
-            style: AppTypography.h3.copyWith(color: AppColors.black),
+            style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
           ),
         ),
         body: Column(
           children: [
-            _buildTabBar(),
+            _buildTabBar(appColors),
             Expanded(
               child: Container(
-                color: AppColors.gray5,
+                color: appColors.gray5,
                 child: TabBarView(
                   children: [
                     inProgressAsync.when(
@@ -83,16 +85,16 @@ class ChallengeListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(AppColorsExtension appColors) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: AppColors.gray4, width: 1)),
+      decoration: BoxDecoration(
+        color: appColors.whiteToBlack,
+        border: Border(bottom: BorderSide(color: appColors.gray4, width: 1)),
       ),
-      child: const TabBar(
-        indicatorColor: AppColors.primaryAble,
-        labelColor: AppColors.primaryAble,
-        unselectedLabelColor: AppColors.gray2,
+      child: TabBar(
+        indicatorColor: appColors.primaryAble,
+        labelColor: appColors.primaryAble,
+        unselectedLabelColor: appColors.gray2,
         tabs: [
           Tab(text: '진행중'),
           Tab(text: '완료'),
@@ -110,7 +112,7 @@ class ChallengeListScreen extends ConsumerWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       itemCount: list.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) => MyChallengeCard(item: list[index]),
     );
   }

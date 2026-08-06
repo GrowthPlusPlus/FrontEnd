@@ -24,6 +24,8 @@ class ProfileHeaderView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final bool hasIntro = introduction.trim().isNotEmpty; // 한줄소개 있없 확인
 
     return Column(
@@ -35,7 +37,7 @@ class ProfileHeaderView extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             introduction,
-            style: AppTypography.b1.copyWith(color: AppColors.gray3),
+            style: AppTypography.b1.copyWith(color: appColors.gray3),
           ),
         ],
         SizedBox(height: hasIntro ? 17 : 14), // 한줄소개 없으면 닉네임과 태그 사이 간격 좁힘
