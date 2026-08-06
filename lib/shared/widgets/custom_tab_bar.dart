@@ -36,6 +36,10 @@ class CustomTabBar extends StatefulWidget {
     this.onTabChanged,
     this.scrollControllers,
   }) : assert(
+         tabs.length == children.length,
+         'tabs 길이와 children 길이는 동일해야 합니다.',
+       ),
+       assert(
          scrollControllers == null || scrollControllers.length == tabs.length,
          'scrollControllers 길이는 tabs 길이와 동일해야 합니다.',
        );
@@ -47,32 +51,54 @@ class CustomTabBar extends StatefulWidget {
 class _CustomTabBarState extends State<CustomTabBar>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late int _previousIndex;
 
   @override
   void initState() {
     super.initState();
+    _previousIndex = widget.initialIndex;
+    _initTabController();
+  }
+
+  void _initTabController() {
     _tabController = TabController(
       length: widget.tabs.length,
       vsync: this,
       initialIndex: widget.initialIndex,
     );
 
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        widget.onTabChanged?.call(_tabController.index);
-      }
-    });
+    _tabController.addListener(_handleTabSelection);
+  }
+
+  void _handleTabSelection() {
+    // 탭 애니메이션 진행 중 중복 호출 방지
+    if (!_tabController.indexIsChanging) {
+      widget.onTabChanged?.call(_tabController.index);
+      _previousIndex = _tabController.index;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomTabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 탭 개수나 초기 인덱스가 부모 위젯 리빌드로 인해 달라진 경우 처리
+    if (oldWidget.tabs.length != widget.tabs.length) {
+      _tabController.removeListener(_handleTabSelection);
+      _tabController.dispose();
+      _initTabController();
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
     super.dispose();
   }
 
   void _scrollToTop(int index) {
     final controllers = widget.scrollControllers;
-    if (controllers == null) return;
+    if (controllers == null || index >= controllers.length) return;
 
     final controller = controllers[index];
     if (controller.hasClients) {
@@ -98,10 +124,13 @@ class _CustomTabBarState extends State<CustomTabBar>
           indicatorWeight: 1,
           indicatorSize: TabBarIndicatorSize.tab,
           labelStyle: AppTypography.b1.copyWith(color: appColors.primaryAble),
+          unselectedLabelStyle: AppTypography.b1.copyWith(
+            color: appColors.gray2,
+          ),
           tabs: widget.tabs.map((t) => Tab(text: t)).toList(),
           onTap: (index) {
-            // 이미 선택된 탭을 다시 눌렀을 때 스크롤 최상단 이동
-            if (_tabController.index == index) {
+            // 이미 활성화되어 있던 탭을 재선택했을 때 최상단 스크롤
+            if (_previousIndex == index) {
               _scrollToTop(index);
             }
           },

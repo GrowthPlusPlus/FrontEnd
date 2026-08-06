@@ -7,6 +7,7 @@ import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
 import '../provider/feed_provider.dart';
 import 'package:haenaem/features/feed/views/share_feed_view.dart';
+import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -20,21 +21,6 @@ class _FeedScreenState extends State<FeedScreen>
   late TabController _tabController;
   final ScrollController _friendScrollController = ScrollController();
   final ScrollController _exploreScrollController = ScrollController();
-  int _previousIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {
-          _previousIndex = _tabController.index;
-        });
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -42,17 +28,6 @@ class _FeedScreenState extends State<FeedScreen>
     _friendScrollController.dispose();
     _exploreScrollController.dispose();
     super.dispose();
-  }
-
-  // 최상단 이동 애니메이션 함수
-  void _scrollToTop(ScrollController controller) {
-    if (controller.hasClients) {
-      controller.animateTo(
-        0,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOut,
-      );
-    }
   }
 
   @override
@@ -97,34 +72,11 @@ class _FeedScreenState extends State<FeedScreen>
             ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: appColors.primaryAble,
-          unselectedLabelColor: appColors.gray4,
-          indicatorColor: appColors.primaryAble,
-          indicatorWeight: 1,
-          indicatorSize: TabBarIndicatorSize.tab,
-          labelStyle: AppTypography.b1,
-          unselectedLabelStyle: AppTypography.b1,
-          onTap: (index) {
-            if (_previousIndex == index) {
-              if (index == 0) {
-                _scrollToTop(_friendScrollController);
-              } else {
-                _scrollToTop(_exploreScrollController);
-              }
-            }
-          },
-          tabs: const [
-            Tab(text: '친구'),
-            Tab(text: '둘러보기'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: CustomTabBar(
+        tabs: const ['친구', '둘러보기'],
+        scrollControllers: [_friendScrollController, _exploreScrollController],
         children: [
-          // 탭별로 다른 Provider와 컨트롤러를 주입
           ShareFeedView(
             scrollController: _friendScrollController,
             provider: friendFeedProvider,
