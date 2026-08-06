@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../views/all_notifications_view.dart';
 import '../provider/notification_provider.dart';
+import 'package:haenaem/shared/widgets/custom_tab_bar.dart';
 
 class NotificationMainScreen extends ConsumerStatefulWidget {
   const NotificationMainScreen({super.key});
@@ -33,33 +34,25 @@ class _NotificationMainScreenState
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2, // 탭 개수
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.black),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: const Text('알림', style: AppTypography.h3),
-          bottom: const TabBar(
-            indicatorColor: AppColors.primaryAble,
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: AppColors.primaryAble,
-            unselectedLabelColor: AppColors.gray2,
-            labelStyle: AppTypography.b1,
-            tabs: [
-              Tab(text: '모두'),
-              Tab(text: '챌린지 초대'),
-            ],
-          ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.black),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        body: const TabBarView(
-          children: [
-            AllNotificationsView(), // '모두' 탭
-            ChallengeInvitesView(), // '챌린지 초대' 탭
-          ],
-        ),
+        title: const Text('알림', style: AppTypography.h3),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      body: CustomTabBar(
+        tabs: ['모두', '챌린지 초대'],
+        children: const [
+          AllNotificationsView(), // '모두' 탭
+          ChallengeInvitesView(), // '챌린지 초대' 탭
+        ],
       ),
     );
   }
