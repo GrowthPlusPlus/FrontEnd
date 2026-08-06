@@ -18,19 +18,20 @@ class StatisticsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     final activityAsync = ref.watch(activityRepositoryProvider);
     final distributionAsync = ref.watch(distributionRepositoryProvider);
     final monthlyWeeklyAsync = ref.watch(monthlyWeeklyRepositoryProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.gray5,
+      backgroundColor: appColors.gray5,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
           '통계',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),
@@ -53,7 +54,7 @@ class StatisticsScreen extends ConsumerWidget {
                       Text(
                         '데이터를 불러오지 못했어요',
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.gray4,
+                          color: appColors.gray4,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -73,7 +74,7 @@ class StatisticsScreen extends ConsumerWidget {
                 activity: data.activity,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             // 나의 해냄 분포
             distributionAsync.when(
               loading: () => const SizedBox(
@@ -89,7 +90,7 @@ class StatisticsScreen extends ConsumerWidget {
                       Text(
                         '데이터를 불러오지 못했어요',
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.gray4,
+                          color: appColors.gray4,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -110,7 +111,7 @@ class StatisticsScreen extends ConsumerWidget {
                 totalCount: data.totalCount,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             // 나의 해냄 추이
             monthlyWeeklyAsync.when(
               loading: () => const SizedBox(
@@ -126,7 +127,7 @@ class StatisticsScreen extends ConsumerWidget {
                       Text(
                         '데이터를 불러오지 못했어요',
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.gray4,
+                          color: appColors.gray4,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -143,10 +144,10 @@ class StatisticsScreen extends ConsumerWidget {
               data: (data) =>
                   LineGraph(monthlyData: data.monthly, weeklyData: data.weekly),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             // AI 코칭 카드 (나의 해냄 포인트 / 이것만 해내면 완벽해요 / 다음 단계 해내기)
             const AiCoachingSection(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
           ],
         ),
       ),
