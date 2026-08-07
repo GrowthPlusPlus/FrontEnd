@@ -27,7 +27,6 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   int? _selectedReasonIndex;
   final TextEditingController _otherReasonController = TextEditingController();
 
-  // 백엔드 API 명세에 맞게 keys 값을 꼭 수정해주세요!
   final List<Map<String, String>> _reasons = [
     {'key': 'SPAM', 'title': '영리목적/홍보성', 'desc': '상업적 광고, 도배성 게시글, 링크 유도 등'},
     {
@@ -64,7 +63,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         ? _otherReasonController.text
         : '';
 
-    // 바뀐 부분: 모델 객체 생성 없이 파라미터로 바로 전달
+    // 모델 객체 생성 없이 파라미터로 바로 전달
     final success = await ref
         .read(reportControllerProvider.notifier)
         .submitReport(
@@ -85,13 +84,14 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 항목이 하나라도 선택되었는지 여부로 하단 버튼 활성화 상태 결정
     final bool isButtonActive = _selectedReasonIndex != null;
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
+          icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('신고하기', style: AppTypography.h3),
@@ -104,7 +104,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             child: Text(
               '더 깨끗한 \'해냄\'을 위해 부적절한 콘텐츠를 알려주세요.\n신고하신 내용은 운영 정책에 따라 검토 후 조치됩니다.',
               textAlign: TextAlign.center,
-              style: AppTypography.b2.copyWith(color: AppColors.gray2),
+              style: AppTypography.b2.copyWith(color: appColors.gray2),
             ),
           ),
 
@@ -140,8 +140,8 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       bottomNavigationBar: BottomActionButton(
         text: '신고하기',
         backgroundColor: isButtonActive
-            ? AppColors.primaryAble
-            : AppColors.disable,
+            ? appColors.primaryAble
+            : appColors.disable,
         onPressed: isButtonActive ? _submitReport : () {},
       ),
     );

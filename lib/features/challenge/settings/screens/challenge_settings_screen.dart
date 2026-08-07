@@ -20,18 +20,20 @@ class ChallengeSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.black,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
               BlendMode.srcIn,
             ),
           ),
@@ -39,7 +41,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
         ),
         title: Text(
           '챌린지 설정',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),
@@ -50,9 +52,10 @@ class ChallengeSettingsScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // --- 챌린지 운영 관리 섹션 ---
-              _buildSectionTitle('챌린지 운영 관리', AppColors.black),
+              _buildSectionTitle('챌린지 운영 관리', appColors.blackToWhite),
               const SizedBox(height: 8),
               _buildManageTile(
+                appColors,
                 title: '챌린지 멤버 관리',
                 iconPath: 'assets/images/icons/friend_icon_on.svg',
                 onTap: () {
@@ -70,12 +73,9 @@ class ChallengeSettingsScreen extends ConsumerWidget {
               const SizedBox(height: 30),
 
               // --- 위험 구역 섹션 (통합 박스 구조) ---
-              Text(
-                '위험구역',
-                style: AppTypography.b3.copyWith(color: AppColors.notification),
-              ),
+              _buildSectionTitle('위험구역', appColors.notification),
               const SizedBox(height: 10),
-              _buildDangerZoneContainer(context, ref),
+              _buildDangerZoneContainer(context, ref, appColors),
             ],
           ),
         ),
@@ -85,11 +85,12 @@ class ChallengeSettingsScreen extends ConsumerWidget {
 
   // 섹션 타이틀 헬퍼
   Widget _buildSectionTitle(String title, Color color) {
-    return Text(title, style: AppTypography.b3.copyWith(color: color));
+    return Text(title, style: AppTypography.h3.copyWith(color: color));
   }
 
   // 관리 메뉴 타일
-  Widget _buildManageTile({
+  Widget _buildManageTile(
+    AppColorsExtension appColors, {
     required String title,
     required String iconPath,
     required VoidCallback onTap,
@@ -100,7 +101,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.gray5,
+          color: appColors.gray5,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -112,21 +113,21 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                   iconPath,
                   width: 16,
                   height: 16,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.black,
+                  colorFilter: ColorFilter.mode(
+                    appColors.blackToWhite,
                     BlendMode.srcIn,
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text(title, style: AppTypography.b2),
+                Text(title, style: AppTypography.b1),
               ],
             ),
             SvgPicture.asset(
               'assets/images/icons/right_arrow_icon.svg',
               width: 16,
               height: 16,
-              colorFilter: const ColorFilter.mode(
-                AppColors.black,
+              colorFilter: ColorFilter.mode(
+                appColors.blackToWhite,
                 BlendMode.srcIn,
               ),
             ),
@@ -137,13 +138,17 @@ class ChallengeSettingsScreen extends ConsumerWidget {
   }
 
   // 위험 구역 통합 컨테이너
-  Widget _buildDangerZoneContainer(BuildContext context, WidgetRef ref) {
+  Widget _buildDangerZoneContainer(
+    BuildContext context,
+    WidgetRef ref,
+    AppColorsExtension appColors,
+  ) {
     return Container(
       width: double.infinity,
       decoration: ShapeDecoration(
-        color: AppColors.gray5,
+        color: appColors.gray5,
         shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 1, color: AppColors.gray4),
+          side: BorderSide(width: 1, color: appColors.gray4),
           borderRadius: BorderRadius.circular(10),
         ),
       ),
@@ -151,6 +156,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
         children: [
           // 상단: 챌린지 나가기 구역
           _buildDangerItem(
+            appColors,
             context: context,
             title: '챌린지 나가기',
             description: '다른 멤버에게 챌린지장을 위임한 후, 챌린지를 나갑니다.',
@@ -163,8 +169,8 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                   title: '챌린지장 위임하기',
                   content: '다른 멤버에게 챌린지장을 위임하고\n정말 이 챌린지에서 나가시겠습니까?',
                   confirmText: '나가기',
-                  confirmBackgroundColor: AppColors.notification,
-                  confirmTextColor: Colors.white,
+                  confirmBackgroundColor: appColors.notification,
+                  confirmTextColor: appColors.whiteToBlack,
                   cancelText: '취소',
                   onConfirm: () async {
                     final currentFilter = MemberFilter(
@@ -188,13 +194,14 @@ class ChallengeSettingsScreen extends ConsumerWidget {
           ),
 
           // 중간 구분선
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 0),
-            child: Divider(height: 1, color: AppColors.gray4),
+            child: Divider(height: 1, color: appColors.gray4),
           ),
 
           // 하단: 챌린지 삭제 구역
           _buildDangerItem(
+            appColors,
             context: context,
             title: '챌린지 삭제',
             description:
@@ -211,10 +218,10 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                   content:
                       '이 작업은 되돌릴 수 없습니다.\n\n삭제 시 영향:\n• 모든 멤버가 퇴장됩니다.\n• 성취 그래프와 인증 기록이 삭제됩니다.\n• 챌린지 정보가 완전히 제거됩니다.',
                   confirmText: '영구 삭제',
-                  confirmBackgroundColor: AppColors.notification,
-                  confirmTextColor: Colors.white,
+                  confirmBackgroundColor: appColors.notification,
+                  confirmTextColor: appColors.whiteToBlack,
                   cancelText: '취소',
-                  cancelTextColor: AppColors.gray2,
+                  cancelTextColor: appColors.gray2,
                   onConfirm: () async {
                     // 기존 다이얼로그에 있던 삭제 로직 그대로 이식
                     final success = await ref
@@ -241,7 +248,8 @@ class ChallengeSettingsScreen extends ConsumerWidget {
   }
 
   // 위험 구역 내부 아이템 빌더
-  Widget _buildDangerItem({
+  Widget _buildDangerItem(
+    AppColorsExtension appColors, {
     required BuildContext context,
     required String title,
     required String description,
@@ -256,25 +264,27 @@ class ChallengeSettingsScreen extends ConsumerWidget {
         children: [
           Text(
             title,
-            style: AppTypography.b2.copyWith(color: AppColors.notification),
+            style: AppTypography.b3.copyWith(color: appColors.notification),
           ),
           const SizedBox(height: 4),
           Text(
             description,
-            style: AppTypography.c1.copyWith(color: AppColors.gray2),
+            style: AppTypography.b2.copyWith(color: appColors.gray2),
           ),
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDelete ? AppColors.notification : Colors.white,
+              backgroundColor: isDelete
+                  ? appColors.notification
+                  : appColors.whiteToBlack,
               elevation: 0,
               minimumSize: const Size(double.infinity, 40),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
                 side: isDelete
                     ? BorderSide.none
-                    : const BorderSide(color: AppColors.gray4),
+                    : BorderSide(color: appColors.gray4),
               ),
             ),
             child: Row(
@@ -285,8 +295,8 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                     'assets/images/icons/small_trash_icon.svg',
                     width: 16,
                     height: 16,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
+                    colorFilter: ColorFilter.mode(
+                      appColors.whiteToBlack,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -294,8 +304,10 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                 ],
                 Text(
                   buttonText,
-                  style: AppTypography.b2.copyWith(
-                    color: isDelete ? Colors.white : AppColors.black,
+                  style: AppTypography.b1.copyWith(
+                    color: isDelete
+                        ? appColors.whiteToBlack
+                        : appColors.blackToWhite,
                   ),
                 ),
               ],

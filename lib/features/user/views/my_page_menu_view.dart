@@ -17,6 +17,8 @@ class MyPageMenuView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Column(
       children: [
         MyPageMenuItem(
@@ -76,7 +78,7 @@ class MyPageMenuView extends ConsumerWidget {
         const SizedBox(height: 10),
         MyPageMenuItem(
           title: '회원 탈퇴',
-          textColor: AppColors.notification,
+          textColor: appColors.notification,
           showArrow: true,
           onTap: () {
             Navigator.push(

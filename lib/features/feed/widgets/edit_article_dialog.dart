@@ -22,7 +22,10 @@ class _EditArticleDialogState extends State<EditArticleDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Dialog(
+      backgroundColor: appColors.whiteToBlack,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -37,7 +40,7 @@ class _EditArticleDialogState extends State<EditArticleDialog> {
               maxLines: 5,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: AppColors.gray5,
+                fillColor: appColors.gray5,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -50,24 +53,21 @@ class _EditArticleDialogState extends State<EditArticleDialog> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      '취소',
-                      style: TextStyle(color: AppColors.gray2),
-                    ),
+                    child: Text('취소', style: TextStyle(color: appColors.gray2)),
                   ),
                 ),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, _controller.text),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryAble,
+                      backgroundColor: appColors.primaryAble,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       '수정완료',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: appColors.whiteToBlack),
                     ),
                   ),
                 ),

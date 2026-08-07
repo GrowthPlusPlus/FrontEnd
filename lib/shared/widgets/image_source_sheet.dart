@@ -14,6 +14,8 @@ class ImageSourceSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return CustomBottomSheet(
       title: '사진 추가',
       heightFactor: 0.4,
@@ -22,12 +24,14 @@ class ImageSourceSheet extends StatelessWidget {
         child: Column(
           children: [
             _buildOptionItem(
+              appColors,
               title: '직접 촬영하기',
               iconPath: 'assets/images/icons/camera.svg',
               onTap: () => onSourceSelected(ImageSource.camera),
             ),
             const SizedBox(height: 10),
             _buildOptionItem(
+              appColors,
               title: '갤러리에서 가져오기',
               iconPath: 'assets/images/icons/gallery_icon.svg',
               onTap: () => onSourceSelected(ImageSource.gallery),
@@ -38,7 +42,8 @@ class ImageSourceSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildOptionItem({
+  Widget _buildOptionItem(
+    AppColorsExtension appColors, {
     required String title,
     required String iconPath,
     required VoidCallback onTap,
@@ -50,7 +55,7 @@ class ImageSourceSheet extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
-          color: AppColors.gray5,
+          color: appColors.gray5,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -59,15 +64,12 @@ class ImageSourceSheet extends StatelessWidget {
               iconPath,
               width: 36,
               height: 36,
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray1,
-                BlendMode.srcIn,
-              ),
+              colorFilter: ColorFilter.mode(appColors.gray1, BlendMode.srcIn),
             ),
             const SizedBox(width: 16),
             Text(
               title,
-              style: AppTypography.b1.copyWith(color: AppColors.gray1),
+              style: AppTypography.b1.copyWith(color: appColors.gray1),
             ),
           ],
         ),

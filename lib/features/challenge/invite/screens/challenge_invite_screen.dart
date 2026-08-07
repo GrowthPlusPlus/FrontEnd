@@ -13,19 +13,27 @@ class ChallengeInviteScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: SvgPicture.asset('assets/images/icons/arrow_left.svg'),
+          icon: SvgPicture.asset(
+            'assets/images/icons/arrow_left.svg',
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           '챌린지 초대',
-          style: AppTypography.h3.copyWith(color: Colors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),

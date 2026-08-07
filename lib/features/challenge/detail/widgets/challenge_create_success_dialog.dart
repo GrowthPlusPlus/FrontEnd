@@ -18,6 +18,8 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Dialog(
       alignment: const Alignment(0, -0.3),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20),
@@ -27,7 +29,7 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
         height: 700,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors.whiteToBlack,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -47,7 +49,7 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
               ),
             ),
             // 하단 닫기 버튼
-            buildLaterButton(context),
+            buildLaterButton(context, appColors),
           ],
         ),
       ),
@@ -76,13 +78,13 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '챌린지 생성 완료!',
-            style: AppTypography.h2.copyWith(color: Colors.white),
+            style: AppTypography.h2.copyWith(color: AppColors.white),
           ),
           const SizedBox(height: 4),
           Text(
             '친구들을 초대해서 함께 도전해보세요',
             style: AppTypography.b1.copyWith(
-              color: Colors.white.withAlpha(200),
+              color: AppColors.white.withAlpha(200),
             ),
           ),
         ],
@@ -91,7 +93,7 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
   }
 
   // 나중에 초대하기 버튼
-  Widget buildLaterButton(BuildContext context) {
+  Widget buildLaterButton(BuildContext context, AppColorsExtension appColors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -102,12 +104,12 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
           height: 44,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.gray2),
+            border: Border.all(color: appColors.gray2),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
             '나중에 초대하기',
-            style: AppTypography.b1.copyWith(color: AppColors.gray2),
+            style: AppTypography.b1.copyWith(color: appColors.gray2),
           ),
         ),
       ),

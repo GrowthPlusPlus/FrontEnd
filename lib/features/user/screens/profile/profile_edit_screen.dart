@@ -160,6 +160,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final tagState = ref.watch(tagProvider);
     final profileEditState = ref.watch(userProfileProvider); // 💡 프로필 저장 상태 구독
 
@@ -176,8 +178,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         !profileEditState.isLoading;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(context),
+      backgroundColor: appColors.whiteToBlack,
+      appBar: _buildAppBar(context, appColors),
       body: Stack(
         children: [
           Column(
@@ -195,15 +197,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                             const SizedBox(height: 20),
                             _buildProfileImageSection(),
                             const SizedBox(height: 40),
-                            _buildNicknameSection(),
+                            _buildNicknameSection(appColors),
                             const SizedBox(height: 10),
                             _buildTextFieldSection(
+                              appColors,
                               label: '한 줄 소개',
                               controller: _introController,
                               maxLength: 50,
                             ),
                             const SizedBox(height: 10),
-                            _buildTagSection(),
+                            _buildTagSection(appColors),
                             const SizedBox(height: 120),
                           ],
                         ),
@@ -239,8 +242,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             child: BottomActionButton(
               text: '수정사항 저장하기',
               backgroundColor: isEnabled
-                  ? AppColors.primaryAble
-                  : AppColors.disable,
+                  ? appColors.primaryAble
+                  : appColors.disable,
               onPressed: isEnabled ? _handleSave : () {},
             ),
           ),
@@ -307,7 +310,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
 
-  Widget _buildNicknameSection() {
+  Widget _buildNicknameSection(AppColorsExtension appColors) {
     String? errorMessage;
     if (_isInvalidFormat) {
       errorMessage = '마침표(.), 언더바(_), 하이픈(-) 외의 특수문자나 띄어쓰기는 포함할 수 없어요';
@@ -330,16 +333,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
                 color: errorMessage != null
-                    ? AppColors.notification
-                    : AppColors.gray4,
+                    ? appColors.notification
+                    : appColors.gray4,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
                 color: errorMessage != null
-                    ? AppColors.notification
-                    : AppColors.primaryAble,
+                    ? appColors.notification
+                    : appColors.primaryAble,
                 width: 1.5,
               ),
             ),
@@ -354,14 +357,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   ? Text(
                       '* $errorMessage',
                       style: AppTypography.c1.copyWith(
-                        color: AppColors.notification,
+                        color: appColors.notification,
                       ),
                     )
                   : const SizedBox.shrink(),
             ),
             Text(
               '${_nicknameController.text.length}/15',
-              style: AppTypography.c1.copyWith(color: AppColors.gray2),
+              style: AppTypography.c1.copyWith(color: appColors.gray2),
             ),
           ],
         ),
@@ -369,7 +372,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
 
-  Widget _buildTextFieldSection({
+  Widget _buildTextFieldSection(
+    AppColorsExtension appColors, {
     required String label,
     required TextEditingController controller,
     required int maxLength,
@@ -377,7 +381,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTypography.b3.copyWith(color: AppColors.black)),
+        Text(
+          label,
+          style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -387,11 +394,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             contentPadding: const EdgeInsets.all(12),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.gray4),
+              borderSide: BorderSide(color: appColors.gray4),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.primaryAble),
+              borderSide: BorderSide(color: appColors.primaryAble),
             ),
           ),
         ),
@@ -400,21 +407,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           alignment: Alignment.centerRight,
           child: Text(
             '${controller.text.length}/$maxLength',
-            style: AppTypography.c1.copyWith(color: AppColors.gray2),
+            style: AppTypography.c1.copyWith(color: appColors.gray2),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTagSection() {
+  Widget _buildTagSection(AppColorsExtension appColors) {
     final selectedTags = ref.watch(tagProvider).tags;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '관심 태그 (2~6개 선택)',
-          style: AppTypography.b3.copyWith(color: AppColors.black),
+          style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
         ),
         const SizedBox(height: 16),
         ...TagMapper.categoryOrder.map((engCategory) {
@@ -427,7 +434,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               children: [
                 Text(
                   korCategory,
-                  style: AppTypography.b2.copyWith(color: Colors.black),
+                  style: AppTypography.b2.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
@@ -455,23 +464,29 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     ref.read(tagProvider.notifier).toggleTag(tag);
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    AppColorsExtension appColors,
+  ) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       elevation: 0,
       leading: IconButton(
         icon: SvgPicture.asset(
           'assets/images/icons/arrow_left.svg',
           width: 24,
           height: 24,
-          colorFilter: const ColorFilter.mode(AppColors.black, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(
+            appColors.blackToWhite,
+            BlendMode.srcIn,
+          ),
         ),
         onPressed: () => Navigator.pop(context),
       ),
       centerTitle: true,
       title: Text(
         '프로필 편집',
-        style: AppTypography.h3.copyWith(color: AppColors.black),
+        style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
       ),
     );
   }

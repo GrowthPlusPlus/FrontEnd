@@ -26,14 +26,16 @@ class MyPageMainScreen extends ConsumerStatefulWidget {
 class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // myProfileProvider가 로딩중일 때
     // 전역 관리하는 currentUserProvider가 닉네임/이미지라도 먼저 가져옴
     final currentUser = ref.watch(currentUserProvider);
     final profileAsync = ref.watch(myProfileProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(profileAsync.value),
+      backgroundColor: appColors.whiteToBlack,
+      appBar: _buildAppBar(profileAsync.value, appColors),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -84,9 +86,12 @@ class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(UserDetail? detail) {
+  PreferredSizeWidget _buildAppBar(
+    UserDetail? detail,
+    AppColorsExtension appColors,
+  ) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Row(
@@ -95,7 +100,7 @@ class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
           const SizedBox(width: 24),
           Text(
             '내 페이지',
-            style: AppTypography.h3.copyWith(color: AppColors.black),
+            style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
           ),
           InkWell(
             onTap: () {
@@ -120,8 +125,8 @@ class _MyPageMainScreenState extends ConsumerState<MyPageMainScreen> {
               'assets/images/icons/my_page_edit.svg',
               width: 24,
               height: 24,
-              colorFilter: const ColorFilter.mode(
-                AppColors.black,
+              colorFilter: ColorFilter.mode(
+                appColors.blackToWhite,
                 BlendMode.srcIn,
               ),
             ),

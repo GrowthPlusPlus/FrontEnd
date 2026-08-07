@@ -21,6 +21,7 @@ class ChallengeInviteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     final challengeInfo = inviteChallenge.challengeInfo;
     final inviterUser = inviteChallenge.inviterUser;
 
@@ -29,7 +30,7 @@ class ChallengeInviteCard extends StatelessWidget {
       // 디자인 가이드에 맞춘 패딩 적용
       padding: const EdgeInsets.only(top: 10, left: 16, right: 4, bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -56,12 +57,12 @@ class ChallengeInviteCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
                         children: [
-                          _buildIconBox(),
+                          _buildIconBox(appColors), // 프로필 이미지 또는 기본 아이콘
                           const SizedBox(width: 6),
                           Text(
                             '${inviterUser.nickname}님의 초대',
                             style: AppTypography.b2.copyWith(
-                              color: AppColors.gray1, // 디자인 코드 참조
+                              color: appColors.gray1, // 디자인 코드 참조
                             ),
                           ),
                         ],
@@ -69,7 +70,9 @@ class ChallengeInviteCard extends StatelessWidget {
                     ),
                     Text(
                       challengeInfo.base.title,
-                      style: AppTypography.b3.copyWith(color: AppColors.black),
+                      style: AppTypography.b3.copyWith(
+                        color: appColors.blackToWhite,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
 
@@ -81,15 +84,15 @@ class ChallengeInviteCard extends StatelessWidget {
                           'assets/images/icons/person_icon.svg',
                           width: 16,
                           height: 16,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.gray2,
+                          colorFilter: ColorFilter.mode(
+                            appColors.gray2,
                             BlendMode.srcIn,
                           ),
                         ),
                         Text(
                           '${challengeInfo.participantCount.toString()}명',
                           style: AppTypography.b2.copyWith(
-                            color: AppColors.gray2,
+                            color: appColors.gray2,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -98,7 +101,7 @@ class ChallengeInviteCard extends StatelessWidget {
                               ? '오늘 완료'
                               : '완료까지 D-${challengeInfo.dDay}',
                           style: AppTypography.b2.copyWith(
-                            color: AppColors.gray2,
+                            color: appColors.gray2,
                           ),
                         ),
                       ],
@@ -115,13 +118,13 @@ class ChallengeInviteCard extends StatelessWidget {
                             vertical: 4,
                           ), // 내부 여백
                           decoration: BoxDecoration(
-                            color: AppColors.selected,
+                            color: appColors.selected,
                             borderRadius: BorderRadius.circular(16), // 모서리 둥글기
                           ),
                           child: Text(
                             tag.tag,
                             style: AppTypography.b2.copyWith(
-                              color: AppColors.primaryAble,
+                              color: appColors.primaryAble,
                             ),
                           ),
                         );
@@ -152,8 +155,8 @@ class ChallengeInviteCard extends StatelessWidget {
                   },
                   icon: SvgPicture.asset(
                     'assets/images/icons/thick_right_arrow_icon.svg',
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.gray2,
+                    colorFilter: ColorFilter.mode(
+                      appColors.gray2,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -177,13 +180,13 @@ class ChallengeInviteCard extends StatelessWidget {
                       height: 48,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.gray5,
+                        color: appColors.gray5,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '거절',
                         style: AppTypography.b1.copyWith(
-                          color: AppColors.gray2,
+                          color: appColors.gray2,
                         ),
                       ),
                     ),
@@ -199,12 +202,14 @@ class ChallengeInviteCard extends StatelessWidget {
                       height: 48,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryAble,
+                        color: appColors.primaryAble,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '수락',
-                        style: AppTypography.b1.copyWith(color: Colors.white),
+                        style: AppTypography.b1.copyWith(
+                          color: appColors.whiteToBlack,
+                        ),
                       ),
                     ),
                   ),
@@ -218,12 +223,12 @@ class ChallengeInviteCard extends StatelessWidget {
   }
 
   // 아이콘 또는 프로필 이미지 렌더링 영역
-  Widget _buildIconBox() {
+  Widget _buildIconBox(AppColorsExtension appColors) {
     return Container(
       width: 24,
       height: 24,
       decoration: BoxDecoration(
-        color: AppColors.gray5,
+        color: appColors.gray5,
         shape: BoxShape.circle,
         image:
             inviteChallenge.inviterUser.profileUrl != null &&

@@ -17,6 +17,8 @@ class CalendarPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final String formattedDate = DateFormat(
       'M월 d일',
     ).format(DateTime.parse(post.postDate));
@@ -32,9 +34,9 @@ class CalendarPostCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors.whiteToBlack,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.gray4),
+          border: Border.all(color: appColors.gray4),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,12 +63,16 @@ class CalendarPostCard extends StatelessWidget {
                         'assets/images/icons/green_calendar.svg',
                         width: 12,
                         height: 12,
+                        colorFilter: ColorFilter.mode(
+                          appColors.primaryAble,
+                          BlendMode.srcIn,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         formattedDate,
                         style: AppTypography.c1.copyWith(
-                          color: AppColors.primaryAble,
+                          color: appColors.primaryAble,
                         ),
                       ),
                     ],
@@ -74,7 +80,9 @@ class CalendarPostCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     post.content,
-                    style: AppTypography.b2.copyWith(color: AppColors.black),
+                    style: AppTypography.b2.copyWith(
+                      color: appColors.blackToWhite,
+                    ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),

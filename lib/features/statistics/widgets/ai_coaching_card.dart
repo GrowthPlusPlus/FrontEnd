@@ -14,6 +14,8 @@ class AiCoachingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     const borderWidth = 4.0;
     const outerRadius = 12.0;
     const innerRadius = outerRadius - borderWidth;
@@ -40,7 +42,7 @@ class AiCoachingCard extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
-          color: Colors.white,
+          color: appColors.whiteToBlack,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(innerRadius),
           ),
@@ -76,6 +78,8 @@ class _CardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -83,7 +87,7 @@ class _CardHeader extends StatelessWidget {
         Expanded(
           child: Text(
             '$emoji $title',
-            style: AppTypography.h3.copyWith(color: AppColors.black),
+            style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
           ),
         ),
         const SizedBox(width: 8),
@@ -101,6 +105,8 @@ class _BulletText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -120,7 +126,7 @@ class _BulletText extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: AppTypography.b1.copyWith(color: AppColors.black),
+            style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
           ),
         ),
       ],

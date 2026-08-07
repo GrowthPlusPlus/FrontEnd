@@ -10,6 +10,8 @@ class ReportSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -24,8 +26,8 @@ class ReportSuccessScreen extends StatelessWidget {
                     Container(
                       width: 84,
                       height: 84,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryAble,
+                      decoration: BoxDecoration(
+                        color: appColors.primaryAble,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -37,10 +39,12 @@ class ReportSuccessScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // 완료 안내 제목
-                    const Text(
+                    Text(
                       '신고가 접수되었습니다.',
                       textAlign: TextAlign.center,
-                      style: AppTypography.h1, // 24px, Bold
+                      style: AppTypography.h1.copyWith(
+                        color: appColors.blackToWhite,
+                      ), // 24px, Bold
                     ),
                     const SizedBox(height: 12),
 
@@ -49,7 +53,7 @@ class ReportSuccessScreen extends StatelessWidget {
                       '검토 결과에 따라 적절한 조치가 취해질 예정이며,\n깨끗한 \'해냄\'을 위해 항상 노력하겠습니다.',
                       textAlign: TextAlign.center,
                       style: AppTypography.b3.copyWith(
-                        color: AppColors.gray1,
+                        color: appColors.gray1,
                       ), // 16px, SemiBold
                     ),
                   ],

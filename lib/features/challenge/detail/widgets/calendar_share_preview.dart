@@ -18,6 +18,8 @@ class CalendarSharePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Dialog(
       backgroundColor: Colors.transparent, // 배경 투명 (barrierColor가 어둡게 처리)
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
@@ -56,18 +58,23 @@ class CalendarSharePreview extends StatelessWidget {
                     if (loadingProgress == null) return child;
                     return Container(
                       height: 300,
-                      color: AppColors.gray5,
-                      child: const Center(
+                      color: appColors.gray5,
+                      child: Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.black,
+                          color: appColors.blackToWhite,
                         ),
                       ),
                     );
                   },
                   errorBuilder: (context, error, stackTrace) => Container(
                     height: 200,
-                    color: AppColors.gray5,
-                    child: const Center(child: Text('이미지를 불러올 수 없습니다.')),
+                    color: appColors.gray5,
+                    child: Center(
+                      child: Text(
+                        '이미지를 불러올 수 없습니다.',
+                        style: TextStyle(color: appColors.blackToWhite),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -85,8 +92,8 @@ class CalendarSharePreview extends StatelessWidget {
                   text: '저장하기',
                   icon: Icons.download_rounded,
                   onPressed: onSave,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  textColor: Colors.white,
+                  backgroundColor: appColors.gray2,
+                  textColor: appColors.whiteToBlack,
                   showContainerDecoration: false, // Row 안에서 배경 중첩 방지
                 ),
               ),
@@ -98,8 +105,8 @@ class CalendarSharePreview extends StatelessWidget {
                   text: '공유하기',
                   icon: Icons.share_rounded,
                   onPressed: onShare,
-                  backgroundColor: AppColors.primaryAble,
-                  textColor: Colors.white,
+                  backgroundColor: appColors.primaryAble,
+                  textColor: appColors.whiteToBlack,
                   showContainerDecoration: false, // Row 안에서 배경 중첩 방지
                 ),
               ),

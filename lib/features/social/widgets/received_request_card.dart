@@ -23,11 +23,13 @@ class ReceivedRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -41,13 +43,13 @@ class ReceivedRequestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(request.user.nickname, style: AppTypography.h3),
-                    Text(
-                      "함께 아는 친구 0명", // 추후 데이터 연동 필요
-                      style: AppTypography.c1.copyWith(color: AppColors.gray2),
-                    ),
+                    // Text(
+                    //   "함께 아는 친구 0명", // 추후 데이터 연동 필요
+                    //   style: AppTypography.c1.copyWith(color: appColors.gray2),
+                    // ),
                     Text(
                       DateFormat('yyyy년 MM월 dd일').format(request.requestDate),
-                      style: AppTypography.c2.copyWith(color: AppColors.gray3),
+                      style: AppTypography.b2.copyWith(color: appColors.gray3),
                     ),
                   ],
                 ),
@@ -60,8 +62,8 @@ class ReceivedRequestCard extends StatelessWidget {
               Expanded(
                 child: _buildActionButton(
                   label: '거절',
-                  bg: const Color(0x7FDFE1DC),
-                  text: AppColors.gray2,
+                  bg: appColors.gray5,
+                  text: appColors.gray2,
                   onTap: onReject,
                 ),
               ),
@@ -69,8 +71,8 @@ class ReceivedRequestCard extends StatelessWidget {
               Expanded(
                 child: _buildActionButton(
                   label: '수락',
-                  bg: AppColors.primaryAble,
-                  text: Colors.white,
+                  bg: appColors.primaryAble,
+                  text: appColors.whiteToBlack,
                   onTap: onAccept,
                 ),
               ),

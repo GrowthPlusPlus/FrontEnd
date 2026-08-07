@@ -31,6 +31,8 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 사용자 프로필 정보 가져오기 (헤더 이름용)
     final currentUser = ref.watch(currentUserProvider);
 
@@ -40,18 +42,18 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
     );
 
     return Scaffold(
-      backgroundColor: Color(0xFFE0E2DC).withValues(alpha: 50),
+      backgroundColor: appColors.gray5,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: appColors.whiteToBlack,
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.black,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
               BlendMode.srcIn,
             ),
           ),
@@ -59,20 +61,20 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
         ),
         title: Text(
           '챌린지 탐색',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          const Divider(height: 1, color: AppColors.gray4),
           // 검색창 영역
-          _buildSearchBar(),
+          _buildSearchBar(appColors),
           // 챌린지 카드 리스트 영역
           Expanded(
             child: _currentKeyword.isEmpty
                 ? _buildRecommendationSection(
                     currentUser,
+                    appColors,
                   ) // 💡 검색어 없을 때 추천 섹션 노출
                 : _buildSearchResults(searchResults), // 검색어 있을 때 결과 노출
           ),
@@ -82,7 +84,10 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
   }
 
   // ── AI 추천 섹션 구현 ────────────────────────────
-  Widget _buildRecommendationSection(User? currentUser) {
+  Widget _buildRecommendationSection(
+    User? currentUser,
+    AppColorsExtension appColors,
+  ) {
     final userName = currentUser?.nickname ?? "해냄";
     final recommendedAsync = ref.watch(recommendedChallengesProvider);
 
@@ -98,7 +103,9 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "추천 챌린지",
-                  style: AppTypography.h3.copyWith(color: AppColors.black),
+                  style: AppTypography.h3.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
               ),
             ),
@@ -120,7 +127,7 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
   }
 
   // 검색창 위젯 분리 (가독성용)
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(AppColorsExtension appColors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: TextField(
@@ -132,18 +139,14 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
         },
         decoration: InputDecoration(
           hintText: '이름으로 탐색하기',
-          hintStyle: AppTypography.b2.copyWith(color: AppColors.gray3),
+          hintStyle: AppTypography.b2.copyWith(color: appColors.gray3),
           prefixIcon: Padding(
             padding: const EdgeInsets.all(14.0),
             child: SvgPicture.asset('assets/images/icons/search_icon.svg'),
           ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(
-                    Icons.clear,
-                    size: 20,
-                    color: AppColors.gray3,
-                  ),
+                  icon: Icon(Icons.clear, size: 20, color: appColors.gray3),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _currentKeyword = "");
@@ -151,15 +154,15 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
                 )
               : null,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: appColors.whiteToBlack,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(9.5),
-            borderSide: const BorderSide(color: AppColors.gray4),
+            borderSide: BorderSide(color: appColors.gray4),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(9.5),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+            borderSide: BorderSide(color: appColors.gray4),
           ),
         ),
       ),

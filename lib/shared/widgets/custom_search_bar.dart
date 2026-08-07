@@ -24,12 +24,14 @@ class CustomSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.gray4),
+        border: Border.all(color: appColors.gray4),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -37,10 +39,7 @@ class CustomSearchBar extends StatelessWidget {
           SvgPicture.asset(
             'assets/images/icons/search_icon.svg',
             width: 18,
-            colorFilter: const ColorFilter.mode(
-              AppColors.gray3,
-              BlendMode.srcIn,
-            ),
+            colorFilter: ColorFilter.mode(appColors.gray3, BlendMode.srcIn),
           ),
           const SizedBox(width: 8),
           Expanded(

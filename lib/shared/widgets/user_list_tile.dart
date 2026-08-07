@@ -22,6 +22,8 @@ class UserListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Padding(
       padding: padding,
       child: Row(
@@ -35,13 +37,15 @@ class UserListTile extends StatelessWidget {
               children: [
                 Text(
                   user.nickname,
-                  style: AppTypography.b1.copyWith(color: AppColors.black),
+                  style: AppTypography.b1.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
                 /*
                 Text(
                   "해냄 메이트",
                   // TODO 추후 칭호 기능 연동 시 User 모델에서 받아오도록 수정
-                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  style: AppTypography.c1.copyWith(color: appColors.gray2),
                 ),
                 */
               ],

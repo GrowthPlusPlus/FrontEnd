@@ -14,6 +14,8 @@ class AiCoachingSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final coachingAsync = ref.watch(aiCoachingRepositoryProvider);
 
     return Padding(
@@ -42,7 +44,7 @@ class AiCoachingSection extends ConsumerWidget {
                 children: [
                   Text(
                     '데이터를 불러오지 못했어요',
-                    style: AppTypography.b2.copyWith(color: AppColors.gray4),
+                    style: AppTypography.b2.copyWith(color: appColors.gray4),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
@@ -59,7 +61,7 @@ class AiCoachingSection extends ConsumerWidget {
         data: (cards) => Column(
           children: [
             for (int i = 0; i < cards.length; i++) ...[
-              if (i != 0) const SizedBox(height: 20),
+              if (i != 0) const SizedBox(height: 10),
               AiCoachingCard(data: cards[i]),
             ],
           ],

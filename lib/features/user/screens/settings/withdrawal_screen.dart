@@ -27,20 +27,22 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   /// 반환 값: Widget
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         leading: IconButton(
           // 뒤로가기 버튼 (SVG 사용 권장)
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
+          icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: Text(
           '회원 탈퇴',
-          style: AppTypography.h2.copyWith(color: AppColors.black), //
+          style: AppTypography.h2.copyWith(color: appColors.blackToWhite), //
         ),
       ),
       body: SafeArea(
@@ -54,13 +56,13 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                   children: [
                     const SizedBox(height: 60),
                     // --- 경고 아이콘 영역 ---
-                    buildWarningIcon(),
+                    buildWarningIcon(appColors),
                     const SizedBox(height: 20),
                     // --- 안내 문구 영역 ---
                     Text(
                       '정말 탈퇴하시겠습니까?',
                       style: AppTypography.h1.copyWith(
-                        color: AppColors.black,
+                        color: appColors.blackToWhite,
                       ), //
                       textAlign: TextAlign.center,
                     ),
@@ -68,16 +70,16 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                     Text(
                       '계정을 삭제하면 모든 데이터가 영구적으로\n삭제되며 복구할 수 없습니다.',
                       style: AppTypography.b1.copyWith(
-                        color: AppColors.gray2,
+                        color: appColors.gray2,
                       ), //
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 40),
                     // --- 동의 체크박스 영역 ---
-                    buildAgreementBox(),
+                    buildAgreementBox(appColors),
                     const SizedBox(height: 10),
                     // --- 추가 참고 사항 영역 ---
-                    buildNoticeBox(),
+                    buildNoticeBox(appColors),
                   ],
                 ),
               ),
@@ -93,13 +95,13 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   /// 함수의 용도: 경고 아이콘(SVG) 영역 위젯 생성
   /// 매개 변수: 없음
   /// 반환 값: Widget
-  Widget buildWarningIcon() {
+  Widget buildWarningIcon(AppColorsExtension appColors) {
     return Container(
       width: 80,
       height: 80,
       decoration: BoxDecoration(
         // 피그마 mainlist-warning 컬러 적용 (투명도 포함)
-        color: const Color(0xFFFFD5C8).withAlpha(127),
+        color: appColors.warning.withAlpha(127),
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -111,14 +113,14 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   /// 함수의 용도: 탈퇴 동의 여부를 확인하는 체크박스 박스 생성
   /// 매개 변수: 없음
   /// 반환 값: Widget
-  Widget buildAgreementBox() {
+  Widget buildAgreementBox(AppColorsExtension appColors) {
     return InkWell(
       onTap: () => setState(() => isAgreed = !isAgreed),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFDFE1DC).withAlpha(127), // gray5
+          color: appColors.gray5.withAlpha(127), // gray5
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -128,13 +130,15 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
               isAgreed ? Icons.check_box : Icons.check_box_outline_blank,
               size: 24,
               // 체크 여부에 따라 색상 변경 (검정 / 회색3)
-              color: isAgreed ? AppColors.black : AppColors.gray3, //
+              color: isAgreed ? appColors.blackToWhite : appColors.gray3, //
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 '위 내용을 확인했으며, 계정 삭제에 동의합니다.',
-                style: AppTypography.b2.copyWith(color: AppColors.black), //
+                style: AppTypography.b2.copyWith(
+                  color: appColors.blackToWhite,
+                ), //
               ),
             ),
           ],
@@ -146,18 +150,18 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   /// 함수의 용도: 탈퇴 관련 추가 참고 사항을 안내하는 박스 생성
   /// 매개 변수: 없음
   /// 반환 값: Widget
-  Widget buildNoticeBox() {
+  Widget buildNoticeBox(AppColorsExtension appColors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFDFE1DC).withAlpha(127),
+        color: appColors.gray5.withAlpha(127),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '참고: 탈퇴 후 30일 이내에는 계정 복구가 가능합니다. '
         '30일이 지나면 모든 데이터가 완전히 삭제됩니다.',
-        style: AppTypography.c1.copyWith(color: AppColors.gray2), //
+        style: AppTypography.c1.copyWith(color: appColors.gray2), //
       ),
     );
   }
@@ -166,6 +170,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   /// 매개 변수: BuildContext context
   /// 반환 값: Widget
   Widget buildBottomButtons(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -176,7 +182,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
               text: '탈퇴하기',
               // 동의 여부에 따라 배경색 변경
               color: isAgreed
-                  ? AppColors.notification
+                  ? appColors.notification
                   : const Color(0xFFDBADAD), //
               textColor: Colors.white,
               onTap: isAgreed
@@ -214,8 +220,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
           Expanded(
             child: buildActionButton(
               text: '취소',
-              color: const Color(0xFFDFE1DC).withAlpha(127),
-              textColor: AppColors.gray2,
+              color: appColors.gray5.withAlpha(127),
+              textColor: appColors.gray2,
               onTap: () => Navigator.pop(context),
             ),
           ),

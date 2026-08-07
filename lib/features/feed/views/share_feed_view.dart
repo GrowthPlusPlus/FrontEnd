@@ -64,6 +64,8 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     super.build(context);
 
     final feedState = ref.watch(widget.provider);
@@ -84,7 +86,7 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
             Center(
               child: Text(
                 widget.emptyMessage,
-                style: AppTypography.b1.copyWith(color: AppColors.gray4),
+                style: AppTypography.b1.copyWith(color: appColors.gray4),
               ),
             ),
           ],

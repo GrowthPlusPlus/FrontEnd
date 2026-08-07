@@ -31,6 +31,7 @@ class PieGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // ✅ 데이터 없을 때 빈 상태 UI
     if (top3.isEmpty) {
       return StatisticsCard(
@@ -40,7 +41,7 @@ class PieGraph extends StatelessWidget {
           child: Center(
             child: Text(
               '아직 완료한 챌린지가 없어요',
-              style: AppTypography.b2.copyWith(color: AppColors.gray3),
+              style: AppTypography.b2.copyWith(color: appColors.gray3),
             ),
           ),
         ),
@@ -51,7 +52,7 @@ class PieGraph extends StatelessWidget {
     final pieData = [
       ...top3,
       if (restCount > 0)
-        TagCount(tag: '기타', count: restCount, color: AppColors.gray4),
+        TagCount(tag: '기타', count: restCount, color: appColors.gray4),
     ];
 
     return StatisticsCard(
@@ -68,7 +69,10 @@ class PieGraph extends StatelessWidget {
               aspectRatio: 1,
               child: CustomPaint(
                 // ✅ 파이 차트는 pieData (top3 + 기타 합산) 사용
-                painter: _PieChartPainter(tagCounts: pieData),
+                painter: _PieChartPainter(
+                  tagCounts: pieData,
+                  appColors: appColors,
+                ),
               ),
             ),
           ),
@@ -81,15 +85,15 @@ class PieGraph extends StatelessWidget {
             children: [
               Text(
                 '총',
-                style: AppTypography.b3.copyWith(color: AppColors.black),
+                style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
               ),
               Text(
                 '$totalCount번',
-                style: AppTypography.h3.copyWith(color: AppColors.primaryAble),
+                style: AppTypography.h3.copyWith(color: appColors.primaryAble),
               ),
               Text(
                 '해냄!',
-                style: AppTypography.b3.copyWith(color: AppColors.black),
+                style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
               ),
             ],
           ),
@@ -100,7 +104,9 @@ class PieGraph extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               // ✅ 텍스트는 top3 그대로 사용
-              children: top3.map((tag) => _buildTopTagItem(tag)).toList(),
+              children: top3
+                  .map((tag) => _buildTopTagItem(tag, appColors))
+                  .toList(),
             ),
           ),
 
@@ -111,7 +117,9 @@ class PieGraph extends StatelessWidget {
               child: Column(
                 spacing: 1,
                 // ✅ rest는 각각 따로 표시
-                children: rest.map((tag) => _buildRestTagRow(tag)).toList(),
+                children: rest
+                    .map((tag) => _buildRestTagRow(tag, appColors))
+                    .toList(),
               ),
             ),
         ],
@@ -120,7 +128,7 @@ class PieGraph extends StatelessWidget {
   }
 
   // 1~3위 태그 아이템
-  Widget _buildTopTagItem(TagCount tag) {
+  Widget _buildTopTagItem(TagCount tag, AppColorsExtension appColors) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center, // ✅ start → center
@@ -128,7 +136,7 @@ class PieGraph extends StatelessWidget {
       children: [
         Text(
           tag.tag,
-          style: AppTypography.b1.copyWith(color: AppColors.gray2),
+          style: AppTypography.b1.copyWith(color: appColors.gray2),
           textAlign: TextAlign.center, // ✅ 추가
         ),
         Text(
@@ -141,14 +149,14 @@ class PieGraph extends StatelessWidget {
   }
 
   // 4위~ 태그 행
-  Widget _buildRestTagRow(TagCount tag) {
+  Widget _buildRestTagRow(TagCount tag, AppColorsExtension appColors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(tag.tag, style: AppTypography.b2.copyWith(color: AppColors.gray2)),
+        Text(tag.tag, style: AppTypography.b2.copyWith(color: appColors.gray2)),
         Text(
           '${tag.count}번',
-          style: AppTypography.b2.copyWith(color: AppColors.gray2),
+          style: AppTypography.b2.copyWith(color: appColors.gray2),
         ),
       ],
     );
@@ -159,7 +167,9 @@ class PieGraph extends StatelessWidget {
 class _PieChartPainter extends CustomPainter {
   final List<TagCount> tagCounts;
 
-  const _PieChartPainter({required this.tagCounts});
+  final AppColorsExtension appColors;
+
+  const _PieChartPainter({required this.tagCounts, required this.appColors});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -184,7 +194,7 @@ class _PieChartPainter extends CustomPainter {
 
     // 중앙 흰색 원 (도넛 효과)
     final innerPaint = Paint()
-      ..color = Colors.white
+      ..color = appColors.whiteToBlack
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius * 0.50, innerPaint);
   }

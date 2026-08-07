@@ -21,11 +21,13 @@ class SentRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -47,8 +49,8 @@ class SentRequestCard extends StatelessWidget {
                       Text(request.user.nickname, style: AppTypography.h3),
                       Text(
                         DateFormat('yyyy년 MM월 dd일').format(request.requestDate),
-                        style: AppTypography.c2.copyWith(
-                          color: AppColors.gray3,
+                        style: AppTypography.b2.copyWith(
+                          color: appColors.gray3,
                         ),
                       ),
                     ],
@@ -64,14 +66,14 @@ class SentRequestCard extends StatelessWidget {
               width: double.infinity,
               height: 48,
               decoration: BoxDecoration(
-                color: const Color(0x7FDFE1DC),
+                color: appColors.gray5,
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
               child: Text(
                 '요청 취소',
                 style: AppTypography.b1.copyWith(
-                  color: AppColors.gray2,
+                  color: appColors.gray2,
                   fontWeight: FontWeight.w500,
                 ),
               ),

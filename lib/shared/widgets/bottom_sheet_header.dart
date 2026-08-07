@@ -12,6 +12,8 @@ class BottomSheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Column(
       children: [
         Row(
@@ -22,7 +24,9 @@ class BottomSheetHeader extends StatelessWidget {
               child: Center(
                 child: Text(
                   title,
-                  style: AppTypography.h3.copyWith(color: AppColors.black),
+                  style: AppTypography.h3.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
               ),
             ),
@@ -35,8 +39,8 @@ class BottomSheetHeader extends StatelessWidget {
                   'assets/images/icons/tab_close.svg',
                   width: 14,
                   height: 14,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.gray2,
+                  colorFilter: ColorFilter.mode(
+                    appColors.gray2,
                     BlendMode.srcIn,
                   ),
                 ),
