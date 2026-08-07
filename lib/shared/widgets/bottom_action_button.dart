@@ -59,10 +59,12 @@ class _BottomActionButtonState extends State<BottomActionButton> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 기본값 설정: 파라미터가 없으면 기존 디자인 시스템 색상 사용
     final Color effectiveBgColor =
-        widget.backgroundColor ?? AppColors.primaryAble;
-    final Color effectiveTextColor = widget.textColor ?? Colors.white;
+        widget.backgroundColor ?? appColors.primaryAble;
+    final Color effectiveTextColor = widget.textColor ?? appColors.whiteToBlack;
 
     final Widget buttonWidget = ElevatedButton(
       onPressed: widget.onPressed == null ? null : _handlePressed,
@@ -108,9 +110,9 @@ class _BottomActionButtonState extends State<BottomActionButton> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.white.withValues(alpha: 0),
-            Colors.white.withValues(alpha: 0.9),
-            Colors.white,
+            appColors.whiteToBlack.withValues(alpha: 0),
+            appColors.whiteToBlack.withValues(alpha: 0.9),
+            appColors.whiteToBlack,
           ],
           stops: const [0.0, 0.3, 1.0],
         ),

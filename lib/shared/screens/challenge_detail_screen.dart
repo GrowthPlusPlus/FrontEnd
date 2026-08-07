@@ -39,24 +39,26 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 1. 상세 데이터 구독
     final challengeAsync = ref.watch(
       challengeDetailProvider(challengeId: widget.challengeId),
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: appColors.whiteToBlack,
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.black,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
               BlendMode.srcIn,
             ),
           ),
@@ -64,18 +66,18 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
         ),
         title: Text(
           widget.challengeTitle,
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          const Divider(height: 1, color: AppColors.gray4),
+          Divider(height: 1, color: appColors.gray4),
           Expanded(
             // 2. 상태별 화면 렌더링
             child: challengeAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryAble),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: appColors.primaryAble),
               ),
               error: (err, stack) {
                 // 터미널에 에러의 진짜 이유를 출력합니다.
@@ -86,7 +88,9 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
                   child: Text(
                     '에러 내용: $err', // 화면에도 에러를 표시해서 확인
                     textAlign: TextAlign.center,
-                    style: AppTypography.b2.copyWith(color: Colors.red),
+                    style: AppTypography.b2.copyWith(
+                      color: appColors.notification,
+                    ),
                   ),
                 );
               },

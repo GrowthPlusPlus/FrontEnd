@@ -25,6 +25,7 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     final isExpanded = _expandedStates[_currentIndex] ?? false;
     final currentItem = widget.items[_currentIndex];
 
@@ -34,7 +35,7 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
         // ✅ 패딩 제거 → 이미지가 카드 전체 너비를 꽉 채움(풀블리드)
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
-          color: Colors.white,
+          color: appColors.whiteToBlack,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -79,7 +80,7 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
                             child: Text(
                               currentItem.recommendReason,
                               style: AppTypography.b2.copyWith(
-                                color: AppColors.gray1,
+                                color: appColors.gray1,
                               ),
                             ),
                           )
@@ -97,7 +98,7 @@ class _RecommendedChallengeCardState extends State<RecommendedChallengeCard> {
                         isExpanded ? '추천 이유 닫기' : '추천 이유 보기',
                         textAlign: TextAlign.right,
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.gray1,
+                          color: appColors.gray1,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -127,6 +128,8 @@ class _RecommendedChallengeTop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,16 +145,16 @@ class _RecommendedChallengeTop extends StatelessWidget {
                   loadingBuilder: (context, child, progress) {
                     if (progress == null) return child;
                     return Container(
-                      color: AppColors.gray4,
+                      color: appColors.gray4,
                       child: const Center(child: CircularProgressIndicator()),
                     );
                   },
                   errorBuilder: (context, error, stackTrace) => Container(
-                    color: AppColors.gray4,
+                    color: appColors.gray4,
                     child: const Icon(Icons.image_not_supported_outlined),
                   ),
                 )
-              : Container(color: AppColors.gray4),
+              : Container(color: appColors.gray4),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -162,7 +165,7 @@ class _RecommendedChallengeTop extends StatelessWidget {
               // ── 제목 ──
               Text(
                 item.title,
-                style: AppTypography.b3.copyWith(color: AppColors.black),
+                style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -183,15 +186,15 @@ class _RecommendedChallengeTop extends StatelessWidget {
                                   'assets/images/icons/person_icon.svg',
                                   width: 16,
                                   height: 16,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.gray2,
+                                  colorFilter: ColorFilter.mode(
+                                    appColors.gray2,
                                     BlendMode.srcIn,
                                   ),
                                 ),
                                 Text(
                                   '${item.participantNumber}명',
                                   style: AppTypography.b2.copyWith(
-                                    color: AppColors.gray2,
+                                    color: appColors.gray2,
                                   ),
                                 ),
                               ],
@@ -199,7 +202,7 @@ class _RecommendedChallengeTop extends StatelessWidget {
                             Text(
                               '완료까지 D-${item.remainingDays}',
                               style: AppTypography.b2.copyWith(
-                                color: AppColors.gray2,
+                                color: appColors.gray2,
                               ),
                             ),
                           ],
@@ -228,8 +231,8 @@ class _RecommendedChallengeTop extends StatelessWidget {
                     child: SizedBox(
                       child: SvgPicture.asset(
                         'assets/images/icons/thick_right_arrow_icon.svg',
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.gray2,
+                        colorFilter: ColorFilter.mode(
+                          appColors.gray2,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -243,11 +246,11 @@ class _RecommendedChallengeTop extends StatelessWidget {
                 children: [
                   Text(
                     '챌린지 설명',
-                    style: AppTypography.b1.copyWith(color: AppColors.gray1),
+                    style: AppTypography.b1.copyWith(color: appColors.gray1),
                   ),
                   Text(
                     item.content,
-                    style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                    style: AppTypography.b2.copyWith(color: appColors.gray1),
                   ),
                 ],
               ),

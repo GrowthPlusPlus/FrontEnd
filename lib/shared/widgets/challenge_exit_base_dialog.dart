@@ -23,9 +23,11 @@ class ChallengeExitBaseDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       // 다이얼로그 자체가 화면 끝에서 떨어지는 정도
       insetPadding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Container(
@@ -41,7 +43,7 @@ class ChallengeExitBaseDialog extends StatelessWidget {
             // 2. 제목
             Text(
               title,
-              style: AppTypography.h3.copyWith(color: AppColors.black),
+              style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
             ),
             const SizedBox(height: 8),
 
@@ -55,8 +57,8 @@ class ChallengeExitBaseDialog extends StatelessWidget {
                     'assets/images/icons/tri_warning_icon.svg',
                     width: 20,
                     height: 20,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.notification,
+                    colorFilter: ColorFilter.mode(
+                      appColors.notification,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -66,7 +68,7 @@ class ChallengeExitBaseDialog extends StatelessWidget {
                     '지금까지의 진행 상황이 모두 사라지며,\n복구할 수 없습니다.',
                     textAlign: TextAlign.center,
                     style: AppTypography.b3.copyWith(
-                      color: AppColors.notification,
+                      color: appColors.notification,
                     ),
                   ),
                 ),
@@ -88,7 +90,7 @@ class ChallengeExitBaseDialog extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: isConfirmEnabled ? onConfirm : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.notification,
+                        backgroundColor: appColors.notification,
                         disabledBackgroundColor: const Color(0xFFDBAEAD),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -97,7 +99,9 @@ class ChallengeExitBaseDialog extends StatelessWidget {
                       ),
                       child: Text(
                         confirmButtonText,
-                        style: AppTypography.b1.copyWith(color: Colors.white),
+                        style: AppTypography.b1.copyWith(
+                          color: appColors.whiteToBlack,
+                        ),
                       ),
                     ),
                   ),
@@ -111,8 +115,8 @@ class ChallengeExitBaseDialog extends StatelessWidget {
                       // result에 false를 넣지 않고 그냥 pop 합니다. (null 반환)
                       onPressed: () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gray5,
-                        foregroundColor: AppColors.gray2,
+                        backgroundColor: appColors.gray5,
+                        foregroundColor: appColors.gray2,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -121,7 +125,7 @@ class ChallengeExitBaseDialog extends StatelessWidget {
                       child: Text(
                         '취소',
                         style: AppTypography.b1.copyWith(
-                          color: AppColors.gray2,
+                          color: appColors.gray2,
                         ),
                       ),
                     ),

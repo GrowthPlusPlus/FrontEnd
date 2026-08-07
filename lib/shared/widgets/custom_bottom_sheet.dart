@@ -1,6 +1,7 @@
 // 최초 작성자 : 김채영
 import 'package:flutter/material.dart';
 import 'bottom_sheet_header.dart';
+import 'package:haenaem/core/theme/app_colors.dart';
 
 // -- 챌린지 생성화면의 탭 화면의 제목, 콘텐츠들 커스텀할 수 있도록 함 --
 class CustomBottomSheet extends StatelessWidget {
@@ -17,10 +18,12 @@ class CustomBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       height: MediaQuery.of(context).size.height * heightFactor,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(

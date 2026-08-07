@@ -29,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 공통으로 사용할 네비게이션 함수
     // void navigateToSignup() {
     //   Navigator.push(
@@ -45,7 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         // 스크롤 가능
         child: SingleChildScrollView(
@@ -74,7 +74,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   "오늘의 '해냄'을 위해\n지금 시작해보세요",
                   textAlign: TextAlign.center,
-                  style: AppTypography.h2.copyWith(color: Colors.black),
+                  style: AppTypography.h2.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
 
                 const SizedBox(height: 120), // 중간 여백
@@ -82,9 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   '간편하게 시작하기',
                   textAlign: TextAlign.center,
-                  style: AppTypography.b2.copyWith(
-                    color: const Color(0xFf6A7282),
-                  ),
+                  style: AppTypography.b2.copyWith(color: appColors.gray3),
                 ),
                 const SizedBox(height: 10),
 
@@ -206,9 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   '계속 진행하면 서비스 이용약관 및\n개인정보 처리방침에 동의하는 것으로 간주됩니다',
                   textAlign: TextAlign.center,
-                  style: AppTypography.b2.copyWith(
-                    color: const Color(0xFF6A7282),
-                  ),
+                  style: AppTypography.b2.copyWith(color: appColors.gray3),
                 ),
                 const SizedBox(height: 40), // 하단 여백
               ],

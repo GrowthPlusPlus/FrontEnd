@@ -11,11 +11,13 @@ class NotificationDateHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Padding(
       padding: const EdgeInsets.only(top: 16, left: 20, right: 20, bottom: 4),
       child: Text(
         dateText,
-        style: AppTypography.h3.copyWith(color: AppColors.gray1),
+        style: AppTypography.h3.copyWith(color: appColors.gray1),
       ),
     );
   }

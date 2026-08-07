@@ -81,14 +81,16 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final detailAsync = ref.watch(
       challengeDetailProvider(challengeId: widget.challengeId),
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -96,6 +98,10 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg',
             width: 24,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
           ),
         ),
         title: Text(widget.challengeTitle ?? "챌린지 상세", style: AppTypography.h3),
@@ -144,11 +150,11 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomButton(),
+      bottomNavigationBar: _buildBottomButton(appColors),
     );
   }
 
-  Widget _buildBottomButton() {
+  Widget _buildBottomButton(AppColorsExtension appColors) {
     final myInfo = ref.watch(currentUserProvider);
     final detailAsync = ref.watch(
       challengeDetailProvider(challengeId: widget.challengeId),
@@ -181,10 +187,10 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
     return BottomActionButton(
       text: isMemberTab ? '내 순위 확인하기' : (isDisabled ? '인증 완료!' : '인증하기'),
       backgroundColor: isDisabled
-          ? AppColors.disable
-          : (isMemberTab ? Colors.white : AppColors.primaryAble),
-      textColor: isMemberTab ? AppColors.primaryAble : Colors.white,
-      borderColor: isMemberTab ? AppColors.primaryAble : null,
+          ? appColors.disable
+          : (isMemberTab ? appColors.whiteToBlack : appColors.primaryAble),
+      textColor: isMemberTab ? appColors.primaryAble : appColors.whiteToBlack,
+      borderColor: isMemberTab ? appColors.primaryAble : null,
       onPressed: isDisabled
           ? null // 비활성화 시 탭 자체를 막음 (토스트 제거)
           : () {

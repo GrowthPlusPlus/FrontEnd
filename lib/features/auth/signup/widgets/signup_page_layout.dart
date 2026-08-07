@@ -26,6 +26,8 @@ class SignupPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Stack(
       children: [
         // 콘텐츠 영역 (스크롤 가능)
@@ -39,12 +41,16 @@ class SignupPageLayout extends StatelessWidget {
                 // 타이틀 + 서브타이틀
                 Text(
                   title,
-                  style: AppTypography.h2.copyWith(color: AppColors.black),
+                  style: AppTypography.h2.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   subTitle,
-                  style: AppTypography.b1.copyWith(color: AppColors.black),
+                  style: AppTypography.b1.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
                 const SizedBox(height: 42),
                 child, // 단계별 본문 콘텐츠

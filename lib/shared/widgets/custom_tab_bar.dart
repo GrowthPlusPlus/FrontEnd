@@ -112,18 +112,20 @@ class _CustomTabBarState extends State<CustomTabBar>
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Column(
       children: [
         TabBar(
           controller: _tabController,
-          labelColor: AppColors.primaryAble,
-          unselectedLabelColor: AppColors.gray2,
-          indicatorColor: AppColors.primaryAble,
+          labelColor: appColors.primaryAble,
+          unselectedLabelColor: appColors.gray2,
+          indicatorColor: appColors.primaryAble,
           indicatorWeight: 1,
           indicatorSize: TabBarIndicatorSize.tab,
-          labelStyle: AppTypography.b1.copyWith(color: AppColors.primaryAble),
+          labelStyle: AppTypography.b1.copyWith(color: appColors.primaryAble),
           unselectedLabelStyle: AppTypography.b1.copyWith(
-            color: AppColors.gray2,
+            color: appColors.gray2,
           ),
           tabs: widget.tabs.map((t) => Tab(text: t)).toList(),
           onTap: (index) {

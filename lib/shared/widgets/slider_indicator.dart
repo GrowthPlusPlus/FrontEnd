@@ -10,21 +10,23 @@ class SliderIndicator extends StatelessWidget {
   final int currentIndex;
 
   /// 활성화되었을 때의 인디케이터 색상
-  final Color activeColor;
+  final Color? activeColor;
 
   /// 비활성화되었을 때의 인디케이터 색상
-  final Color inactiveColor;
+  final Color? inactiveColor;
 
   const SliderIndicator({
     super.key,
     required this.count,
     required this.currentIndex,
-    this.activeColor = AppColors.primaryAble,
-    this.inactiveColor = AppColors.disable,
+    this.activeColor,
+    this.inactiveColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (index) {
@@ -35,7 +37,9 @@ class SliderIndicator extends StatelessWidget {
           width: isSelected ? 28.0 : 8.0,
           height: 8.0,
           decoration: ShapeDecoration(
-            color: isSelected ? activeColor : inactiveColor,
+            color: isSelected
+                ? (activeColor ?? appColors.primaryAble)
+                : (inactiveColor ?? appColors.disable),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),

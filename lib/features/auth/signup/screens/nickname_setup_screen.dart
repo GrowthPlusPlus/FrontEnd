@@ -97,6 +97,8 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 어떤 에러 메시지를 보여줄지 결정 (형식 에러가 중복 에러보다 우선순위 높음)
     String? errorMessage;
     if (_isInvalidFormat) {
@@ -116,10 +118,10 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
           TextField(
             controller: _nicknameController,
             maxLength: 15,
-            style: AppTypography.b2.copyWith(color: AppColors.black),
+            style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
             decoration: InputDecoration(
               hintText: '닉네임을 입력해주세요',
-              hintStyle: AppTypography.b2.copyWith(color: AppColors.gray3),
+              hintStyle: AppTypography.b2.copyWith(color: appColors.gray3),
               counterText: '',
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 16,
@@ -129,16 +131,16 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
                   color: (errorMessage != null)
-                      ? AppColors.notification
-                      : AppColors.gray4,
+                      ? appColors.notification
+                      : appColors.gray4,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
                   color: (errorMessage != null)
-                      ? AppColors.notification
-                      : AppColors.primaryAble,
+                      ? appColors.notification
+                      : appColors.primaryAble,
                   width: 1.5,
                 ),
               ),
@@ -160,7 +162,7 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
                           Text(
                             '* ',
                             style: AppTypography.c1.copyWith(
-                              color: AppColors.notification,
+                              color: appColors.notification,
                               height: 1.5,
                             ),
                           ),
@@ -170,7 +172,7 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
                               // 기존 메시지에서 '* '를 제거하고 전달
                               errorMessage.replaceFirst('* ', ''),
                               style: AppTypography.c1.copyWith(
-                                color: AppColors.notification,
+                                color: appColors.notification,
                                 height: 1.5,
                               ),
                             ),
@@ -184,7 +186,7 @@ class _NicknameSetupScreenState extends ConsumerState<NicknameSetupScreen> {
               // 글자수 카운터
               Text(
                 '${_nicknameController.text.length}/15',
-                style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                style: AppTypography.c1.copyWith(color: appColors.gray2),
               ),
             ],
           ),

@@ -9,11 +9,13 @@ class PhotoFreeBox extends StatelessWidget {
   const PhotoFreeBox({super.key});
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: AppColors.gray5,
+        color: appColors.gray5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Row(
@@ -23,6 +25,7 @@ class PhotoFreeBox extends StatelessWidget {
             'assets/images/icons/gallery_icon.svg',
             width: 24,
             height: 24,
+            colorFilter: ColorFilter.mode(appColors.gray1, BlendMode.srcIn),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -31,11 +34,11 @@ class PhotoFreeBox extends StatelessWidget {
               children: [
                 Text(
                   '사진 첨부는 선택이에요',
-                  style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                  style: AppTypography.b2.copyWith(color: appColors.gray1),
                 ),
                 Text(
                   '사진을 함께 올리면 더 생생한 인증글이 완성돼요😎',
-                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  style: AppTypography.c1.copyWith(color: appColors.gray2),
                 ),
               ],
             ),

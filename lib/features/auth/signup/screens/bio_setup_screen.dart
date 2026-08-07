@@ -62,6 +62,7 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 사용자가 한 글자라도 입력했는지 여부를 판단하여 버튼 문구 결정
     final String dynamicButtonText = _bioController.text.isEmpty
         ? '건너뛰기'
@@ -82,10 +83,10 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
                 maxLength: 50,
                 maxLines: null,
                 minLines: 1,
-                style: AppTypography.b2.copyWith(color: AppColors.black),
+                style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
                 decoration: InputDecoration(
                   hintText: '한 줄 소개를 입력해주세요',
-                  hintStyle: AppTypography.b2.copyWith(color: AppColors.gray3),
+                  hintStyle: AppTypography.b2.copyWith(color: appColors.gray3),
                   counterText: '',
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: 16,
@@ -93,12 +94,12 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.gray4),
+                    borderSide: BorderSide(color: appColors.gray4),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(
-                      color: AppColors.primaryAble,
+                    borderSide: BorderSide(
+                      color: appColors.primaryAble,
                       width: 1.5,
                     ),
                   ),
@@ -107,7 +108,7 @@ class _BioSetupScreenState extends ConsumerState<BioSetupScreen> {
               const SizedBox(height: 8),
               Text(
                 '${_bioController.text.length}/50',
-                style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                style: AppTypography.c1.copyWith(color: appColors.gray2),
               ),
             ],
           ),

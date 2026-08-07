@@ -22,6 +22,7 @@ class LineGraph extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     final isMonthly = ref.watch(graphTypeProvider);
 
     return StatisticsCard(
@@ -31,9 +32,9 @@ class LineGraph extends ConsumerWidget {
         children: [
           Column(
             children: [
-              _buildToggleButtons(ref, isMonthly),
+              _buildToggleButtons(ref, isMonthly, appColors),
               const SizedBox(height: 20),
-              _buildLegend(isMonthly),
+              _buildLegend(context, isMonthly, appColors),
               const SizedBox(height: 12),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
@@ -51,35 +52,55 @@ class LineGraph extends ConsumerWidget {
     );
   }
 
-  Widget _buildLegend(bool isMonthly) {
+  Widget _buildLegend(
+    BuildContext context,
+    bool isMonthly,
+    AppColorsExtension appColors,
+  ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       spacing: 8,
       children: [
         _buildLegendItem(
-          iconPath: 'assets/images/icons/green_line_graph_icon.svg',
+          appColors,
+          iconPath: isDarkMode
+              ? 'assets/images/icons/green_line_graph_icon_dark.svg'
+              : 'assets/images/icons/green_line_graph_icon.svg',
           label: isMonthly ? '이번 달' : '이번 주',
         ),
         _buildLegendItem(
-          iconPath: 'assets/images/icons/gray_line_graph_icon.svg',
+          appColors,
+          iconPath: isDarkMode
+              ? 'assets/images/icons/gray_line_graph_icon_dark.svg'
+              : 'assets/images/icons/gray_line_graph_icon.svg',
           label: isMonthly ? '저번 달' : '저번 주',
         ),
       ],
     );
   }
 
-  Widget _buildLegendItem({required String iconPath, required String label}) {
+  Widget _buildLegendItem(
+    AppColorsExtension appColors, {
+    required String iconPath,
+    required String label,
+  }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       spacing: 4,
       children: [
         SvgPicture.asset(iconPath, width: 16, height: 16),
-        Text(label, style: AppTypography.c1.copyWith(color: AppColors.gray1)),
+        Text(label, style: AppTypography.c1.copyWith(color: appColors.gray1)),
       ],
     );
   }
 
-  Widget _buildToggleButtons(WidgetRef ref, bool isMonthly) {
+  Widget _buildToggleButtons(
+    WidgetRef ref,
+    bool isMonthly,
+    AppColorsExtension appColors,
+  ) {
     return Container(
       width: double.infinity,
       height: 35.99,
@@ -90,12 +111,14 @@ class LineGraph extends ConsumerWidget {
       child: Row(
         children: [
           _buildTab(
+            appColors,
             ref: ref,
             label: '월간',
             isSelected: isMonthly,
             onTap: () => ref.read(graphTypeProvider.notifier).state = true,
           ),
           _buildTab(
+            appColors,
             ref: ref,
             label: '주간',
             isSelected: !isMonthly,
@@ -106,7 +129,8 @@ class LineGraph extends ConsumerWidget {
     );
   }
 
-  Widget _buildTab({
+  Widget _buildTab(
+    AppColorsExtension appColors, {
     required WidgetRef ref,
     required String label,
     required bool isSelected,
@@ -120,14 +144,16 @@ class LineGraph extends ConsumerWidget {
           height: double.infinity,
           alignment: Alignment.center,
           decoration: ShapeDecoration(
-            color: isSelected ? AppColors.primaryAble : Colors.transparent,
+            color: isSelected ? appColors.primaryAble : Colors.transparent,
             shape: const StadiumBorder(),
           ),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: AppTypography.b2.copyWith(
-              color: isSelected ? Colors.white : AppColors.black,
+              color: isSelected
+                  ? appColors.whiteToBlack
+                  : appColors.blackToWhite,
             ),
           ),
         ),

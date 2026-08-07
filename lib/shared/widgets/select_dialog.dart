@@ -29,19 +29,21 @@ class SelectDialog extends StatelessWidget {
     this.cancelText = '취소',
     required this.onConfirm,
     required this.onCancel,
-    this.titleColor = AppColors.black,
-    this.contentColor = AppColors.gray2,
-    this.confirmBackgroundColor = AppColors.gray5,
-    this.confirmTextColor = AppColors.gray2,
-    this.cancelBackgroundColor = AppColors.gray5,
-    this.cancelTextColor = AppColors.gray2,
+    this.titleColor,
+    this.contentColor,
+    this.confirmBackgroundColor,
+    this.confirmTextColor,
+    this.cancelBackgroundColor,
+    this.cancelTextColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       child: Container(
         width: 335,
         padding: const EdgeInsets.all(16.0),
@@ -56,13 +58,17 @@ class SelectDialog extends StatelessWidget {
             if (title != null) ...[
               Text(
                 title!,
-                style: AppTypography.h3.copyWith(color: AppColors.black),
+                style: AppTypography.h3.copyWith(
+                  color: titleColor ?? appColors.blackToWhite,
+                ),
               ),
               const SizedBox(height: 8),
             ],
             Text(
               content,
-              style: AppTypography.b1.copyWith(color: contentColor),
+              style: AppTypography.b1.copyWith(
+                color: contentColor ?? appColors.gray2,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -72,8 +78,8 @@ class SelectDialog extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: cancelBackgroundColor,
-                      foregroundColor: cancelTextColor,
+                      backgroundColor: cancelBackgroundColor ?? appColors.gray5,
+                      foregroundColor: cancelTextColor ?? appColors.gray2,
                       elevation: 0, // 다이얼로그 내부 버튼이므로 입체감 제거
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // 부드러운 라운딩 처리
@@ -94,8 +100,9 @@ class SelectDialog extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: confirmBackgroundColor,
-                      foregroundColor: confirmTextColor,
+                      backgroundColor:
+                          confirmBackgroundColor ?? appColors.gray5,
+                      foregroundColor: confirmTextColor ?? appColors.gray2,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),

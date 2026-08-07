@@ -28,6 +28,8 @@ class HaenaemGrass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     debugPrint('🌿 [HaenaemGrass] successDays: $successDays');
     debugPrint('🔥 [HaenaemGrass] currentStreak: $currentStreak');
     debugPrint('📊 [HaenaemGrass] activity length: ${activity.length}');
@@ -50,7 +52,7 @@ class HaenaemGrass extends StatelessWidget {
           _buildSummaryItem(
             'assets/images/icons/mini_success_icon.svg',
             '$successDays일',
-            AppColors.primaryAble,
+            appColors.primaryAble,
           ),
           const SizedBox(width: 10),
           _buildSummaryItem(
@@ -83,7 +85,7 @@ class HaenaemGrass extends StatelessWidget {
                 int count = activityIndex < activity.length
                     ? activity[activityIndex]
                     : 0;
-                return _buildGrassNode(_getLevel(count));
+                return _buildGrassNode(_getLevel(count), appColors);
               }),
             );
           }),
@@ -107,23 +109,23 @@ class HaenaemGrass extends StatelessWidget {
     );
   }
 
-  Widget _buildGrassNode(int level) {
+  Widget _buildGrassNode(int level, AppColorsExtension appColors) {
     Color nodeColor;
     switch (level) {
       case 1:
-        nodeColor = AppColors.primaryAble.withValues(alpha: 0.30);
+        nodeColor = appColors.primaryAble.withValues(alpha: 0.30);
         break;
       case 2:
-        nodeColor = AppColors.primaryAble.withValues(alpha: 0.55);
+        nodeColor = appColors.primaryAble.withValues(alpha: 0.55);
         break;
       case 3:
-        nodeColor = AppColors.primaryAble.withValues(alpha: 0.80);
+        nodeColor = appColors.primaryAble.withValues(alpha: 0.80);
         break;
       case 4:
-        nodeColor = AppColors.primaryAble;
+        nodeColor = appColors.primaryAble;
         break;
       default:
-        nodeColor = AppColors.gray5;
+        nodeColor = appColors.gray5;
     }
 
     return Container(

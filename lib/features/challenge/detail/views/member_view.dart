@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/feed/provider/feed_provider.dart';
 import 'package:haenaem/features/feed/views/share_feed_view.dart';
+import 'package:haenaem/core/theme/app_colors.dart';
 
 class MemberView extends ConsumerStatefulWidget {
   final int challengeId;
@@ -30,11 +31,13 @@ class _MemberViewState extends ConsumerState<MemberView> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // challengeId별로 독립적인 상태를 가진 프로바이더를 참조합니다.
     final provider = memberFeedProvider(widget.challengeId);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       body: ShareFeedView(
         scrollController: widget.scrollController,
         provider: provider,

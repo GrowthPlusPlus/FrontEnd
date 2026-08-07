@@ -41,7 +41,8 @@ class LineChartGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final axisColor = labelColor ?? AppColors.gray1;
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+    final axisColor = labelColor ?? appColors.gray1;
 
     // Y축 레이블: yMax에서 0까지 rowCount+1개 균등 분할
     final yLabels = List.generate(
@@ -89,6 +90,7 @@ class LineChartGrid extends StatelessWidget {
                         yMax: yMax,
                         thisData: thisData,
                         lastData: lastData,
+                        appColors: appColors,
                       ),
                     ),
                   ),
@@ -154,6 +156,7 @@ class _LineChartPainter extends CustomPainter {
   final double yMax;
   final List<int> thisData;
   final List<int> lastData;
+  final AppColorsExtension appColors;
 
   const _LineChartPainter({
     required this.columnCount,
@@ -161,31 +164,32 @@ class _LineChartPainter extends CustomPainter {
     required this.yMax,
     required this.thisData,
     required this.lastData,
+    required this.appColors,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    _drawGrid(canvas, size);
+    _drawGrid(canvas, size, appColors);
     if (lastData.length >= columnCount) {
-      _drawLine(canvas, size, lastData, AppColors.gray4);
-      _drawDots(canvas, size, lastData, AppColors.gray4);
+      _drawLine(canvas, size, lastData, appColors.gray3);
+      _drawDots(canvas, size, lastData, appColors.gray3, appColors);
     }
     if (thisData.length >= columnCount) {
-      _drawLine(canvas, size, thisData, AppColors.primaryAble);
-      _drawDots(canvas, size, thisData, AppColors.primaryAble);
+      _drawLine(canvas, size, thisData, appColors.primaryAble);
+      _drawDots(canvas, size, thisData, appColors.primaryAble, appColors);
     }
   }
 
   /// 격자선
   /// - 가로: rowCount+1개, 맨 아래만 실선 나머지는 점선
   /// - 세로: columnCount+1개 점선 (양끝 포함)
-  void _drawGrid(Canvas canvas, Size size) {
+  void _drawGrid(Canvas canvas, Size size, AppColorsExtension appColors) {
     final solidPaint = Paint()
-      ..color = AppColors.gray4
+      ..color = appColors.gray4
       ..strokeWidth = 1;
 
     final dashedPaint = Paint()
-      ..color = AppColors.gray4
+      ..color = appColors.gray4
       ..strokeWidth = 1;
 
     // 가로선: rowCount+1개 (i=0: top, i=rowCount: bottom)
@@ -263,9 +267,15 @@ class _LineChartPainter extends CustomPainter {
   }
 
   /// 데이터 포인트 점 그리기 (흰색 채우기 + 컬러 테두리)
-  void _drawDots(Canvas canvas, Size size, List<int> values, Color color) {
+  void _drawDots(
+    Canvas canvas,
+    Size size,
+    List<int> values,
+    Color color,
+    AppColorsExtension appColors,
+  ) {
     final fillPaint = Paint()
-      ..color = Colors.white
+      ..color = appColors.whiteToBlack
       ..style = PaintingStyle.fill;
     final borderPaint = Paint()
       ..color = color

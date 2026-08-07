@@ -23,6 +23,8 @@ class ChallengeDetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 1. 날짜 데이터 가공
     String formattedStart = DateFormat(
       'yyyy년 MM월 dd일',
@@ -71,25 +73,26 @@ class ChallengeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoSection('챌린지 시작일', formattedStart),
-          _buildInfoSection('챌린지 마감일', '$formattedEnd $dDayString'),
-          _buildInfoSection('인증 빈도', frequencyText),
+          _buildInfoSection('챌린지 시작일', formattedStart, appColors),
+          _buildInfoSection('챌린지 마감일', '$formattedEnd $dDayString', appColors),
+          _buildInfoSection('인증 빈도', frequencyText, appColors),
           _buildInfoSection(
             '인증 방식',
             challenge.photoRequired ? '사진 첨부 필수' : '사진 첨부 선택',
+            appColors,
           ),
 
           // 태그 섹션
           Text(
             '챌린지 태그',
-            style: AppTypography.b1.copyWith(color: AppColors.gray2),
+            style: AppTypography.b1.copyWith(color: appColors.gray2),
           ),
           const SizedBox(height: 8),
 
           challenge.tags.isEmpty
               ? Text(
                   "-",
-                  style: AppTypography.b1.copyWith(color: AppColors.gray3),
+                  style: AppTypography.b1.copyWith(color: appColors.gray3),
                 )
               : Wrap(
                   spacing: 8,
@@ -118,13 +121,13 @@ class ChallengeDetailContent extends StatelessWidget {
           // 챌린지 설명
           Text(
             '챌린지 설명',
-            style: AppTypography.b1.copyWith(color: AppColors.gray2),
+            style: AppTypography.b1.copyWith(color: appColors.gray2),
           ),
           const SizedBox(height: 8),
           Text(
             challenge.description,
             style: AppTypography.b1.copyWith(
-              color: AppColors.black,
+              color: appColors.blackToWhite,
               height: 1.5,
             ),
           ),
@@ -132,7 +135,7 @@ class ChallengeDetailContent extends StatelessWidget {
           const _CustomDivider(),
 
           // 방장 정보
-          Text('방장', style: AppTypography.b1.copyWith(color: AppColors.gray2)),
+          Text('방장', style: AppTypography.b1.copyWith(color: appColors.gray2)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -143,7 +146,7 @@ class ChallengeDetailContent extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 challenge.leader.nickname,
-                style: AppTypography.b1.copyWith(color: AppColors.black),
+                style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
               ),
             ],
           ),
@@ -153,18 +156,18 @@ class ChallengeDetailContent extends StatelessWidget {
           // 참여자 수
           Row(
             children: [
-              const Icon(Icons.person, size: 18, color: AppColors.black),
+              Icon(Icons.person, size: 18, color: appColors.blackToWhite),
               const SizedBox(width: 4),
               Text(
                 '참여자 수',
-                style: AppTypography.b1.copyWith(color: AppColors.gray2),
+                style: AppTypography.b1.copyWith(color: appColors.gray2),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             '${challenge.participantCount}명/50명',
-            style: AppTypography.b1.copyWith(color: AppColors.black),
+            style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
           ),
 
           const _CustomDivider(),
@@ -172,13 +175,13 @@ class ChallengeDetailContent extends StatelessWidget {
           // 오늘의 인증자
           Text(
             '오늘의 인증자',
-            style: AppTypography.b1.copyWith(color: AppColors.gray2),
+            style: AppTypography.b1.copyWith(color: appColors.gray2),
           ),
           const SizedBox(height: 12),
           challenge.todaySuccessUsers.isEmpty
               ? Text(
                   '아직 오늘의 인증자가 없습니다.',
-                  style: AppTypography.b1.copyWith(color: AppColors.gray2),
+                  style: AppTypography.b1.copyWith(color: appColors.gray2),
                 )
               : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -199,7 +202,7 @@ class ChallengeDetailContent extends StatelessWidget {
                               child: Text(
                                 user.nickname,
                                 style: AppTypography.c1.copyWith(
-                                  color: AppColors.black,
+                                  color: appColors.blackToWhite,
                                 ),
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
@@ -219,17 +222,21 @@ class ChallengeDetailContent extends StatelessWidget {
 
   // --- 내부 컴포넌트 메서드 ---
 
-  Widget _buildInfoSection(String title, String content) {
+  Widget _buildInfoSection(
+    String title,
+    String content,
+    AppColorsExtension appColors,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTypography.b1.copyWith(color: AppColors.gray2)),
+          Text(title, style: AppTypography.b1.copyWith(color: appColors.gray2)),
           const SizedBox(height: 4),
           Text(
             content,
-            style: AppTypography.b1.copyWith(color: AppColors.black),
+            style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
           ),
         ],
       ),
@@ -259,9 +266,11 @@ class _CustomDivider extends StatelessWidget {
   const _CustomDivider();
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Divider(height: 1, thickness: 1, color: AppColors.gray4),
+      child: Divider(height: 1, thickness: 1, color: appColors.gray4),
     );
   }
 }

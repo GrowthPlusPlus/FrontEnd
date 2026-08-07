@@ -70,6 +70,8 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 클라이언트 필터링을 위해 nickname에 null 전달
     // (서버에서 전체 목록을 받아온 후 앱 내에서 초성 검색 수행)
     final filter = MemberFilter(
@@ -81,17 +83,17 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
     final currentUserId = ref.watch(currentUserProvider)?.id;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.black,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
               BlendMode.srcIn,
             ),
           ),
@@ -100,7 +102,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
         centerTitle: true,
         title: Text(
           '챌린지 멤버 관리',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
       ),
       body: Column(
@@ -109,7 +111,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
           Center(
             child: Text(
               '멤버를 검색하고 관리할 수 있습니다.',
-              style: AppTypography.b2.copyWith(color: AppColors.gray2),
+              style: AppTypography.b2.copyWith(color: appColors.gray2),
             ),
           ),
           const SizedBox(height: 10),
@@ -120,7 +122,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
               height: 46,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(9.5),
-                border: Border.all(color: AppColors.gray4),
+                border: Border.all(color: appColors.gray4),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -128,8 +130,8 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                   SvgPicture.asset(
                     'assets/images/icons/search_icon.svg',
                     width: 18,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.gray2,
+                    colorFilter: ColorFilter.mode(
+                      appColors.gray2,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -146,13 +148,15 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                       decoration: InputDecoration(
                         hintText: '닉네임으로 검색',
                         hintStyle: AppTypography.b2.copyWith(
-                          color: AppColors.gray3,
+                          color: appColors.gray3,
                         ),
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
-                      style: AppTypography.b2.copyWith(color: AppColors.black),
+                      style: AppTypography.b2.copyWith(
+                        color: appColors.blackToWhite,
+                      ),
                     ),
                   ),
                 ],
@@ -203,7 +207,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                       child: Text(
                         '멤버 ${filteredMembers.length}',
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.black,
+                          color: appColors.blackToWhite,
                         ),
                       ),
                     ),
@@ -223,7 +227,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
                           return _MemberTile(
                             member: member,
                             isMe: isMe, // 상태 전달
-                            notificationRed: AppColors.notification,
+                            notificationRed: appColors.notification,
                             // 콜백 함수 전달
                             onKick: () =>
                                 _handleKickMember(member.id, member.nickname),
@@ -257,6 +261,8 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
@@ -270,12 +276,12 @@ class _MemberTile extends StatelessWidget {
             children: [
               Text(
                 member.nickname,
-                style: AppTypography.b2.copyWith(color: AppColors.black),
+                style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
               ),
               Text(
                 '사용자 칭호',
                 // TODO: 실제 칭호 데이터로 교체 필요
-                style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                style: AppTypography.c1.copyWith(color: appColors.gray2),
               ),
             ],
           ),
@@ -286,12 +292,12 @@ class _MemberTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.selected,
+                color: appColors.selected,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '챌린지장',
-                style: AppTypography.c1.copyWith(color: AppColors.primaryAble),
+                style: AppTypography.c1.copyWith(color: appColors.primaryAble),
               ),
             )
           else
@@ -303,7 +309,7 @@ class _MemberTile extends StatelessWidget {
                     title: '강제 퇴장',
                     content: '\'${member.nickname}\' 님을 강퇴하시겠습니까?',
                     confirmText: '강제 퇴장',
-                    confirmTextColor: AppColors.notification,
+                    confirmTextColor: appColors.notification,
                     onConfirm: () {
                       onKick();
                     },

@@ -20,14 +20,16 @@ class UserSearchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return UserListTile(
       user: searchCard.user,
       padding: const EdgeInsets.symmetric(vertical: 12), // 여기만 12
-      trailing: _buildRequestButton(),
+      trailing: _buildRequestButton(appColors),
     );
   }
 
-  Widget _buildRequestButton() {
+  Widget _buildRequestButton(AppColorsExtension appColors) {
     // 1. 이미 친구인 경우 버튼을 숨김
     if (searchCard.state == FriendState.friend) {
       return const SizedBox.shrink();
@@ -41,13 +43,13 @@ class UserSearchTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isRequested ? AppColors.disable : AppColors.primaryAble,
+          color: isRequested ? appColors.disable : appColors.primaryAble,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           isRequested ? '신청됨' : '친구 신청',
           style: AppTypography.c1.copyWith(
-            color: isRequested ? AppColors.gray2 : Colors.white,
+            color: isRequested ? appColors.gray2 : appColors.whiteToBlack,
             fontWeight: FontWeight.w500,
           ),
         ),

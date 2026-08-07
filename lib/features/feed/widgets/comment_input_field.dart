@@ -40,6 +40,8 @@ class _CommentInputFieldState extends ConsumerState<CommentInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 키보드가 올라왔을 때 하단 여백 자동 조절
     final double systemBottomPadding =
         MediaQuery.of(context).viewInsets.bottom > 0
@@ -54,7 +56,7 @@ class _CommentInputFieldState extends ConsumerState<CommentInputField> {
         bottom: systemBottomPadding,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -62,7 +64,7 @@ class _CommentInputFieldState extends ConsumerState<CommentInputField> {
             blurRadius: 4,
           ),
         ],
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        border: Border(top: BorderSide(color: appColors.gray4)),
       ),
       child: Row(
         children: [
@@ -71,9 +73,9 @@ class _CommentInputFieldState extends ConsumerState<CommentInputField> {
               controller: _commentController,
               decoration: InputDecoration(
                 hintText: '댓글을 입력하세요...',
-                hintStyle: AppTypography.b2.copyWith(color: AppColors.gray3),
+                hintStyle: AppTypography.b2.copyWith(color: appColors.gray3),
                 filled: true,
-                fillColor: AppColors.gray5,
+                fillColor: appColors.gray5,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 10,
@@ -113,10 +115,14 @@ class _CommentInputFieldState extends ConsumerState<CommentInputField> {
             child: CircleAvatar(
               radius: 22,
               backgroundColor: _isButtonActive
-                  ? AppColors.primaryAble
-                  : AppColors.disable,
+                  ? appColors.primaryAble
+                  : appColors.disable,
               child: SvgPicture.asset(
                 'assets/images/icons/comment_upload_icon.svg',
+                colorFilter: ColorFilter.mode(
+                  appColors.whiteToBlack,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),

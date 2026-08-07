@@ -19,6 +19,8 @@ class SignupProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Row(
       children: List.generate(totalSteps, (index) {
         final bool isCompleted = index < currentStep;
@@ -29,8 +31,8 @@ class SignupProgressBar extends StatelessWidget {
             decoration: BoxDecoration(
               // 지정된 색상이 없으면 기본 테마 색상 사용
               color: isCompleted
-                  ? (activeColor ?? AppColors.primaryAble)
-                  : (inactiveColor ?? AppColors.gray4),
+                  ? (activeColor ?? appColors.primaryAble)
+                  : (inactiveColor ?? appColors.gray4),
               borderRadius: BorderRadius.circular(1000),
             ),
           ),

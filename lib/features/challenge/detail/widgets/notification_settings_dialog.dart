@@ -214,10 +214,12 @@ class _NotificationSettingsDialogState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -227,10 +229,10 @@ class _NotificationSettingsDialogState
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: appColors.whiteToBlack,
               border: Border(
-                bottom: BorderSide(width: 1, color: AppColors.gray4),
+                bottom: BorderSide(width: 1, color: appColors.gray4),
               ),
             ),
             child: Row(
@@ -238,7 +240,9 @@ class _NotificationSettingsDialogState
               children: [
                 Text(
                   '챌린지 알림 설정',
-                  style: AppTypography.h3.copyWith(color: AppColors.black),
+                  style: AppTypography.h3.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
@@ -247,6 +251,10 @@ class _NotificationSettingsDialogState
                     height: 24,
                     child: SvgPicture.asset(
                       'assets/images/icons/close_icon.svg',
+                      colorFilter: ColorFilter.mode(
+                        appColors.blackToWhite,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),
@@ -256,10 +264,10 @@ class _NotificationSettingsDialogState
 
           // ── 본문 ─────────────────────────────────────
           _isLoading
-              ? const Padding(
+              ? Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
                   child: CircularProgressIndicator(
-                    color: AppColors.primaryAble,
+                    color: appColors.primaryAble,
                   ),
                 )
               : Padding(
@@ -275,12 +283,14 @@ class _NotificationSettingsDialogState
                         '모든 알림 받기',
                         allNotifications,
                         _toggleAll,
+                        appColors,
                       ),
-                      _buildDailyReminderSection(),
+                      _buildDailyReminderSection(appColors),
                       _buildSwitchRowWithGlobalWarning(
                         '내 글 좋아요',
                         "내 게시물에 '좋아요' 반응이 올 때 알림",
                         likesNotification,
+                        appColors,
                         _likesDisabledByGlobal ? null : _toggleLikes,
                         disabledByGlobal: _likesDisabledByGlobal,
                       ),
@@ -288,6 +298,7 @@ class _NotificationSettingsDialogState
                         '댓글',
                         '내 글에 새로운 댓글이 달릴 때 알림',
                         commentsNotification,
+                        appColors,
                         _commentsDisabledByGlobal ? null : _toggleComments,
                         disabledByGlobal: _commentsDisabledByGlobal,
                       ),
@@ -295,6 +306,7 @@ class _NotificationSettingsDialogState
                         '멤버 인증 소식',
                         '다른 참여자들이 인증 완료 시 알림',
                         mateVerification,
+                        appColors,
                         _verificationDisabledByGlobal
                             ? null
                             : _toggleVerification,
@@ -308,8 +320,8 @@ class _NotificationSettingsDialogState
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(width: 1, color: AppColors.gray4)),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(width: 1, color: appColors.gray4)),
             ),
             child: SizedBox(
               width: double.infinity,
@@ -317,16 +329,16 @@ class _NotificationSettingsDialogState
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryAble,
+                  backgroundColor: appColors.primaryAble,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
+                child: Text(
                   '완료',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: appColors.whiteToBlack,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -346,6 +358,7 @@ class _NotificationSettingsDialogState
     String subtitle,
     bool value,
     ValueChanged<bool>? onChanged,
+    AppColorsExtension appColors,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -357,16 +370,16 @@ class _NotificationSettingsDialogState
             children: [
               Text(
                 title,
-                style: AppTypography.b1.copyWith(color: AppColors.black),
+                style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
               ),
               Text(
                 subtitle,
-                style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                style: AppTypography.b2.copyWith(color: appColors.gray2),
               ),
             ],
           ),
         ),
-        _buildSwitch(value, onChanged),
+        _buildSwitch(value, onChanged, appColors),
       ],
     );
   }
@@ -377,6 +390,7 @@ class _NotificationSettingsDialogState
     String title,
     String subtitle,
     bool value,
+    AppColorsExtension appColors,
     ValueChanged<bool>? onChanged, {
     bool disabledByGlobal = false,
   }) {
@@ -395,13 +409,13 @@ class _NotificationSettingsDialogState
                     title,
                     style: AppTypography.b1.copyWith(
                       color: disabledByGlobal
-                          ? AppColors.gray2
-                          : AppColors.black,
+                          ? appColors.gray2
+                          : appColors.blackToWhite,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    style: AppTypography.b2.copyWith(color: appColors.gray2),
                   ),
                 ],
               ),
@@ -409,6 +423,7 @@ class _NotificationSettingsDialogState
             _buildSwitch(
               value,
               (_isLoading || disabledByGlobal) ? null : onChanged,
+              appColors,
             ),
           ],
         ),
@@ -417,7 +432,7 @@ class _NotificationSettingsDialogState
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               '전체 푸시 알림 설정에서 해당 알림이 꺼져 있습니다.',
-              style: AppTypography.c1.copyWith(color: AppColors.primaryAble),
+              style: AppTypography.c1.copyWith(color: appColors.primaryAble),
             ),
           ),
       ],
@@ -426,27 +441,31 @@ class _NotificationSettingsDialogState
 
   // ── 공통 스위치 위젯 ────────────────────────────────────
 
-  Widget _buildSwitch(bool value, ValueChanged<bool>? onChanged) {
+  Widget _buildSwitch(
+    bool value,
+    ValueChanged<bool>? onChanged,
+    AppColorsExtension appColors,
+  ) {
     return Transform.scale(
       scale: 0.8,
       alignment: Alignment.centerRight,
       child: Switch(
         value: value,
         onChanged: onChanged,
-        activeTrackColor: AppColors.primaryAble,
-        activeThumbColor: Colors.white,
-        inactiveTrackColor: AppColors.disable,
-        inactiveThumbColor: Colors.white,
+        activeTrackColor: appColors.primaryAble,
+        activeThumbColor: appColors.whiteToBlack,
+        inactiveTrackColor: appColors.disable,
+        inactiveThumbColor: appColors.whiteToBlack,
         trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
         thumbIcon: WidgetStateProperty.all(const Icon(null)),
-        thumbColor: const WidgetStatePropertyAll(Colors.white),
+        thumbColor: const WidgetStatePropertyAll(AppColors.white),
       ),
     );
   }
 
   // ── 일일 리마인더 섹션 ──────────────────────────────────
 
-  Widget _buildDailyReminderSection() {
+  Widget _buildDailyReminderSection(AppColorsExtension appColors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -462,13 +481,13 @@ class _NotificationSettingsDialogState
                     '일일 리마인더',
                     style: AppTypography.b1.copyWith(
                       color: _reminderDisabledByGlobal
-                          ? AppColors.gray2
-                          : AppColors.black,
+                          ? appColors.gray2
+                          : appColors.blackToWhite,
                     ),
                   ),
                   Text(
                     '매일 $selectedTime 알림',
-                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    style: AppTypography.b2.copyWith(color: appColors.gray2),
                   ),
                 ],
               ),
@@ -478,18 +497,19 @@ class _NotificationSettingsDialogState
               (_isLoading || _reminderDisabledByGlobal)
                   ? null
                   : _toggleReminder,
+              appColors,
             ),
           ],
         ),
         if (dailyReminder && !_reminderDisabledByGlobal) ...[
           const SizedBox(height: 4),
           GestureDetector(
-            onTap: () => _showTimePicker(context),
+            onTap: () => _showTimePicker(context, appColors),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.gray5,
+                color: appColors.gray5,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -497,7 +517,7 @@ class _NotificationSettingsDialogState
                 children: [
                   Text(
                     selectedTime,
-                    style: AppTypography.b2.copyWith(color: AppColors.gray3),
+                    style: AppTypography.b2.copyWith(color: appColors.gray3),
                   ),
                   Opacity(
                     opacity: 0.5,
@@ -505,8 +525,8 @@ class _NotificationSettingsDialogState
                       'assets/images/icons/big_down_arrow.svg',
                       width: 16,
                       height: 16,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.gray2,
+                      colorFilter: ColorFilter.mode(
+                        appColors.gray2,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -521,7 +541,7 @@ class _NotificationSettingsDialogState
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               '전체 푸시 알림 설정에서 해당 알림이 꺼져 있습니다.',
-              style: AppTypography.c1.copyWith(color: AppColors.primaryAble),
+              style: AppTypography.c1.copyWith(color: appColors.primaryAble),
             ),
           ),
       ],
@@ -530,7 +550,7 @@ class _NotificationSettingsDialogState
 
   // ── 시간 피커 ───────────────────────────────────────────
 
-  void _showTimePicker(BuildContext context) {
+  void _showTimePicker(BuildContext context, AppColorsExtension appColors) {
     final List<String> hours = List.generate(12, (i) => '${i + 1}시');
     String currentPeriod = selectedTime.contains('오후') ? '오후' : '오전';
     String currentHour = selectedTime.split(' ').last;
@@ -539,13 +559,13 @@ class _NotificationSettingsDialogState
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withAlpha(100),
+      barrierColor: appColors.blackToWhite.withAlpha(100),
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: appColors.whiteToBlack,
           contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           content: SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
@@ -558,6 +578,7 @@ class _NotificationSettingsDialogState
                     currentPeriod,
                     (newPeriod) =>
                         setDialogState(() => currentPeriod = newPeriod),
+                    appColors,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -570,7 +591,7 @@ class _NotificationSettingsDialogState
                           height: 40,
                           margin: const EdgeInsets.symmetric(horizontal: 24),
                           decoration: BoxDecoration(
-                            color: AppColors.gray4.withAlpha(100),
+                            color: appColors.gray4.withAlpha(100),
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
@@ -614,7 +635,7 @@ class _NotificationSettingsDialogState
                     },
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.transparent,
-                      foregroundColor: AppColors.primaryAble,
+                      foregroundColor: appColors.primaryAble,
                       minimumSize: const Size(double.infinity, 52),
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
@@ -624,7 +645,7 @@ class _NotificationSettingsDialogState
                     child: Text(
                       '완료',
                       style: AppTypography.b1.copyWith(
-                        color: AppColors.primaryAble,
+                        color: appColors.primaryAble,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -641,12 +662,13 @@ class _NotificationSettingsDialogState
   Widget _buildAnimatedPeriodSelector(
     String currentPeriod,
     Function(String) onPeriodChanged,
+    AppColorsExtension appColors,
   ) {
     return Container(
       height: 48,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.gray4,
+        color: appColors.gray4,
         borderRadius: BorderRadius.circular(12),
       ),
       child: LayoutBuilder(
@@ -664,7 +686,7 @@ class _NotificationSettingsDialogState
                   width: width - 4,
                   height: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: appColors.whiteToBlack,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
@@ -687,7 +709,9 @@ class _NotificationSettingsDialogState
                         child: AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 250),
                           style: AppTypography.b2.copyWith(
-                            color: isSelected ? Colors.black : AppColors.gray2,
+                            color: isSelected
+                                ? appColors.blackToWhite
+                                : appColors.gray2,
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,

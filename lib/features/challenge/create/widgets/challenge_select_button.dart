@@ -19,6 +19,8 @@ class ChallengeSelectButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -26,11 +28,11 @@ class ChallengeSelectButton extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             // 활성화 시 selected 색상, 비활성 시 gray5
-            color: isSelected ? AppColors.selected : AppColors.gray5,
+            color: isSelected ? appColors.selected : appColors.gray5,
             borderRadius: BorderRadius.circular(8),
             // 활성화 시에만 primaryAble 외곽선 추가
             border: isSelected
-                ? Border.all(color: AppColors.primaryAble, width: 2)
+                ? Border.all(color: appColors.primaryAble, width: 2)
                 : null,
           ),
           alignment: Alignment.center,
@@ -39,7 +41,9 @@ class ChallengeSelectButton extends StatelessWidget {
             style: AppTypography.b2.copyWith(
               // 활성화 시 Bold + primaryAble 색상
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? AppColors.primaryAble : AppColors.black,
+              color: isSelected
+                  ? appColors.primaryAble
+                  : appColors.blackToWhite,
             ),
           ),
         ),
