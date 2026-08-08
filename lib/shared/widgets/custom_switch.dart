@@ -11,6 +11,8 @@ class CustomSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return GestureDetector(
       onTap: () => onChanged(!value),
       behavior: HitTestBehavior.opaque,
@@ -20,7 +22,7 @@ class CustomSwitch extends StatelessWidget {
         height: 24, // 디자인 가이드 높이
         padding: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
-          color: value ? AppColors.primaryAble : AppColors.disable,
+          color: value ? appColors.primaryAble : appColors.disable,
           borderRadius: BorderRadius.circular(80),
         ),
         child: AnimatedAlign(

@@ -18,12 +18,14 @@ class StatisticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20), // 화면 양끝과 20 차이
       child: Container(
         padding: const EdgeInsets.all(20), // 카드 내부 기본 패딩 (상단 20 포함)
         decoration: ShapeDecoration(
-          color: Colors.white,
+          color: appColors.whiteToBlack,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -47,7 +49,9 @@ class StatisticsCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTypography.h3.copyWith(color: AppColors.black),
+                  style: AppTypography.h3.copyWith(
+                    color: appColors.blackToWhite,
+                  ),
                 ),
                 if (headerAction != null) headerAction!,
               ],

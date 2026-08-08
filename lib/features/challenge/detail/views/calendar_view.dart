@@ -77,6 +77,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
 
   // 1. 공유 버튼 클릭 이벤트 핸들러
   Future<void> _handleShare() async {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 로딩 중 및 안내 문구 표시 다이얼로그
     showDialog(
       context: context,
@@ -87,21 +88,21 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
         child: Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: appColors.whiteToBlack,
               borderRadius: BorderRadius.all(Radius.circular(16)),
             ),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: AppColors.black),
+                CircularProgressIndicator(color: appColors.primaryAble),
                 SizedBox(height: 16),
                 Text(
                   '이미지를 생성하고 있습니다...\n(약 5~10초 정도 소요될 수 있습니다)',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.black,
+                    color: appColors.blackToWhite,
                     height: 1.4,
                   ),
                 ),
@@ -155,6 +156,8 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
 
   // 모달 위젯을 띄우는 함수
   void _showSharePreviewModal(String imageUrl) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.75), // 어두운 백그라운드
@@ -231,6 +234,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 1. 데이터 구독
     final statsAsync = ref.watch(challengeStatsProvider(widget.challengeId));
 
@@ -244,20 +248,20 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
 
     // 2. 통합 로딩/에러/데이터 처리
     return statsAsync.when(
-      loading: () => const Scaffold(
-        backgroundColor: Colors.white,
+      loading: () => Scaffold(
+        backgroundColor: appColors.whiteToBlack,
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (e, s) => Scaffold(body: Center(child: Text('통계 로드 실패: $e'))),
       data: (stats) => postsAsync.when(
-        loading: () => const Scaffold(
-          backgroundColor: Colors.white,
+        loading: () => Scaffold(
+          backgroundColor: appColors.whiteToBlack,
           body: Center(child: CircularProgressIndicator()),
         ),
         error: (e, s) => Scaffold(body: Center(child: Text('인증글 로드 실패: $e'))),
         data: (posts) {
           return Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: appColors.whiteToBlack,
             // [추가] 당겨서 새로고침 위젯
             body: RefreshIndicator(
               onRefresh: () async {
@@ -279,11 +283,12 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                     _buildStatCards(
                       stats.totalSuccessDays,
                       stats.currentStreakDays,
+                      appColors,
                     ),
                     const SizedBox(height: 20),
-                    _buildCalendarHeader(_focusedDay),
+                    _buildCalendarHeader(_focusedDay, appColors),
                     const SizedBox(height: 10),
-                    _buildWeekdayHeader(),
+                    _buildWeekdayHeader(appColors),
                     const SizedBox(height: 10),
 
                     SizedBox(
@@ -339,10 +344,10 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                     ),
 
                     const SizedBox(height: 20),
-                    _buildPostsHeaderForData(posts.length),
+                    _buildPostsHeaderForData(posts.length, appColors),
                     const SizedBox(height: 16),
                     posts.isEmpty
-                        ? _buildEmptyState()
+                        ? _buildEmptyState(appColors)
                         : ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -360,17 +365,25 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     );
   }
 
-  Widget _buildStatCards(int totalSuccessDays, int currentStreakDays) {
+  Widget _buildStatCards(
+    int totalSuccessDays,
+    int currentStreakDays,
+    AppColorsExtension appColors,
+  ) {
     return Row(
       children: [
-        _buildStatCard(totalSuccessDays.toString(), '완료 일수'),
+        _buildStatCard(totalSuccessDays.toString(), '완료 일수', appColors),
         const SizedBox(width: 12),
-        _buildStatCard(currentStreakDays.toString(), '연속 일수'),
+        _buildStatCard(currentStreakDays.toString(), '연속 일수', appColors),
       ],
     );
   }
 
-  Widget _buildStatCard(String value, String label) {
+  Widget _buildStatCard(
+    String value,
+    String label,
+    AppColorsExtension appColors,
+  ) {
     final intValue = int.tryParse(value) ?? 0;
     final bool showFire = label == '연속 일수' && intValue > 0;
 
@@ -378,7 +391,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: AppColors.gray5,
+          color: appColors.gray5,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -405,7 +418,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
             ),
             Text(
               label,
-              style: const TextStyle(color: AppColors.black, fontSize: 13),
+              style: TextStyle(color: appColors.blackToWhite, fontSize: 13),
             ),
           ],
         ),
@@ -413,7 +426,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
     );
   }
 
-  Widget _buildCalendarHeader(DateTime date) {
+  Widget _buildCalendarHeader(DateTime date, AppColorsExtension appColors) {
     final now = DateTime.now();
     bool isFuture =
         date.year > now.year ||
@@ -438,7 +451,9 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
-                  isAtStart ? AppColors.gray3 : AppColors.black, // 색상도 비활성 표시
+                  isAtStart
+                      ? appColors.gray3
+                      : appColors.blackToWhite, // 색상도 비활성 표시
                   BlendMode.srcIn,
                 ),
               ),
@@ -446,7 +461,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
             const SizedBox(width: 20),
             Text(
               '${date.year}년 ${date.month}월',
-              style: AppTypography.b1.copyWith(color: AppColors.black),
+              style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
             ),
             const SizedBox(width: 20),
             IconButton(
@@ -456,7 +471,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
-                  isFuture ? AppColors.gray3 : AppColors.black,
+                  isFuture ? appColors.gray3 : appColors.blackToWhite,
                   BlendMode.srcIn,
                 ),
               ),
@@ -470,13 +485,17 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
             'assets/images/icons/share_icon.svg',
             width: 24,
             height: 24,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildWeekdayHeader() {
+  Widget _buildWeekdayHeader(AppColorsExtension appColors) {
     final weekdays = ['일', '월', '화', '수', '목', '금', '토'];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -484,28 +503,28 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
           .map(
             (day) => Text(
               day,
-              style: AppTypography.b1.copyWith(color: AppColors.black),
+              style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
             ),
           )
           .toList(),
     );
   }
 
-  Widget _buildPostsHeaderForData(int count) {
+  Widget _buildPostsHeaderForData(int count, AppColorsExtension appColors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text('내 인증글', style: AppTypography.b1),
         Text(
           '총 $count개',
-          style: AppTypography.c1.copyWith(color: AppColors.gray2),
+          style: AppTypography.c1.copyWith(color: appColors.gray2),
         ),
       ],
     );
   }
 
-  Widget _buildEmptyState() => const Padding(
+  Widget _buildEmptyState(AppColorsExtension appColors) => Padding(
     padding: EdgeInsets.symmetric(vertical: 40),
-    child: Text('이번 달 인증글이 없습니다.', style: TextStyle(color: AppColors.gray2)),
+    child: Text('이번 달 인증글이 없습니다.', style: TextStyle(color: appColors.gray2)),
   );
 }

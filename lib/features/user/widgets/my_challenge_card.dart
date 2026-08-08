@@ -15,6 +15,8 @@ class MyChallengeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 상태별 테마 설정
     Color themeColor;
     String statusText;
@@ -22,11 +24,11 @@ class MyChallengeCard extends StatelessWidget {
 
     switch (item.status) {
       case ChallengeStatus.success:
-        themeColor = AppColors.primaryAble;
+        themeColor = appColors.primaryAble;
         statusText = '완료';
         break;
       case ChallengeStatus.fail:
-        themeColor = AppColors.notification;
+        themeColor = appColors.notification;
         statusText = '실패';
         break;
       case ChallengeStatus.inProgress:
@@ -39,10 +41,10 @@ class MyChallengeCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(width: 0.69, color: AppColors.gray5),
+          side: BorderSide(width: 0.69, color: appColors.gray5),
         ),
       ),
       child: Column(
@@ -63,7 +65,7 @@ class MyChallengeCard extends StatelessWidget {
                           child: Text(
                             item.challengeInfo.challengeBase.title,
                             style: AppTypography.b3.copyWith(
-                              color: AppColors.black,
+                              color: appColors.blackToWhite,
                             ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -78,25 +80,25 @@ class MyChallengeCard extends StatelessWidget {
                       item.status == ChallengeStatus.inProgress
                           ? '주 ${item.challengeInfo.weeklyFrequency}회, 완료까지 D-${item.challengeInfo.dDay}'
                           : '$statusText일 ${item.failedDate?.toString().substring(0, 10).replaceAll('-', '/') ?? ''}',
-                      style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                      style: AppTypography.b2.copyWith(color: appColors.gray2),
                     ),
                     // ✅ 스트리크/멤버 정보를 Column 안으로 이동
-                    _buildDetailInfoRow(themeColor),
+                    _buildDetailInfoRow(themeColor, appColors),
                   ],
                 ),
               ),
-              _buildProgressText(item.rate, themeColor),
+              _buildProgressText(item.rate, themeColor, appColors),
             ],
           ),
           const SizedBox(height: 8),
-          _buildGaugeBar(item.rate, themeColor),
+          _buildGaugeBar(item.rate, themeColor, appColors),
         ],
       ),
     );
   }
 
   // --- 하단 상세 정보 (스트리크 + 멤버 참여도) ---
-  Widget _buildDetailInfoRow(Color themeColor) {
+  Widget _buildDetailInfoRow(Color themeColor, AppColorsExtension appColors) {
     final info = item.challengeInfo;
     return Row(
       children: [
@@ -111,7 +113,7 @@ class MyChallengeCard extends StatelessWidget {
           ),
         Text(
           '${info.streakCount}일째', // ✅ currentStreak 매핑
-          style: AppTypography.b2.copyWith(color: AppColors.black),
+          style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
         ),
         const SizedBox(width: 12),
         SvgPicture.asset(
@@ -122,7 +124,7 @@ class MyChallengeCard extends StatelessWidget {
         // 예: 3/5명 인증 완료
         Text(
           '${info.successParticipantCount}/${info.participantCount}명',
-          style: AppTypography.b2.copyWith(color: AppColors.black),
+          style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
         ),
       ],
     );
@@ -139,7 +141,11 @@ class MyChallengeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressText(double progress, Color color) {
+  Widget _buildProgressText(
+    double progress,
+    Color color,
+    AppColorsExtension appColors,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -147,18 +153,22 @@ class MyChallengeCard extends StatelessWidget {
           '${progress.toInt()}%',
           style: AppTypography.h2.copyWith(color: color),
         ),
-        Text('달성률', style: AppTypography.c1.copyWith(color: AppColors.gray2)),
+        Text('달성률', style: AppTypography.c1.copyWith(color: appColors.gray2)),
       ],
     );
   }
 
-  Widget _buildGaugeBar(double progress, Color color) {
+  Widget _buildGaugeBar(
+    double progress,
+    Color color,
+    AppColorsExtension appColors,
+  ) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(23),
       child: LinearProgressIndicator(
         value: (progress / 100).clamp(0.0, 1.0),
         minHeight: 4,
-        backgroundColor: AppColors.gray5,
+        backgroundColor: appColors.gray5,
         valueColor: AlwaysStoppedAnimation<Color>(color),
       ),
     );

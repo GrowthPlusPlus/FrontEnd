@@ -19,6 +19,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final homeDataAsync = ref.watch(homeNotifierProvider);
 
     DateTime now = DateTime.now();
@@ -29,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       body: SafeArea(
         child: homeDataAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -130,6 +132,8 @@ class HomeScreen extends ConsumerWidget {
     WidgetRef ref,
     int count,
   ) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -162,7 +166,13 @@ class HomeScreen extends ConsumerWidget {
               }
             }
           },
-          icon: SvgPicture.asset('assets/images/icons/home_notice_icon.svg'),
+          icon: SvgPicture.asset(
+            'assets/images/icons/home_notice_icon.svg',
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
+          ),
         ),
         if (count > 0)
           Positioned(
@@ -170,13 +180,13 @@ class HomeScreen extends ConsumerWidget {
             top: 3,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: AppColors.notification,
+              decoration: BoxDecoration(
+                color: appColors.notification,
                 shape: BoxShape.circle,
               ),
               child: Text(
                 '$count',
-                style: AppTypography.c1.copyWith(color: Colors.white),
+                style: AppTypography.c1.copyWith(color: AppColors.white),
               ),
             ),
           ),
@@ -186,6 +196,14 @@ class HomeScreen extends ConsumerWidget {
 
   // FAB 빌더
   Widget _buildFAB(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+    Color FABColor = Theme.of(context).brightness == Brightness.light
+        ? AppColors.white
+        : appColors.primaryAble;
+    Color FABplusColor = Theme.of(context).brightness == Brightness.light
+        ? appColors.primaryAble
+        : AppColors.black;
+
     return Positioned(
       right: 20,
       bottom: 30,
@@ -196,9 +214,9 @@ class HomeScreen extends ConsumerWidget {
             builder: (context) => const ChallengeCreateScreen(),
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: FABColor,
         shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 32, color: Colors.green),
+        child: Icon(Icons.add, size: 32, color: FABplusColor),
       ),
     );
   }
@@ -217,7 +235,9 @@ class ChallengeListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (challenges.isEmpty) return _buildEmptyState();
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
+    if (challenges.isEmpty) return _buildEmptyState(appColors);
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 100),
@@ -228,14 +248,14 @@ class ChallengeListView extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppColorsExtension appColors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         decoration: BoxDecoration(
-          color: AppColors.gray5,
+          color: appColors.gray5,
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Text(

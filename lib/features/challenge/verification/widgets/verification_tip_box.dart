@@ -9,11 +9,16 @@ class VerificationTipBox extends StatelessWidget {
   const VerificationTipBox({super.key});
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+    Color tipboxYellow = Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFFFF4D1)
+        : const Color(0xFF575046);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: const Color(0xFFFFF4D1),
+        color: tipboxYellow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Row(
@@ -38,7 +43,7 @@ class VerificationTipBox extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '• 날짜/시간이 보이는 사진이 더 좋아요.\n• 구체적인 내용을 작성하면 동기부여에 도움이 됩니다.\n• 긍정적인 에너지를 공유해보세요!',
-                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  style: AppTypography.c1.copyWith(color: appColors.gray2),
                 ),
               ],
             ),

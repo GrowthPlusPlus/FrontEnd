@@ -18,6 +18,8 @@ class ChallengeFrequencyBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 선택지 리스트 정의
     final items = ["매일", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회"];
 
@@ -40,13 +42,15 @@ class ChallengeFrequencyBottomSheet extends StatelessWidget {
               width: double.infinity,
               height: 54,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.selected : Colors.transparent,
+                color: isSelected ? appColors.selected : Colors.transparent,
               ),
               alignment: Alignment.center,
               child: Text(
                 item,
                 style: AppTypography.b1.copyWith(
-                  color: isSelected ? AppColors.primaryAble : AppColors.black,
+                  color: isSelected
+                      ? appColors.primaryAble
+                      : appColors.blackToWhite,
                 ),
               ),
             ),

@@ -13,23 +13,31 @@ class MemberRankingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 1. 프로바이더 구독 (API 호출 및 상태 관리)
     final rankingAsync = ref.watch(
       challengeRankingNotifierProvider(challengeId),
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         leading: IconButton(
-          icon: SvgPicture.asset('assets/images/icons/arrow_left.svg'),
+          icon: SvgPicture.asset(
+            'assets/images/icons/arrow_left.svg',
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           '멤버 순위',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),
@@ -49,20 +57,23 @@ class MemberRankingScreen extends ConsumerWidget {
               child: Stack(
                 children: [
                   ListView(), // RefreshIndicator를 동작하게 하기 위한 빈 리스트뷰
-                  const Center(
+                  Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.leaderboard_outlined,
                           size: 64,
-                          color: Colors.grey,
+                          color: appColors.gray2,
                         ),
                         SizedBox(height: 16),
                         Text(
                           '아직 랭킹 데이터가 없어요!\n첫 번째로 인증을 완료해 보세요.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          style: TextStyle(
+                            color: appColors.gray2,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
@@ -87,6 +98,7 @@ class MemberRankingScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final user = rankingData.topRankings[index];
                       return _buildRankingItem(
+                        appColors,
                         rank: user.rank,
                         userName: user.nickname,
                         profileImageUrl: user.profileImageUrl,
@@ -107,7 +119,8 @@ class MemberRankingScreen extends ConsumerWidget {
   }
 
   // 랭킹 아이템 리스트 위젯
-  Widget _buildRankingItem({
+  Widget _buildRankingItem(
+    AppColorsExtension appColors, {
     required int rank,
     required String userName,
     required String? profileImageUrl,
@@ -123,10 +136,10 @@ class MemberRankingScreen extends ConsumerWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: isMe ? AppColors.selected : Colors.white,
+        color: isMe ? appColors.selected : appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isMe ? AppColors.primaryAble : AppColors.gray4,
+          color: isMe ? appColors.primaryAble : appColors.gray4,
           width: 1,
         ),
         boxShadow: [
@@ -139,16 +152,16 @@ class MemberRankingScreen extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          SizedBox(width: 28, child: _buildRankBadge(rank)),
+          SizedBox(width: 28, child: _buildRankBadge(rank, appColors)),
           const SizedBox(width: 13),
-          _buildProfileImage(profileImageUrl, isMe: isMe),
+          _buildProfileImage(profileImageUrl, appColors, isMe: isMe),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               userName,
               style: TextStyle(
                 fontSize: 15,
-                color: isMe ? AppColors.primaryAble : Colors.black,
+                color: isMe ? appColors.primaryAble : appColors.blackToWhite,
               ),
             ),
           ),
@@ -156,13 +169,15 @@ class MemberRankingScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _buildStatInfo(
+                appColors,
                 svgAsset: 'assets/images/icons/mini_success_icon.svg',
                 value: totalCount,
-                color: AppColors.primaryAble,
+                color: appColors.primaryAble,
                 isActive: totalCount > 0,
               ),
               const SizedBox(height: 6),
               _buildStatInfo(
+                appColors,
                 svgAsset: 'assets/images/icons/small_fire_icon.svg',
                 value: streakCount,
                 color: AppColors.fire,
@@ -176,7 +191,11 @@ class MemberRankingScreen extends ConsumerWidget {
   }
 
   // 헬퍼 메서드들
-  Widget _buildProfileImage(String? url, {required bool isMe}) {
+  Widget _buildProfileImage(
+    String? url,
+    AppColorsExtension appColors, {
+    required bool isMe,
+  }) {
     // isMe 여부에 따라 사이즈 결정
     final double size = isMe ? 50 : 40;
 
@@ -188,7 +207,7 @@ class MemberRankingScreen extends ConsumerWidget {
         color: Colors.grey[200],
         // 내 순위일 때만 테두리 적용
         border: Border.all(
-          color: isMe ? AppColors.disable : Colors.transparent,
+          color: isMe ? appColors.disable : Colors.transparent,
           width: isMe ? 1 : 0,
         ),
       ),
@@ -228,13 +247,13 @@ class MemberRankingScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRankBadge(int rank) {
+  Widget _buildRankBadge(int rank, AppColorsExtension appColors) {
     if (rank <= 3)
       return SvgPicture.asset(_getMedalSvg(rank), width: 30, height: 30);
 
     return Text(
       rank.toString(),
-      style: AppTypography.b3.copyWith(color: AppColors.gray2),
+      style: AppTypography.b3.copyWith(color: appColors.gray2),
       textAlign: TextAlign.center,
     );
   }
@@ -252,7 +271,8 @@ class MemberRankingScreen extends ConsumerWidget {
     }
   }
 
-  Widget _buildStatInfo({
+  Widget _buildStatInfo(
+    AppColorsExtension appColors, {
     required String svgAsset,
     required int value,
     required Color color,
@@ -266,7 +286,7 @@ class MemberRankingScreen extends ConsumerWidget {
           width: 20,
           height: 20,
           colorFilter: ColorFilter.mode(
-            isActive ? color : AppColors.gray4,
+            isActive ? color : appColors.gray4,
             BlendMode.srcIn,
           ),
         ),
@@ -276,7 +296,7 @@ class MemberRankingScreen extends ConsumerWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: isActive ? color : AppColors.gray4,
+            color: isActive ? color : appColors.gray4,
           ),
         ),
       ],

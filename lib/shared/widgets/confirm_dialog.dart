@@ -22,9 +22,11 @@ class ConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
         child: Column(
@@ -34,12 +36,12 @@ class ConfirmDialog extends StatelessWidget {
             if (title != null) ...[
               Text(
                 title!,
-                style: AppTypography.h2.copyWith(color: AppColors.black),
+                style: AppTypography.h2.copyWith(color: appColors.blackToWhite),
               ),
             ],
             Text(
               content,
-              style: AppTypography.b3.copyWith(color: AppColors.gray1),
+              style: AppTypography.b3.copyWith(color: appColors.gray1),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 36),
@@ -53,14 +55,14 @@ class ConfirmDialog extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryAble, // 해냄 메인 활성화 색상
+                  color: appColors.primaryAble, // 해냄 메인 활성화 색상
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
                   child: Text(
                     buttonText,
                     style: AppTypography.b1.copyWith(
-                      color: Colors.white,
+                      color: appColors.whiteToBlack,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

@@ -42,6 +42,8 @@ class _TagScreenState extends ConsumerState<TagScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final signupState = ref.watch(signupProvider);
     final categorizedTags = signupState.categorizedTags;
     final selectedTags = signupState.tags;
@@ -91,7 +93,7 @@ class _TagScreenState extends ConsumerState<TagScreen> {
                       Text(
                         TagMapper.getKoreanCategory(categoryKey),
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.black,
+                          color: appColors.blackToWhite,
                         ),
                       ),
                       const SizedBox(height: 12),

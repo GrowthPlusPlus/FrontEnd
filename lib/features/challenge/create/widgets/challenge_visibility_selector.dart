@@ -18,6 +18,8 @@ class ChallengeVisibilitySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -46,7 +48,7 @@ class ChallengeVisibilitySelector extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           '비공개, 친구 공개 시 챌린지 검색에서 제외됩니다.',
-          style: AppTypography.c1.copyWith(color: AppColors.gray2),
+          style: AppTypography.c1.copyWith(color: appColors.gray2),
         ),
       ],
     );

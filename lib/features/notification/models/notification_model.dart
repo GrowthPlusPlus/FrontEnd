@@ -19,7 +19,7 @@ class NotificationModel {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     // 백엔드에서 빈 문자열("")이 오면 null로 변환하는 안전 장치
-    String? rawImageUrl = json['imageUrl'];
+    String? rawImageUrl = json['profileImageUrl'];
     if (rawImageUrl != null && rawImageUrl.trim().isEmpty) {
       rawImageUrl = null;
     }

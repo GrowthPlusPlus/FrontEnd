@@ -34,16 +34,18 @@ class _NotificationMainScreenState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
+          icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('알림', style: AppTypography.h3),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),

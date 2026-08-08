@@ -7,6 +7,7 @@ import '../providers/signup_provider.dart';
 import '../widgets/emoji_firework_widget.dart';
 import 'package:haenaem/features/auth/signup/widgets/signup_progress.bar.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
+import 'package:haenaem/core/theme/app_colors.dart';
 
 // 회원가입 4단계를 모두 끝낸 후 띄우는 가입 성공 화면
 class SignupSuccessScreen extends ConsumerStatefulWidget {
@@ -77,7 +78,7 @@ class _SignupSuccessScreenState extends ConsumerState<SignupSuccessScreen> {
                     alignment: Alignment.center,
                     child: Text(
                       '회원가입',
-                      style: AppTypography.h3.copyWith(color: Colors.white),
+                      style: AppTypography.h3.copyWith(color: AppColors.white),
                     ),
                   ),
                   // 진행률 바 배치
@@ -86,8 +87,8 @@ class _SignupSuccessScreenState extends ConsumerState<SignupSuccessScreen> {
                     child: SignupProgressBar(
                       currentStep: 5,
                       totalSteps: 5,
-                      activeColor: Colors.white,
-                      inactiveColor: Colors.white,
+                      activeColor: AppColors.white,
+                      inactiveColor: AppColors.white,
                     ),
                   ),
 
@@ -106,14 +107,14 @@ class _SignupSuccessScreenState extends ConsumerState<SignupSuccessScreen> {
                           Text(
                             '가입을 해냈어요! 🎉\n당신의 첫 번째 성취를 축하합니다.',
                             style: AppTypography.h2.copyWith(
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                           const SizedBox(height: 10),
                           Text(
                             '멋진 챌린지들이 기다리고 있어요.\n함께 해낼 준비 됐나요?',
                             style: AppTypography.h3.copyWith(
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                         ],
@@ -145,7 +146,9 @@ class _SignupSuccessScreenState extends ConsumerState<SignupSuccessScreen> {
 
                         child: Text(
                           '시작하기',
-                          style: AppTypography.h3.copyWith(color: Colors.white),
+                          style: AppTypography.h3.copyWith(
+                            color: AppColors.white,
+                          ),
                         ),
                       ),
                     ),

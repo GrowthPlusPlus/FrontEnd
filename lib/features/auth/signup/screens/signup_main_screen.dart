@@ -70,6 +70,8 @@ class _SignupMainScreenState extends ConsumerState<SignupMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final bool isSuccessStep = _currentStep == _totalSteps;
     final bool isLoading = ref.watch(signupProvider).isLoading;
 
@@ -82,8 +84,8 @@ class _SignupMainScreenState extends ConsumerState<SignupMainScreen> {
       child: Stack(
         children: [
           Scaffold(
-            backgroundColor: isSuccessStep ? null : Colors.white,
-            appBar: _buildAppBar(isSuccessStep),
+            backgroundColor: isSuccessStep ? null : appColors.whiteToBlack,
+            appBar: _buildAppBar(isSuccessStep, appColors),
             body: Column(
               children: [
                 if (!isSuccessStep) _buildProgressBar(),
@@ -106,18 +108,21 @@ class _SignupMainScreenState extends ConsumerState<SignupMainScreen> {
   }
 
   // 상단 앱바 구성
-  PreferredSizeWidget? _buildAppBar(bool isSuccessStep) {
+  PreferredSizeWidget? _buildAppBar(
+    bool isSuccessStep,
+    AppColorsExtension appColors,
+  ) {
     if (isSuccessStep) return null;
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColors.black),
+        icon: Icon(Icons.arrow_back, color: appColors.blackToWhite),
         onPressed: _prevPage,
       ),
       title: Text(
         '회원가입',
-        style: AppTypography.h3.copyWith(color: AppColors.black),
+        style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
       ),
       centerTitle: true,
     );

@@ -1,6 +1,7 @@
 // 최초 작성자 : 김채영
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:haenaem/app.dart';
 import 'package:haenaem/core/utils/image_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -25,7 +26,8 @@ import '../widgets/verification_info_box.dart';
 import '../widgets/ai_success_box.dart';
 import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
-import '../widgets/verification_submit_button.dart';
+// import '../widgets/verification_submit_button.dart';
+import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 import 'package:haenaem/features/user/provider/user_provider.dart';
@@ -241,7 +243,7 @@ class _ChallengeVerificationScreenState
   }
 
   // 사진 업로드/미리보기
-  Widget _buildPhotoUploadBox() {
+  Widget _buildPhotoUploadBox(AppColorsExtension appColors) {
     return SizedBox(
       height: 100,
       child: ListView.builder(
@@ -252,7 +254,7 @@ class _ChallengeVerificationScreenState
           if (index < _newImages.length) {
             return _buildImagePreview(index);
           } else {
-            return _buildAddPhotoButton();
+            return _buildAddPhotoButton(appColors);
           }
         },
       ),
@@ -260,16 +262,16 @@ class _ChallengeVerificationScreenState
   }
 
   // 사진 추가 버튼 (+)
-  Widget _buildAddPhotoButton() {
+  Widget _buildAddPhotoButton(AppColorsExtension appColors) {
     return GestureDetector(
       onTap: _showImageSourceSheet,
       child: Container(
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors.whiteToBlack,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.gray3, width: 1.08),
+          border: Border.all(color: appColors.gray3, width: 1.08),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -278,15 +280,12 @@ class _ChallengeVerificationScreenState
               'assets/images/icons/plus.svg',
               width: 24,
               height: 24,
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray3,
-                BlendMode.srcIn,
-              ),
+              colorFilter: ColorFilter.mode(appColors.gray3, BlendMode.srcIn),
             ),
             const SizedBox(height: 2),
             Text(
               '사진 추가',
-              style: AppTypography.c1.copyWith(color: AppColors.gray3),
+              style: AppTypography.c1.copyWith(color: appColors.gray3),
             ),
           ],
         ),
@@ -338,7 +337,7 @@ class _ChallengeVerificationScreenState
   }
 
   // 입력창 하단 정보 영역
-  Widget _buildInputFooter() {
+  Widget _buildInputFooter(AppColorsExtension appColors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -355,7 +354,7 @@ class _ChallengeVerificationScreenState
                   top: -3.19,
                   child: Text(
                     '챌린지 목표 달성을 자유롭게 표현해주세요',
-                    style: AppTypography.c1.copyWith(color: AppColors.gray3),
+                    style: AppTypography.c1.copyWith(color: appColors.gray3),
                   ),
                 ),
               ],
@@ -366,7 +365,7 @@ class _ChallengeVerificationScreenState
             child: Text(
               '${_contentController.text.length}/500',
               textAlign: TextAlign.right,
-              style: AppTypography.c1.copyWith(color: AppColors.gray3),
+              style: AppTypography.c1.copyWith(color: appColors.gray3),
             ),
           ),
         ],
@@ -375,7 +374,11 @@ class _ChallengeVerificationScreenState
   }
 
   // 인증 사진 옆 사진 개수
-  Widget _buildDynamicLabel(String label, int count) {
+  Widget _buildDynamicLabel(
+    String label,
+    int count,
+    AppColorsExtension appColors,
+  ) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8), // 아래 박스와의 간격
@@ -384,11 +387,14 @@ class _ChallengeVerificationScreenState
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTypography.b3.copyWith(color: AppColors.black)),
+          Text(
+            label,
+            style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
+          ),
           const SizedBox(width: 4),
           Text(
             '($count)',
-            style: AppTypography.b1.copyWith(color: AppColors.primaryAble),
+            style: AppTypography.b1.copyWith(color: appColors.primaryAble),
           ),
         ],
       ),
@@ -570,7 +576,7 @@ class _ChallengeVerificationScreenState
   }
 
   // 기존 이미지 리스트 UI (수정 모드일 때만 호출)
-  Widget _buildExistingImagesList() {
+  Widget _buildExistingImagesList(AppColorsExtension appColors) {
     // articleImageUrl이 String 리스트이므로 인덱스로 관리하거나 ID가 필요함
     // 만약 post.images 객체 리스트가 있다면 ID 추출이 가능합니다.
     return Column(
@@ -579,6 +585,7 @@ class _ChallengeVerificationScreenState
         _buildDynamicLabel(
           '기존 인증 사진',
           _existingImages.length - _imageIdsToDelete.length,
+          appColors,
         ),
         SizedBox(
           height: 100,
@@ -637,7 +644,7 @@ class _ChallengeVerificationScreenState
   }
 
   // 인증글 공통 팝업 호출 로직 (작성 취소할 경우, 수정 취소할 경우)
-  void _handleBackAction() async {
+  void _handleBackAction(AppColorsExtension appColors) async {
     final bool? shouldExit = await showDialog<bool>(
       context: context,
       barrierColor: const Color(0x7F1A1D1B),
@@ -647,7 +654,7 @@ class _ChallengeVerificationScreenState
             ? '지금 나가면 수정 중인 내용은\n저장되지 않고 모두 삭제됩니다.'
             : '지금 나가면 작성 중인 내용은\n저장되지 않고 모두 삭제됩니다.',
         confirmText: isEditMode ? '수정 취소' : '작성 취소',
-        confirmTextColor: AppColors.notification,
+        confirmTextColor: appColors.notification,
         onConfirm: () {
           Navigator.pop(context);
         },
@@ -667,31 +674,37 @@ class _ChallengeVerificationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        _handleBackAction();
+        _handleBackAction(appColors);
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         appBar: AppBar(
           leading: IconButton(
-            onPressed: _handleBackAction,
+            onPressed: () => _handleBackAction(appColors),
             icon: SvgPicture.asset(
               'assets/images/icons/arrow_left.svg',
               width: 24,
               height: 24,
+              colorFilter: ColorFilter.mode(
+                appColors.blackToWhite,
+                BlendMode.srcIn,
+              ),
             ),
           ),
           title: Text(
             isEditMode ? '인증글 수정' : '챌린지 인증하기',
-            style: AppTypography.h3.copyWith(color: AppColors.black),
+            style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
           ),
           centerTitle: true,
           scrolledUnderElevation: 0,
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: appColors.whiteToBlack,
         ),
         body: Column(
           children: [
@@ -706,12 +719,15 @@ class _ChallengeVerificationScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (isEditMode && _existingImages.isNotEmpty)
-                      _buildExistingImagesList(),
+                      _buildExistingImagesList(
+                        appColors,
+                      ), // 기존 이미지 리스트 UI (수정 모드 전용)
                     _buildDynamicLabel(
                       isEditMode ? '새 사진 추가' : '인증 사진',
                       _newImages.length,
+                      appColors,
                     ),
-                    _buildPhotoUploadBox(), // 헬퍼 함수 호출
+                    _buildPhotoUploadBox(appColors), // 헬퍼 함수 호출
                     const SizedBox(height: 8),
 
                     // 검증 상태에 따른 박스 로직
@@ -726,7 +742,7 @@ class _ChallengeVerificationScreenState
                       height: 176,
                     ),
                     const SizedBox(height: 8),
-                    _buildInputFooter(), // 헬퍼 함수 호출
+                    _buildInputFooter(appColors), // 헬퍼 함수 호출
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -735,9 +751,8 @@ class _ChallengeVerificationScreenState
           ],
         ),
         // 하단 버튼 통합
-        bottomNavigationBar: VerificationSubmitButton(
-          label: isEditMode ? '수정하기' : '인증하기',
-          showShadow: _showShadow,
+        bottomNavigationBar: BottomActionButton(
+          text: isEditMode ? '수정하기' : '인증하기',
           onPressed: _isFormValid ? _onSave : null,
         ),
       ),

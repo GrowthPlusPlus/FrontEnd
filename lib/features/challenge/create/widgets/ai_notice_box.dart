@@ -13,13 +13,15 @@ class AiNoticeBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gray4, width: 0.75),
+        border: Border.all(color: appColors.gray4, width: 0.75),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start, // 아이콘이 문구 상단에 맞게 정렬
@@ -28,10 +30,7 @@ class AiNoticeBox extends StatelessWidget {
             'assets/images/icons/ai_notice.svg',
             width: 20,
             height: 20,
-            colorFilter: const ColorFilter.mode(
-              AppColors.gray1,
-              BlendMode.srcIn,
-            ),
+            colorFilter: ColorFilter.mode(appColors.gray1, BlendMode.srcIn),
           ),
           const SizedBox(width: 5),
           Expanded(
@@ -40,14 +39,14 @@ class AiNoticeBox extends StatelessWidget {
               children: [
                 Text(
                   '정확한 인증을 위해 AI 검증 단계를 거치게 됩니다.\n환경에 따라 인식이 지연되거나 재촬영이 필요할 수 있습니다.',
-                  style: AppTypography.c1.copyWith(color: AppColors.gray1),
+                  style: AppTypography.c1.copyWith(color: appColors.gray1),
                 ),
                 if (autoVerifiable == false) ...[
                   const SizedBox(height: 4),
                   Text(
                     '현재 입력한 챌린지 이름은 AI가 자동으로 판별하기 어려운 주제예요. 인증 시 지연되거나 재촬영이 필요할 가능성이 높아요.',
                     style: AppTypography.c1.copyWith(
-                      color: AppColors.primaryAble,
+                      color: appColors.primaryAble,
                     ),
                   ),
                 ],

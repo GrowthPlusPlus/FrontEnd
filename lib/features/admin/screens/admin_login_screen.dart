@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
+import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import '../data/admin_auth_repository.dart';
 import 'admin_main_screen.dart';
 import 'admin_signup_screen.dart';
@@ -191,36 +192,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 const SizedBox(height: 32),
 
                 // 로그인 버튼
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryAble,
-                      disabledBackgroundColor: AppColors.primaryAble
-                          .withOpacity(0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            '로그인',
-                            style: AppTypography.b1.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
+                BottomActionButton(
+                  text: '로그인',
+                  showContainerDecoration:
+                      false, // 폼 내부 배치를 위해 패딩/그라데이션 컨테이너 제거
+                  onPressed: _isLoading ? null : () => _login(),
                 ),
 
                 const SizedBox(height: 16),
@@ -238,7 +214,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                     },
                     child: Text(
                       '회원가입',
-                      style: AppTypography.b2.copyWith(
+                      style: AppTypography.b1.copyWith(
                         color: AppColors.primaryAble,
                       ),
                     ),

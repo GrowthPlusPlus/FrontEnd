@@ -12,10 +12,11 @@ class SentRequestView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     final sentRequestsAsync = ref.watch(sentRequestsProvider);
 
     return Container(
-      color: const Color(0x7FDFE1DC),
+      color: appColors.gray5,
       child: sentRequestsAsync.when(
         data: (requests) {
           if (requests.isEmpty) {
@@ -24,7 +25,7 @@ class SentRequestView extends ConsumerWidget {
             );
           }
           return RefreshIndicator(
-            color: AppColors.primaryAble,
+            color: appColors.primaryAble,
             onRefresh: () async {
               // 새로고침 시 Provider의 Future를 다시 호출하여 최신 데이터 가져오기
               return await ref.refresh(sentRequestsProvider.future);

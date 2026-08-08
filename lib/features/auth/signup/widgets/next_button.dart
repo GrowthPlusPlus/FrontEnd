@@ -18,8 +18,10 @@ class NextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Material(
-      color: isEnabled ? AppColors.primaryAble : AppColors.disable,
+      color: isEnabled ? appColors.primaryAble : appColors.disable,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: isEnabled ? onPressed : null,
@@ -30,7 +32,7 @@ class NextButton extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             text,
-            style: AppTypography.h3.copyWith(color: Colors.white),
+            style: AppTypography.h3.copyWith(color: appColors.whiteToBlack),
           ),
         ),
       ),

@@ -17,12 +17,14 @@ class ProfileImageMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 1, color: AppColors.gray4),
+          side: BorderSide(width: 1, color: appColors.gray4),
           borderRadius: BorderRadius.circular(10),
         ),
         shadows: const [
@@ -45,6 +47,7 @@ class ProfileImageMenu extends StatelessWidget {
         children: [
           // 1. 프로필 사진 변경 버튼
           _buildMenuOption(
+            appColors,
             iconPath: 'assets/images/icons/edit_icon.svg', // 예시 아이콘 경로
             label: '프로필 사진 변경',
             onTap: onChangePressed,
@@ -52,6 +55,7 @@ class ProfileImageMenu extends StatelessWidget {
           ),
           // 2. 프로필 사진 삭제 버튼
           _buildMenuOption(
+            appColors,
             iconPath: 'assets/images/icons/small_trash_icon.svg', // 예시 아이콘 경로
             label: '프로필 사진 삭제',
             onTap: onDeletePressed,
@@ -62,7 +66,8 @@ class ProfileImageMenu extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuOption({
+  Widget _buildMenuOption(
+    AppColorsExtension appColors, {
     required String iconPath,
     required String label,
     required VoidCallback onTap,
@@ -75,9 +80,7 @@ class ProfileImageMenu extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           border: showBorder
-              ? const Border(
-                  bottom: BorderSide(width: 1, color: AppColors.gray4),
-                )
+              ? Border(bottom: BorderSide(width: 1, color: appColors.gray4))
               : null,
         ),
         child: Row(
@@ -89,8 +92,8 @@ class ProfileImageMenu extends StatelessWidget {
               height: 16,
               child: SvgPicture.asset(
                 iconPath,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.black,
+                colorFilter: ColorFilter.mode(
+                  appColors.blackToWhite,
                   BlendMode.srcIn,
                 ),
               ),
@@ -99,7 +102,7 @@ class ProfileImageMenu extends StatelessWidget {
             // 텍스트 영역
             Text(
               label,
-              style: AppTypography.b2.copyWith(color: AppColors.black),
+              style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
             ),
           ],
         ),

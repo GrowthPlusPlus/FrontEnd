@@ -32,12 +32,13 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 새로운 Provider 구독
     final friendListAsync = ref.watch(friendListProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(context),
+      backgroundColor: appColors.whiteToBlack,
+      appBar: _buildAppBar(context, appColors),
       body: Column(
         children: [
           _buildSearchBar(),
@@ -64,10 +65,14 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildListHeader(filteredFriends.length, totalFriends),
+                    _buildListHeader(
+                      filteredFriends.length,
+                      totalFriends,
+                      appColors,
+                    ),
                     Expanded(
                       child: RefreshIndicator(
-                        color: AppColors.primaryAble,
+                        color: appColors.primaryAble,
                         onRefresh: () async {
                           // 스크롤을 당기면 데이터를 강제로 다시 불러옵니다.
                           return await ref.refresh(friendListProvider.future);
@@ -92,15 +97,24 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
   }
 
   // AppBar 위젯을 별도의 메서드로 분리
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    AppColorsExtension appColors,
+  ) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       elevation: 0,
       centerTitle: true,
       title: const Text('친구', style: AppTypography.h3),
       actions: [
         IconButton(
-          icon: SvgPicture.asset('assets/images/icons/friend_add_icon.svg'),
+          icon: SvgPicture.asset(
+            'assets/images/icons/friend_add_icon.svg',
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
+          ),
           onPressed: () async {
             // await를 사용하여 FriendAddScreen이 닫힐 때까지 기다림
             await Navigator.push(
@@ -131,7 +145,11 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
   }
 
   // 친구 목록 헤더 위젯
-  Widget _buildListHeader(int count, List<User> totalFriends) {
+  Widget _buildListHeader(
+    int count,
+    List<User> totalFriends,
+    AppColorsExtension appColors,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
@@ -156,7 +174,7 @@ class _SocialMainScreenState extends ConsumerState<SocialMainScreen> {
             },
             child: Text(
               '편집',
-              style: AppTypography.c1.copyWith(color: AppColors.gray2),
+              style: AppTypography.c1.copyWith(color: appColors.gray2),
             ),
           ),
         ],

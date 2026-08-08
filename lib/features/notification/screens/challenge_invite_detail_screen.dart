@@ -30,15 +30,16 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     // 💡 기존 InformationView에서 쓰던 Provider를 똑같이 사용하여 상세 데이터를 불러옵니다.
     final challengeAsync = ref.watch(
       challengeDetailProvider(challengeId: challengeId),
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -46,14 +47,18 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg', // 기존 앱바 아이콘 통일
             width: 24,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
+              BlendMode.srcIn,
+            ),
           ),
         ),
         title: const Text('챌린지 상세정보', style: AppTypography.h3),
         centerTitle: true,
       ),
       body: challengeAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryAble),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: appColors.primaryAble),
         ),
         error: (error, stack) {
           // 에러 메시지에 404 또는 NOT_FOUND가 포함되어 있는지 확인합니다.
@@ -68,7 +73,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
                   ? '이미 삭제되었거나\n존재하지 않는 챌린지입니다.'
                   : '데이터를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
               textAlign: TextAlign.center,
-              style: AppTypography.b1.copyWith(color: AppColors.gray2),
+              style: AppTypography.b1.copyWith(color: appColors.gray2),
             ),
           );
         },
@@ -84,7 +89,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Text(
                     '$inviterName님의 초대',
-                    style: AppTypography.b1.copyWith(color: AppColors.gray2),
+                    style: AppTypography.b1.copyWith(color: appColors.gray2),
                   ),
                 ],
               ),
@@ -107,8 +112,8 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
         // 데이터 로드 성공 시에만 버튼 표시
         data: (challenge) => BottomActionButton(
           text: '초대 수락하기',
-          backgroundColor: AppColors.primaryAble,
-          textColor: Colors.white,
+          backgroundColor: appColors.primaryAble,
+          textColor: appColors.whiteToBlack,
           onPressed: () async {
             // 💡 1. 다이얼로그에 넘겨줄 챌린지 제목을 가져옵니다.
             final challenge = ref

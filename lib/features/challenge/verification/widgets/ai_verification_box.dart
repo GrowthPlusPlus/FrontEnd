@@ -10,22 +10,24 @@ class AiVerificationBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: AppColors.gray5,
+        color: appColors.gray5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2, // 원의 선 두께
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.gray2),
+              valueColor: AlwaysStoppedAnimation<Color>(appColors.gray2),
             ),
           ),
           const SizedBox(width: 10),
@@ -36,11 +38,11 @@ class AiVerificationBox extends StatelessWidget {
               children: [
                 Text(
                   'AI가 사진을 검증 중입니다...',
-                  style: AppTypography.b2.copyWith(color: AppColors.gray1),
+                  style: AppTypography.b2.copyWith(color: appColors.gray1),
                 ),
                 Text(
                   '챌린지 내용과 적합한지 확인하고 있어요',
-                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  style: AppTypography.c1.copyWith(color: appColors.gray2),
                 ),
               ],
             ),

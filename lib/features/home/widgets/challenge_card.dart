@@ -12,14 +12,16 @@ class ChallengeCard extends StatelessWidget {
 
   const ChallengeCard({super.key, required this.challenge});
 
-  Color get _cardColor {
-    if (challenge.isDone) return AppColors.success;
-    if (challenge.warning) return AppColors.warning;
-    return AppColors.gray5;
+  Color _getCardColor(AppColorsExtension appColors) {
+    if (challenge.isDone) return appColors.success;
+    if (challenge.warning) return appColors.warning;
+    return appColors.gray5;
   }
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -38,7 +40,7 @@ class ChallengeCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: _cardColor,
+            color: _getCardColor(appColors),
             borderRadius: BorderRadius.circular(12),
           ),
           child: IntrinsicHeight(
@@ -62,12 +64,12 @@ class ChallengeCard extends StatelessWidget {
 
                       if (challenge.warning) ...[
                         const SizedBox(height: 4),
-                        _buildWarningText(),
+                        _buildWarningText(appColors),
                       ],
                     ],
                   ),
                 ),
-                _buildDivider(),
+                _buildDivider(appColors),
                 SizedBox(width: 44, child: Center(child: _buildStatusIcon())),
               ],
             ),
@@ -121,20 +123,20 @@ class ChallengeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildWarningText() {
-    return const Text(
+  Widget _buildWarningText(AppColorsExtension appColors) {
+    return Text(
       '오늘 챌린지를 하지 않으면 실패해요!',
-      style: TextStyle(color: AppColors.notification, fontSize: 12),
+      style: TextStyle(color: appColors.notification, fontSize: 12),
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(AppColorsExtension appColors) {
     return SizedBox(
       width: 40,
       child: Center(
         child: CustomPaint(
           size: const Size(1, double.infinity),
-          painter: VerticalDashPainter(),
+          painter: VerticalDashPainter(color: appColors.gray3),
         ),
       ),
     );
@@ -150,14 +152,18 @@ class ChallengeCard extends StatelessWidget {
 }
 
 class VerticalDashPainter extends CustomPainter {
+  final Color color;
+
+  VerticalDashPainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     double dashHeight = 5, dashSpace = 3, startY = 0;
     // 캔버스의 중앙 X축 계산
     final double centerX = size.width / 2;
     final paint = Paint()
-      ..color = AppColors
-          .gray3 // 점선 색상 농도 조절
+      ..color =
+          color // 점선 색상 농도 조절
       ..strokeWidth = 1;
 
     while (startY < size.height) {

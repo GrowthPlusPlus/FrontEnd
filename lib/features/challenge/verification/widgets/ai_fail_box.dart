@@ -10,11 +10,13 @@ class AiFailBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: AppColors.warning,
+        color: appColors.warning,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Row(
@@ -24,6 +26,10 @@ class AiFailBox extends StatelessWidget {
             'assets/images/icons/warning.svg',
             width: 24,
             height: 24,
+            colorFilter: ColorFilter.mode(
+              appColors.notification,
+              BlendMode.srcIn,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -34,12 +40,12 @@ class AiFailBox extends StatelessWidget {
                 Text(
                   '챌린지에 맞는 사진인지 확인해 주세요!',
                   style: AppTypography.b2.copyWith(
-                    color: AppColors.notification,
+                    color: appColors.notification,
                   ),
                 ),
                 Text(
                   '다른 사진으로 다시 시도해주세요.',
-                  style: AppTypography.c1.copyWith(color: AppColors.gray2),
+                  style: AppTypography.c1.copyWith(color: appColors.gray2),
                 ),
               ],
             ),

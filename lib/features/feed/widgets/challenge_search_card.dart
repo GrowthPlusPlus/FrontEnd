@@ -13,11 +13,13 @@ class ChallengeSearchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.fromLTRB(16, 10, 0, 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -37,7 +39,9 @@ class ChallengeSearchCard extends StatelessWidget {
                   // 챌린지 제목
                   Text(
                     challenge.base.title,
-                    style: AppTypography.b3.copyWith(color: AppColors.black),
+                    style: AppTypography.b3.copyWith(
+                      color: appColors.blackToWhite,
+                    ),
                   ),
                   const SizedBox(height: 10),
 
@@ -45,6 +49,7 @@ class ChallengeSearchCard extends StatelessWidget {
                   Row(
                     children: [
                       _buildInfoItem(
+                        appColors,
                         iconPath: 'assets/images/icons/person_icon.svg',
                         text: '${challenge.participantCount}명/50명',
                       ),
@@ -53,7 +58,7 @@ class ChallengeSearchCard extends StatelessWidget {
                       Text(
                         '완료까지 D-${challenge.dDay}',
                         style: AppTypography.b2.copyWith(
-                          color: AppColors.gray2,
+                          color: appColors.gray2,
                         ),
                       ),
                     ],
@@ -94,10 +99,7 @@ class ChallengeSearchCard extends StatelessWidget {
               },
               icon: SvgPicture.asset(
                 'assets/images/icons/thick_right_arrow_icon.svg',
-                colorFilter: const ColorFilter.mode(
-                  AppColors.gray2,
-                  BlendMode.srcIn,
-                ),
+                colorFilter: ColorFilter.mode(appColors.gray2, BlendMode.srcIn),
               ),
             ),
           ],
@@ -107,17 +109,21 @@ class ChallengeSearchCard extends StatelessWidget {
   }
 
   // 정보 아이템(인원수 등) 위젯
-  Widget _buildInfoItem({required String iconPath, required String text}) {
+  Widget _buildInfoItem(
+    AppColorsExtension appColors, {
+    required String iconPath,
+    required String text,
+  }) {
     return Row(
       children: [
         SvgPicture.asset(
           iconPath,
           width: 18,
           height: 18,
-          colorFilter: const ColorFilter.mode(AppColors.gray2, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(appColors.gray2, BlendMode.srcIn),
         ),
         const SizedBox(width: 2),
-        Text(text, style: AppTypography.b2.copyWith(color: AppColors.gray2)),
+        Text(text, style: AppTypography.b2.copyWith(color: appColors.gray2)),
       ],
     );
   }

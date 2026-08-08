@@ -31,18 +31,21 @@ class CommentPopupMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return PopupMenuButton<String>(
-      icon: SvgPicture.asset(
+      child: SvgPicture.asset(
         'assets/images/icons/dots_vert_icon.svg',
         width: 24,
         height: 24,
+        colorFilter: ColorFilter.mode(appColors.gray3, BlendMode.srcIn),
       ),
       offset: const Offset(0, 40),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: AppColors.gray4, width: 1),
+        side: BorderSide(color: appColors.gray4, width: 1),
       ),
-      color: Colors.white,
+      color: appColors.whiteToBlack,
       itemBuilder: (context) {
         // 내 댓글인 경우 : 수정/삭제
         if (comment.isMine) {
@@ -51,12 +54,14 @@ class CommentPopupMenu extends ConsumerWidget {
               '수정하기',
               'assets/images/icons/edit_icon.svg',
               'edit',
+              appColors,
             ),
             const PopupMenuDivider(height: 1),
             _buildPopupItem(
               '삭제하기',
               'assets/images/icons/small_trash_icon.svg',
               'delete',
+              appColors,
               isDanger: true,
             ),
           ];
@@ -68,22 +73,27 @@ class CommentPopupMenu extends ConsumerWidget {
               '신고하기',
               'assets/images/icons/complaint.svg',
               'report',
+              appColors,
               isDanger: true,
             ),
           ];
         }
       },
-      onSelected: (value) => _handleMenuSelection(context, ref, value),
+      onSelected: (value) =>
+          _handleMenuSelection(context, ref, value, appColors),
     );
   }
 
   PopupMenuItem<String> _buildPopupItem(
     String title,
     String iconPath,
-    String value, {
+    String value,
+    AppColorsExtension appColors, {
     bool isDanger = false,
   }) {
-    final Color itemColor = isDanger ? AppColors.notification : AppColors.black;
+    final Color itemColor = isDanger
+        ? appColors.notification
+        : appColors.blackToWhite;
     return PopupMenuItem<String>(
       value: value,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -107,6 +117,7 @@ class CommentPopupMenu extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String value,
+    AppColorsExtension appColors,
   ) async {
     switch (value) {
       case 'edit':
@@ -141,7 +152,7 @@ class CommentPopupMenu extends ConsumerWidget {
             title: '댓글을 삭제하시겠습니까?',
             content: '작성하신 댓글을 삭제하시겠습니까?\n삭제된 댓글은 되돌릴 수 없습니다.',
             confirmText: '삭제',
-            confirmTextColor: AppColors.notification,
+            confirmTextColor: appColors.notification,
             cancelText: '취소',
             onCancel: () {
               Navigator.of(context).pop(true);

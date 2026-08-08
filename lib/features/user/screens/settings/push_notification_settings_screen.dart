@@ -37,6 +37,7 @@ class _PushNotificationSettingsScreenState
 
   // ── 공통 시간 피커 ────────────────────────────────────────
   void _showTimePicker(
+    AppColorsExtension appColors,
     BuildContext context,
     String currentDisplayTime,
     void Function(String serverTime) onConfirm,
@@ -49,13 +50,13 @@ class _PushNotificationSettingsScreenState
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withAlpha(100),
+      barrierColor: appColors.blackToWhite.withAlpha(100),
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: appColors.whiteToBlack,
           contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           content: SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
@@ -65,6 +66,7 @@ class _PushNotificationSettingsScreenState
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: _buildAnimatedPeriodSelector(
+                    appColors,
                     currentPeriod,
                     (newPeriod) =>
                         setDialogState(() => currentPeriod = newPeriod),
@@ -80,7 +82,7 @@ class _PushNotificationSettingsScreenState
                           height: 40,
                           margin: const EdgeInsets.symmetric(horizontal: 24),
                           decoration: BoxDecoration(
-                            color: AppColors.gray4.withAlpha(100),
+                            color: appColors.gray4.withAlpha(100),
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
@@ -122,7 +124,7 @@ class _PushNotificationSettingsScreenState
                     },
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.transparent,
-                      foregroundColor: AppColors.primaryAble,
+                      foregroundColor: appColors.primaryAble,
                       minimumSize: const Size(double.infinity, 52),
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
@@ -132,7 +134,7 @@ class _PushNotificationSettingsScreenState
                     child: Text(
                       '완료',
                       style: AppTypography.b1.copyWith(
-                        color: AppColors.primaryAble,
+                        color: appColors.primaryAble,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -147,6 +149,7 @@ class _PushNotificationSettingsScreenState
   }
 
   Widget _buildAnimatedPeriodSelector(
+    AppColorsExtension appColors,
     String currentPeriod,
     Function(String) onPeriodChanged,
   ) {
@@ -154,7 +157,7 @@ class _PushNotificationSettingsScreenState
       height: 48,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.gray4,
+        color: appColors.gray4,
         borderRadius: BorderRadius.circular(12),
       ),
       child: LayoutBuilder(
@@ -172,11 +175,11 @@ class _PushNotificationSettingsScreenState
                   width: width - 4,
                   height: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: appColors.whiteToBlack,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(20),
+                        color: appColors.blackToWhite.withAlpha(20),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -195,7 +198,9 @@ class _PushNotificationSettingsScreenState
                         child: AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 250),
                           style: AppTypography.b2.copyWith(
-                            color: isSelected ? Colors.black : AppColors.gray2,
+                            color: isSelected
+                                ? appColors.blackToWhite
+                                : appColors.gray2,
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -215,6 +220,7 @@ class _PushNotificationSettingsScreenState
   }
 
   Widget _buildWeeklyReminderSection(
+    AppColorsExtension appColors,
     PushNotificationSettings settings,
     PushNotificationSettingsNotifier notifier,
   ) {
@@ -231,13 +237,13 @@ class _PushNotificationSettingsScreenState
                   Text(
                     '실패 방지 리마인더',
                     style: AppTypography.b1.copyWith(
-                      color: AppColors.black,
+                      color: appColors.blackToWhite,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Text(
                     '챌린지 실패를 방지하는 주간 리마인더 알림',
-                    style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                    style: AppTypography.b2.copyWith(color: appColors.gray2),
                   ),
                 ],
               ),
@@ -248,6 +254,7 @@ class _PushNotificationSettingsScreenState
         const SizedBox(height: 4),
         GestureDetector(
           onTap: () => _showTimePicker(
+            appColors,
             context,
             _convertToDisplayTime(settings.weeklyReminderTime),
             (serverTime) => notifier.updateWeeklyReminderTime(serverTime),
@@ -256,7 +263,7 @@ class _PushNotificationSettingsScreenState
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.gray5,
+              color: appColors.gray5,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -264,7 +271,7 @@ class _PushNotificationSettingsScreenState
               children: [
                 Text(
                   _convertToDisplayTime(settings.weeklyReminderTime),
-                  style: AppTypography.b2.copyWith(color: AppColors.gray3),
+                  style: AppTypography.b2.copyWith(color: appColors.gray3),
                 ),
                 Opacity(
                   opacity: 0.5,
@@ -272,8 +279,8 @@ class _PushNotificationSettingsScreenState
                     'assets/images/icons/big_down_arrow.svg',
                     width: 16,
                     height: 16,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.gray2,
+                    colorFilter: ColorFilter.mode(
+                      appColors.gray2,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -288,22 +295,24 @@ class _PushNotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     final settings = ref.watch(pushNotificationProvider);
     final notifier = ref.read(pushNotificationProvider.notifier);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appColors.whiteToBlack,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: appColors.whiteToBlack,
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/images/icons/arrow_left.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.black,
+            colorFilter: ColorFilter.mode(
+              appColors.blackToWhite,
               BlendMode.srcIn,
             ),
           ),
@@ -311,7 +320,7 @@ class _PushNotificationSettingsScreenState
         ),
         title: Text(
           '푸시 알림 설정',
-          style: AppTypography.h3.copyWith(color: AppColors.black),
+          style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
         ),
         centerTitle: true,
       ),
@@ -324,6 +333,7 @@ class _PushNotificationSettingsScreenState
               // ── 전체 알림 ───────────────────────────────
               const SizedBox(height: 16),
               _buildSwitchRow(
+                appColors,
                 title: '전체 알림',
                 subtitle: '모든 알림 받기',
                 value: settings.allNotifications,
@@ -331,34 +341,38 @@ class _PushNotificationSettingsScreenState
                 isMain: true,
               ),
               const SizedBox(height: 20),
-              const Divider(color: AppColors.gray4, height: 1),
+              Divider(color: appColors.gray4, height: 1),
               const SizedBox(height: 20),
 
               // ── 소셜 섹션 ────────────────────────────────
-              _buildSectionHeader('소셜'),
+              _buildSectionHeader('소셜', appColors),
               const SizedBox(height: 10),
               Column(
                 spacing: 20,
                 children: [
                   _buildSwitchRow(
+                    appColors,
                     title: '내 글 좋아요',
                     subtitle: "내 게시물에 '좋아요' 반응이 올 때 알림",
                     value: settings.likeNotifications,
                     onChanged: (val) => notifier.toggleLikes(val),
                   ),
                   _buildSwitchRow(
+                    appColors,
                     title: '댓글',
                     subtitle: '내 글에 새로운 댓글이 달릴 때 알림',
                     value: settings.commentNotifications,
                     onChanged: (val) => notifier.toggleComments(val),
                   ),
                   _buildSwitchRow(
+                    appColors,
                     title: '친구 신청',
                     subtitle: '나에게 새로운 친구 요청이 도착할 때 알림',
                     value: settings.friendRequestNotifications,
                     onChanged: (val) => notifier.toggleFriend(val),
                   ),
                   _buildSwitchRow(
+                    appColors,
                     title: '멤버 인증 소식 (전체)',
                     subtitle: '멤버 인증 알림 통합 관리',
                     value: settings.memberAuthNotifications,
@@ -369,18 +383,20 @@ class _PushNotificationSettingsScreenState
               const SizedBox(height: 42),
 
               // ── 챌린지 섹션 ──────────────────────────────
-              _buildSectionHeader('챌린지'),
+              _buildSectionHeader('챌린지', appColors),
               const SizedBox(height: 10),
               Column(
                 spacing: 20,
                 children: [
                   _buildSwitchRow(
+                    appColors,
                     title: '챌린지 초대',
                     subtitle: '새로운 챌린지 참여 제안을 받았을 때 알림',
                     value: settings.challengeInviteNotifications,
                     onChanged: (val) => notifier.toggleChallengeInvite(val),
                   ),
                   _buildSwitchRow(
+                    appColors,
                     title: '동기부여 메시지',
                     subtitle: '꾸준한 챌린지 참여를 돕는 응원 푸시 알림',
                     value: settings.motivationNotifications,
@@ -388,13 +404,14 @@ class _PushNotificationSettingsScreenState
                   ),
                   // ── 일일 리마인더 (시간 피커 없음) ──────────────
                   _buildSwitchRow(
+                    appColors,
                     title: '일일 리마인더 (전체)',
                     subtitle: '리마인더 알림 통합 관리',
                     value: settings.dailyReminder,
                     onChanged: (val) => notifier.toggleDailyReminder(val),
                   ),
                   // ── 실패 방지 리마인더 ─────────────────────
-                  _buildWeeklyReminderSection(settings, notifier),
+                  _buildWeeklyReminderSection(appColors, settings, notifier),
                 ],
               ),
               const SizedBox(height: 100),
@@ -406,15 +423,16 @@ class _PushNotificationSettingsScreenState
   }
 
   // ── 섹션 헤더 ────────────────────────────────────────────
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, AppColorsExtension appColors) {
     return Text(
       title,
-      style: AppTypography.b1.copyWith(color: AppColors.gray1),
+      style: AppTypography.b1.copyWith(color: appColors.gray1),
     );
   }
 
   // ── 스위치 행 ────────────────────────────────────────────
-  Widget _buildSwitchRow({
+  Widget _buildSwitchRow(
+    AppColorsExtension appColors, {
     required String title,
     required String subtitle,
     required bool value,
@@ -432,13 +450,13 @@ class _PushNotificationSettingsScreenState
               Text(
                 title,
                 style: AppTypography.b1.copyWith(
-                  color: AppColors.black,
+                  color: appColors.blackToWhite,
                   fontWeight: isMain ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
               Text(
                 subtitle,
-                style: AppTypography.b2.copyWith(color: AppColors.gray2),
+                style: AppTypography.b2.copyWith(color: appColors.gray2),
               ),
             ],
           ),

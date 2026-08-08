@@ -16,9 +16,10 @@ class DeleteConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
+      backgroundColor: appColors.whiteToBlack,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -28,7 +29,7 @@ class DeleteConfirmDialog extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               '$userNickname 님을 삭제하시겠습니까?',
-              style: AppTypography.b2.copyWith(color: AppColors.gray2),
+              style: AppTypography.b2.copyWith(color: appColors.gray2),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -40,7 +41,7 @@ class DeleteConfirmDialog extends StatelessWidget {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        color: const Color(0x7FDFE1DC),
+                        color: appColors.gray5,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Center(
@@ -56,14 +57,14 @@ class DeleteConfirmDialog extends StatelessWidget {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        color: const Color(0x7FDFE1DC),
+                        color: appColors.gray5,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
                         child: Text(
                           '삭제하기',
                           style: AppTypography.b1.copyWith(
-                            color: AppColors.notification,
+                            color: appColors.notification,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

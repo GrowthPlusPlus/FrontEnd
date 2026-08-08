@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
+import 'package:haenaem/app.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:haenaem/core/utils/korean_string_utils.dart';
@@ -85,6 +86,8 @@ class _ChallengeInviteContentState
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     // 챌린지 전용 초대 정보 Provider 사용
     final inviteInfoAsync = ref.watch(
       challengeInviteProvider(widget.challengeId),
@@ -97,15 +100,15 @@ class _ChallengeInviteContentState
         return Column(
           children: [
             // 1. 링크 공유 섹션 (API에서 받아온 링크 사용)
-            _buildLinkShareBox(info.challengeLink),
+            _buildLinkShareBox(info.challengeLink, appColors),
             const SizedBox(height: 10),
 
             // 2. 검색창
-            _buildSearchBar(),
+            _buildSearchBar(appColors),
             const SizedBox(height: 10),
 
             // 3. 친구 리스트 (API 데이터 + 검색 필터링)
-            Expanded(child: _buildFriendList(info.friends)),
+            Expanded(child: _buildFriendList(info.friends, appColors)),
           ],
         );
       },
@@ -114,9 +117,9 @@ class _ChallengeInviteContentState
         debugPrint('⏳ [UI 로딩 중...]');
         return Column(
           children: [
-            _buildLinkShareBox(widget.challengeUrl),
+            _buildLinkShareBox(widget.challengeUrl, appColors),
             const SizedBox(height: 10),
-            _buildSearchBar(),
+            _buildSearchBar(appColors),
             const SizedBox(height: 50),
             const CircularProgressIndicator(),
           ],
@@ -127,7 +130,7 @@ class _ChallengeInviteContentState
         return Center(
           child: Text(
             '정보를 불러오지 못했습니다.',
-            style: AppTypography.b2.copyWith(color: AppColors.gray2),
+            style: AppTypography.b2.copyWith(color: appColors.gray2),
           ),
         );
       },
@@ -135,7 +138,10 @@ class _ChallengeInviteContentState
   }
 
   // 친구 리스트 빌더 메서드 분리
-  Widget _buildFriendList(List<InviteFriend> friends) {
+  Widget _buildFriendList(
+    List<InviteFriend> friends,
+    AppColorsExtension appColors,
+  ) {
     debugPrint('🔍 [검색어] "$_searchQuery"');
     // 검색 필터링
     final filteredFriends = friends.where((friend) {
@@ -157,7 +163,7 @@ class _ChallengeInviteContentState
         padding: const EdgeInsets.only(top: 50),
         child: Text(
           friends.isEmpty ? '초대할 수 있는 친구가 없습니다.' : '검색 결과가 없습니다.',
-          style: AppTypography.b2.copyWith(color: AppColors.gray2),
+          style: AppTypography.b2.copyWith(color: appColors.gray2),
         ),
       );
     }
@@ -166,13 +172,13 @@ class _ChallengeInviteContentState
       shrinkWrap: true,
       itemCount: filteredFriends.length,
       itemBuilder: (context, index) {
-        return _buildFriendInviteItem(filteredFriends[index]);
+        return _buildFriendInviteItem(filteredFriends[index], appColors);
       },
     );
   }
 
   // 링크 공유 박스 UI
-  Widget _buildLinkShareBox(String link) {
+  Widget _buildLinkShareBox(String link, AppColorsExtension appColors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -186,7 +192,7 @@ class _ChallengeInviteContentState
         children: [
           Text(
             '챌린지 링크 공유',
-            style: AppTypography.b2.copyWith(color: AppColors.gray1),
+            style: AppTypography.b2.copyWith(color: appColors.gray1),
           ),
           const SizedBox(height: 8),
           // 링크 표시창
@@ -194,9 +200,9 @@ class _ChallengeInviteContentState
             width: double.infinity,
             padding: const EdgeInsets.all(10),
             decoration: ShapeDecoration(
-              color: Colors.white,
+              color: appColors.whiteToBlack,
               shape: RoundedRectangleBorder(
-                side: const BorderSide(width: 1, color: AppColors.gray4),
+                side: BorderSide(width: 1, color: appColors.gray4),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -214,8 +220,9 @@ class _ChallengeInviteContentState
               children: [
                 Expanded(
                   child: _buildActionItem(
+                    appColors,
                     label: '복사',
-                    color: AppColors.gray5,
+                    color: appColors.gray5,
                     iconPath: 'assets/images/icons/link_copy.svg',
                     onTap: () => _copyToClipboard(link),
                   ),
@@ -223,8 +230,9 @@ class _ChallengeInviteContentState
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildActionItem(
+                    appColors,
                     label: '공유',
-                    color: AppColors.gray5,
+                    color: appColors.gray5,
                     iconPath: 'assets/images/icons/share_icon.svg',
                     onTap: () {
                       _shareSystemLink(link);
@@ -240,7 +248,8 @@ class _ChallengeInviteContentState
   }
 
   // 공통 버튼 아이템 빌더 (아이콘 + 텍스트)
-  Widget _buildActionItem({
+  Widget _buildActionItem(
+    AppColorsExtension appColors, {
     required String label,
     required Color color,
     required String iconPath,
@@ -266,16 +275,13 @@ class _ChallengeInviteContentState
               iconPath,
               width: 16,
               height: 16,
-              colorFilter: const ColorFilter.mode(
-                AppColors.gray2,
-                BlendMode.srcIn,
-              ),
+              colorFilter: ColorFilter.mode(appColors.gray2, BlendMode.srcIn),
             ),
             const SizedBox(width: 4),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: AppTypography.b2.copyWith(color: AppColors.gray2),
+              style: AppTypography.b2.copyWith(color: appColors.gray2),
             ),
           ],
         ),
@@ -284,13 +290,13 @@ class _ChallengeInviteContentState
   }
 
   // 검색창 UI
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(AppColorsExtension appColors) {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
         isDense: true,
         hintText: '친구 검색',
-        hintStyle: AppTypography.b2.copyWith(color: AppColors.gray3),
+        hintStyle: AppTypography.b2.copyWith(color: appColors.gray3),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(14.0),
           child: SvgPicture.asset('assets/images/icons/search_icon.svg'),
@@ -298,18 +304,21 @@ class _ChallengeInviteContentState
         contentPadding: const EdgeInsets.symmetric(vertical: 8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.gray4),
+          borderSide: BorderSide(color: appColors.gray4),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.gray4),
+          borderSide: BorderSide(color: appColors.gray4),
         ),
       ),
     );
   }
 
   // 친구 리스트 아이템 + 실제 API 로직
-  Widget _buildFriendInviteItem(InviteFriend friend) {
+  Widget _buildFriendInviteItem(
+    InviteFriend friend,
+    AppColorsExtension appColors,
+  ) {
     // 1. 서버에서 온 상태(friend.isInvited)이거나
     // 2. 방금 내가 버튼 눌러서 초대한 상태(_newlyInvitedFriends 포함)인지 확인
     bool isInvited =
@@ -376,8 +385,8 @@ class _ChallengeInviteContentState
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: isInvited
-                    ? AppColors.disable
-                    : AppColors.primaryAble,
+                    ? appColors.disable
+                    : appColors.primaryAble,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -387,7 +396,7 @@ class _ChallengeInviteContentState
               child: Text(
                 isInvited ? '초대됨' : '초대',
                 style: AppTypography.c1.copyWith(
-                  color: isInvited ? AppColors.gray2 : Colors.white,
+                  color: isInvited ? appColors.gray2 : Colors.white,
                 ),
               ),
             ),

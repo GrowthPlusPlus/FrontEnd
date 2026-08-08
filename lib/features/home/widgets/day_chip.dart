@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
-// import 'package:haenaem/features/challenge/models/challenge_model.dart';
 
 class DayChip extends StatelessWidget {
   final DateTime date;
@@ -17,7 +16,9 @@ class DayChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color gray2 = AppColors.gray2;
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
+    Color gray2 = appColors.gray2;
 
     // 요일 레이블 매핑
     const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토'];
@@ -32,18 +33,21 @@ class DayChip extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: AppTypography.b1.copyWith(color: AppColors.black)),
+          Text(
+            label,
+            style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
+          ),
           const SizedBox(height: 8),
           Container(
             width: 40,
             height: 40,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
             decoration: ShapeDecoration(
-              color: getBackgroundColor(),
+              color: getBackgroundColor(appColors),
               shape: RoundedRectangleBorder(
                 // 오늘 날짜이면서 색상이 안 들어간 상태일 때만 테두리 적용
                 side: showBorder
-                    ? const BorderSide(
+                    ? BorderSide(
                         width: 1,
                         strokeAlign: BorderSide.strokeAlignOutside,
                         color: gray2,
@@ -56,7 +60,7 @@ class DayChip extends StatelessWidget {
             child: Text(
               day,
               style: TextStyle(
-                color: isColoredStatus ? Colors.white : gray2,
+                color: isColoredStatus ? appColors.whiteToBlack : gray2,
                 fontSize: 14,
                 fontFamily: 'Pretendard',
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
@@ -69,16 +73,16 @@ class DayChip extends StatelessWidget {
     );
   }
 
-  Color getBackgroundColor() {
+  Color getBackgroundColor(AppColorsExtension appColors) {
     switch (status) {
       case 'RED':
-        return AppColors.notification;
+        return appColors.notification;
       case 'GREEN':
-        return AppColors.primaryAble;
+        return appColors.primaryAble;
       case 'GRAY':
       case 'NONE':
       default:
-        return AppColors.gray5;
+        return appColors.gray5;
     }
   }
 }

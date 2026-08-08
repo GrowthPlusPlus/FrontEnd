@@ -18,6 +18,8 @@ class AppTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -25,7 +27,7 @@ class AppTagChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 11),
         decoration: ShapeDecoration(
           // 선택 시 selected 색상 및 primaryAble 테두리, 미선택 시 gray5
-          color: isSelected ? AppColors.selected : AppColors.gray5,
+          color: isSelected ? appColors.selected : appColors.gray5,
           shape: RoundedRectangleBorder(
             side: isSelected
                 ? const BorderSide(width: 2, color: AppColors.primaryAble)
@@ -40,7 +42,9 @@ class AppTagChip extends StatelessWidget {
             Text(
               label,
               style: AppTypography.b2.copyWith(
-                color: isSelected ? AppColors.primaryAble : AppColors.black,
+                color: isSelected
+                    ? appColors.primaryAble
+                    : appColors.blackToWhite,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                 height: 1.0, // 텍스트 중앙 정렬
               ),
