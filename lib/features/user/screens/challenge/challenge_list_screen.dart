@@ -73,10 +73,6 @@ class ChallengeListScreen extends ConsumerWidget {
   }
 
   Widget _buildFilteredListView(List<MyPageChallengeCard> list) {
-    if (list.isEmpty) {
-      return const Center(child: Text('해당하는 챌린지가 없습니다.'));
-    }
-
     return Container(
       color: AppColors.gray5,
       child: list.isEmpty
