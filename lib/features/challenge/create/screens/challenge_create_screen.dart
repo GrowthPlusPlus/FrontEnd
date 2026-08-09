@@ -142,9 +142,12 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
           .read(challengePreviewNotifierProvider.notifier)
           .checkTitle(title);
 
-      debugPrint('🔍 [AI Notice] title: "$title" → autoVerifiable: $result');
+      debugPrint(
+        '🔍 [AI Notice] title: "$title" → autoVerifiable: ${result.autoVerifiable}, category: ${result.category}',
+      );
 
-      if (mounted) setState(() => _autoVerifiable = result);
+      // ✅ ChallengePreviewResponse -> bool로 꺼내서 저장
+      if (mounted) setState(() => _autoVerifiable = result.autoVerifiable);
     } catch (e) {
       debugPrint('🔍 [AI Notice] 검사 실패: $e');
       // 사전 검사 실패는 안내를 못 보여줄 뿐, 생성 흐름에는 영향 없음

@@ -24,12 +24,15 @@ final imageUploadNotifierProvider =
 
 typedef _$ImageUploadNotifier = AutoDisposeNotifier<AsyncValue<int?>>;
 String _$clipVerifyNotifierHash() =>
-    r'93878bc9c648e93d263d03ba26ef92f47f98b51f';
+    r'd31d7681788da5d71b5bf93bd6886289d10a6a76';
 
 /// See also [ClipVerifyNotifier].
 @ProviderFor(ClipVerifyNotifier)
 final clipVerifyNotifierProvider =
-    AutoDisposeNotifierProvider<ClipVerifyNotifier, AsyncValue<bool?>>.internal(
+    AutoDisposeNotifierProvider<
+      ClipVerifyNotifier,
+      AsyncValue<ClipVerifyResult?>
+    >.internal(
       ClipVerifyNotifier.new,
       name: r'clipVerifyNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -39,7 +42,8 @@ final clipVerifyNotifierProvider =
       allTransitiveDependencies: null,
     );
 
-typedef _$ClipVerifyNotifier = AutoDisposeNotifier<AsyncValue<bool?>>;
+typedef _$ClipVerifyNotifier =
+    AutoDisposeNotifier<AsyncValue<ClipVerifyResult?>>;
 String _$articleCreateNotifierHash() =>
     r'ea2a88bead8bf1b6b370bab02fb8ea49bcf1aff6';
 

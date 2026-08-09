@@ -12,6 +12,7 @@ import 'package:haenaem/features/statistics/data/activity_repository.dart';
 import 'package:haenaem/features/statistics/data/distribution_repository.dart';
 import 'package:haenaem/features/statistics/data/monthly_weekly_repository.dart';
 import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
+import '../data/clip_verify_result.dart';
 
 part 'verification_provider.g.dart';
 
@@ -72,9 +73,9 @@ class ImageUploadNotifier extends _$ImageUploadNotifier {
 @riverpod
 class ClipVerifyNotifier extends _$ClipVerifyNotifier {
   @override
-  AsyncValue<bool?> build() => const AsyncValue.data(null);
+  AsyncValue<ClipVerifyResult?> build() => const AsyncValue.data(null);
 
-  Future<bool> verify(int challengeId, int temporaryImageId) async {
+  Future<ClipVerifyResult> verify(int challengeId, int temporaryImageId) async {
     state = const AsyncValue.loading();
     final result = await AsyncValue.guard(
       () => ref
@@ -82,7 +83,7 @@ class ClipVerifyNotifier extends _$ClipVerifyNotifier {
           .clipVerifyImage(challengeId, temporaryImageId),
     );
     state = result;
-    return result.valueOrNull ?? false;
+    return result.valueOrNull ?? const ClipVerifyResult(passed: false);
   }
 }
 

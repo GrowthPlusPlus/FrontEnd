@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/core/network/dio_provider.dart';
-import 'package:haenaem/shared/models/post.dart'; // [추가] 통합된 Post 모델 임포트
+import 'package:haenaem/shared/models/post.dart';
+import '../data/clip_verify_result.dart';
 
 part 'verification_repository.g.dart';
 
@@ -46,7 +47,10 @@ class VerificationRepository {
   }
 
   // 2단계: AI 챌린지 관련성 검사 (1장만 호출)
-  Future<bool> clipVerifyImage(int challengeId, int temporaryImageId) async {
+  Future<ClipVerifyResult> clipVerifyImage(
+    int challengeId,
+    int temporaryImageId,
+  ) async {
     try {
       debugPrint(
         '🔍 [CLIP API] 요청: challengeId=$challengeId, tempId=$temporaryImageId',
@@ -59,27 +63,36 @@ class VerificationRepository {
         },
       );
 
-      debugPrint('🔍 [CLIP API] 응답 상태코드: ${response.statusCode}'); // ✅ 추가
+      debugPrint('🔍 [CLIP API] 응답 상태코드: ${response.statusCode}');
       debugPrint('🔍 [CLIP API] 응답 바디: ${response.data}');
 
-      final String? result = response.data?.toString();
-      final bool passed = result == 'PASS' || result == 'REVIEW';
+      // 200/204 둘 다 바디가 있으면 바디의 passed 값을 그대로 신뢰
+      if (response.data is Map) {
+        final result = ClipVerifyResult.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+        debugPrint(result.passed ? '✅ CLIP 검사 통과' : '❌ CLIP 검사 실패');
+        return result;
+      }
 
-      debugPrint(
-        passed
-            ? '✅ CLIP 검사 통과 (result: $result)'
-            : '❌ CLIP 검사 실패 (result: $result)',
-      );
-      return passed;
+      // 바디가 없는 순수 204는 통과로 간주
+      final bool passed =
+          response.statusCode == 200 || response.statusCode == 204;
+      return ClipVerifyResult(passed: passed);
     } on DioException catch (e) {
-      // 400이 DioException으로 잡힐 수 있음
       debugPrint(
         '🔍 [CLIP API] DioException: ${e.response?.statusCode} / ${e.response?.data}',
       );
-      return false;
+
+      if (e.response?.data is Map) {
+        return ClipVerifyResult.fromJson(
+          e.response!.data as Map<String, dynamic>,
+        );
+      }
+      return const ClipVerifyResult(passed: false);
     } catch (e) {
       debugPrint('🔍 [CLIP API] 알 수 없는 에러: $e');
-      return false;
+      return const ClipVerifyResult(passed: false);
     }
   }
 
