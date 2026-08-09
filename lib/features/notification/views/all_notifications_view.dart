@@ -99,15 +99,26 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
       for (var noti in notis) {
         NotiIconType iconType = NotiIconType.normal;
 
+        // 성공/실패 상태를 저장해둘 변수
+        bool isChallengeSuccess = false;
+        bool isChallengeFail = false;
+
         // API에서 정의한 type 값에 따라 아이콘 분기 처리
-        if (noti.type == 'CHALLENGE_SUCCESS') {
-          iconType = NotiIconType.success;
-        } else if (noti.type == 'CHALLENGE_FAIL') {
-          iconType = NotiIconType.fail;
+        if (noti.type == 'CHALLENGE') {
+          if (noti.message.contains('축하합니다') || noti.message.contains('훌륭하게')) {
+            iconType = NotiIconType.success;
+            isChallengeSuccess = true;
+          } else if (noti.message.contains('아쉬워요') ||
+              noti.message.contains('실패')) {
+            iconType = NotiIconType.fail;
+            isChallengeFail = true;
+          } else {
+            // 키워드가 없으면 일반 챌린지 초대 알림으로 간주
+            iconType = NotiIconType.profile;
+          }
         } else if (noti.type == 'FRIEND_REQUEST' ||
             noti.type == 'COMMENT' ||
             noti.type == 'LIKE' ||
-            noti.type == 'CHALLENGE' ||
             noti.type == 'FRIEND_ACCEPT') {
           iconType = NotiIconType.profile;
         }
@@ -150,21 +161,6 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                     if (noti.message.contains('님이')) {
                       inviterName = noti.message.split('님이').first.trim();
                     }
-
-                  // ChallengeInviteDetailScreen에서는 challengeTitle값이 필요한데 이 화면에는 존재하지 않아서 일단 주석 처리
-
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => ChallengeInviteDetailScreen(
-                  //       challengeId: noti.targetId!,
-                  //       challengeTitle: ,
-                  //       inviterName: inviterName,
-                  //       inviterProfileImageUrl: noti.profileImageUrl,
-                  //     ),
-                  //   ),
-                  // );
-                  // break;
 
                   // TODO: 챌린지 성공/실패 알림 타입 추가 시 여기에 케이스 추가
                   /*
