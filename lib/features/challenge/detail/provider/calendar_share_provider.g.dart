@@ -7,7 +7,7 @@ part of 'calendar_share_provider.dart';
 // **************************************************************************
 
 String _$calendarShareNotifierHash() =>
-    r'a589e400c789c5b0d0594d0f2c8d86dc8359f6dd';
+    r'0c6087bb198fc3750890a757ddc735ed244e270d';
 
 /// See also [CalendarShareNotifier].
 @ProviderFor(CalendarShareNotifier)

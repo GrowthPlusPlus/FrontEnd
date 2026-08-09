@@ -18,13 +18,11 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
   final ScrollController _friendScrollController = ScrollController();
   final ScrollController _exploreScrollController = ScrollController();
 
   @override
   void dispose() {
-    _tabController.dispose();
     _friendScrollController.dispose();
     _exploreScrollController.dispose();
     super.dispose();

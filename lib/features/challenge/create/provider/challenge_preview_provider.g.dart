@@ -7,7 +7,7 @@ part of 'challenge_preview_provider.dart';
 // **************************************************************************
 
 String _$challengePreviewNotifierHash() =>
-    r'2a68d8332bede0a4258d0c2d3236a64d15748af6';
+    r'5601b2e7e0410f7e1c92692baf1f5f251e6e3c1b';
 
 /// See also [ChallengePreviewNotifier].
 @ProviderFor(ChallengePreviewNotifier)

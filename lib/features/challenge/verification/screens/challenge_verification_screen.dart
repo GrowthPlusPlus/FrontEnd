@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/shared/models/post.dart';
 import '../provider/verification_provider.dart';
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
+import '../data/clip_verify_result.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
 import '../../../../shared/widgets/challenge_input_box.dart';
@@ -468,27 +469,35 @@ class _ChallengeVerificationScreenState
 
     debugPrint(
       '🔍 [CLIP] 검사 시작 — challengeId: ${widget.challengeId}, tempId: $firstTempId',
-    ); // ✅ 추가
+    );
 
     setState(() {
       _fileStatusMap[firstFile.path] = ImageVerificationStatus.loading;
       _verifyStatus = _computeOverallStatus();
     });
 
-    final bool passed = await ref
+    // ✅ bool -> ClipVerifyResult
+    final ClipVerifyResult result = await ref
         .read(clipVerifyNotifierProvider.notifier)
         .verify(widget.challengeId, firstTempId);
 
-    debugPrint('🔍 [CLIP] 검사 결과: $passed');
+    debugPrint(
+      '🔍 [CLIP] 검사 결과: passed=${result.passed}, '
+      'score=${result.score}, threshold=${result.threshold}, '
+      'detected=${result.detectedObjects}, expected=${result.expectedObjects}',
+    );
 
     if (!mounted) return;
 
     setState(() {
-      _fileStatusMap[firstFile.path] = passed
+      _fileStatusMap[firstFile.path] = result.passed
           ? ImageVerificationStatus.success
           : ImageVerificationStatus.fail;
       _verifyStatus = _computeOverallStatus();
     });
+
+    // (선택) 실패 사유를 화면에 보여주고 싶다면 여기서 별도 상태에 저장해두고
+    // AiFailBox에 전달하면 됩니다.
   }
 
   // _newImageIdMap을 기준으로, 현재 사진 순서에 맞게 _tempImageIds를 다시 구성

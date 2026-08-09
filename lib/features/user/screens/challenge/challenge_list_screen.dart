@@ -78,10 +78,6 @@ class ChallengeListScreen extends ConsumerWidget {
     List<MyPageChallengeCard> list,
     AppColorsExtension appColors,
   ) {
-    if (list.isEmpty) {
-      return const Center(child: Text('해당하는 챌린지가 없습니다.'));
-    }
-
     return Container(
       color: appColors.gray5,
       child: list.isEmpty
