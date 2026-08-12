@@ -496,17 +496,25 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
 
   Widget _buildWeekdayHeader(AppColorsExtension appColors) {
     final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: weekdays
-          .map(
-            (day) => Text(
-              day,
+    final children = <Widget>[];
+    for (int i = 0; i < weekdays.length; i++) {
+      children.add(
+        Expanded(
+          child: Center(
+            child: Text(
+              weekdays[i],
               style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
             ),
-          )
-          .toList(),
-    );
+          ),
+        ),
+      );
+
+      if (i < weekdays.length - 1) {
+        children.add(const SizedBox(width: 10));
+      }
+    }
+
+    return Row(children: children);
   }
 
   Widget _buildPostsHeaderForData(int count, AppColorsExtension appColors) {
