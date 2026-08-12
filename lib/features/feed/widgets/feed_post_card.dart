@@ -167,8 +167,8 @@ class FeedPostCard extends ConsumerWidget {
                         post.isLiked
                             ? 'assets/images/icons/like_filled_icon.svg'
                             : 'assets/images/icons/like_icon.svg',
-                        width: 20,
-                        height: 20,
+                        width: 24,
+                        height: 24,
                         colorFilter: ColorFilter.mode(
                           post.isLiked
                               ? appColors.notification
