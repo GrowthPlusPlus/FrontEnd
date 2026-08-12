@@ -35,8 +35,8 @@ class MainBottomNavBar extends StatelessWidget {
         currentIndex: currentIndex,
         selectedItemColor: appColors.blackToWhite,
         unselectedItemColor: appColors.gray3,
-        selectedLabelStyle: AppTypography.c2,
-        unselectedLabelStyle: AppTypography.c2,
+        selectedLabelStyle: AppTypography.c1,
+        unselectedLabelStyle: AppTypography.c1,
         onTap: onTap,
         items: [
           _buildNavItem('home_icon_off.svg', '홈', appColors),
