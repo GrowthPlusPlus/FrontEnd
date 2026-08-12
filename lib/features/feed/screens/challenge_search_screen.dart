@@ -30,6 +30,9 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _currentKeyword = "";
 
+  // AI 추천 챌린지 요청 여부를 추적하는 상태 변수
+  bool _isRecommendationRequested = false;
+
   @override
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
@@ -90,6 +93,28 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
     AppColorsExtension appColors,
   ) {
     final userName = currentUser?.nickname ?? "해냄";
+
+    // 추천받기 버튼을 아직 누르지 않은 초기 상태
+    if (!_isRecommendationRequested) {
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            GradationBanner(
+              userName: userName,
+              onRequest: () {
+                // 버튼 클릭 시 Provider를 초기화하여 새 데이터를 불러오고 상태 변경
+                ref.invalidate(recommendedChallengesProvider);
+                setState(() {
+                  _isRecommendationRequested = true;
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 추천받기 버튼을 누른 후, Provider를 통해 데이터를 가져오는 상태
     final recommendedAsync = ref.watch(recommendedChallengesProvider);
 
     return recommendedAsync.when(
@@ -122,7 +147,12 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
           ],
         ),
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      // 로딩 중 상태
+      loading: () => SingleChildScrollView(
+        child: Column(
+          children: [GradationBanner(userName: userName, isLoading: true)],
+        ),
+      ),
       error: (err, _) => Center(child: Text("추천 챌린지를 불러오지 못했어요: $err")),
     );
   }
