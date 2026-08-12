@@ -61,17 +61,17 @@ class CalendarPostCard extends StatelessWidget {
                     children: [
                       SvgPicture.asset(
                         'assets/images/icons/green_calendar.svg',
-                        width: 12,
-                        height: 12,
+                        width: 16,
+                        height: 16,
                         colorFilter: ColorFilter.mode(
                           appColors.primaryAble,
                           BlendMode.srcIn,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
                         formattedDate,
-                        style: AppTypography.c1.copyWith(
+                        style: AppTypography.b2.copyWith(
                           color: appColors.primaryAble,
                         ),
                       ),
