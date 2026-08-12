@@ -26,10 +26,8 @@ class CalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 해당 월 1일의 요일 (0: 일요일 기준으로 맞추기 위해 % 7 처리)
-    // ex) 1일이 화요일이면 skipDays = 2 → 앞에 빈 셀 2개 추가
     final int skipDays =
-        DateTime(focusedDay.year, focusedDay.month, 1).weekday % 7;
+        DateTime(focusedDay.year, focusedDay.month, 1).weekday - 1;
 
     // 해당 월의 마지막 날짜
     // ex) 3월이면 31, 4월이면 30
