@@ -21,8 +21,8 @@ class DayChip extends StatelessWidget {
     Color gray2 = appColors.gray2;
 
     // 요일 레이블 매핑
-    const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토'];
-    String label = weekdayLabels[date.weekday % 7];
+    const weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+    String label = weekdayLabels[date.weekday - 1];
     String day = date.day.toString();
 
     // 상태가 RED나 GREEN일 때는 배경색이 들어가므로 테두리를 지우고 글자를 흰색으로 변경
