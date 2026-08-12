@@ -246,11 +246,13 @@ class _RecommendedChallengeTop extends StatelessWidget {
                 children: [
                   Text(
                     '챌린지 설명',
-                    style: AppTypography.b1.copyWith(color: appColors.gray1),
+                    style: AppTypography.b1.copyWith(
+                      color: appColors.blackToWhite,
+                    ),
                   ),
                   Text(
                     item.content,
-                    style: AppTypography.b2.copyWith(color: appColors.gray1),
+                    style: AppTypography.b1.copyWith(color: appColors.gray2),
                   ),
                 ],
               ),

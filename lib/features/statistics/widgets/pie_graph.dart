@@ -80,7 +80,8 @@ class PieGraph extends StatelessWidget {
           // 총 N번 해냄!
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             spacing: 2,
             children: [
               Text(
@@ -89,7 +90,7 @@ class PieGraph extends StatelessWidget {
               ),
               Text(
                 '$totalCount번',
-                style: AppTypography.h3.copyWith(color: appColors.primaryAble),
+                style: AppTypography.h2.copyWith(color: appColors.primaryAble),
               ),
               Text(
                 '해냄!',
