@@ -105,7 +105,7 @@ class LineGraph extends ConsumerWidget {
       width: double.infinity,
       height: 35.99,
       decoration: ShapeDecoration(
-        color: AppColors.gray5,
+        color: appColors.gray5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
       ),
       child: Row(
