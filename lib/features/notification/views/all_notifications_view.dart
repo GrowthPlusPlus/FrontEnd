@@ -147,20 +147,24 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                 return;
               }
 
-              // 💡 2. [수정됨] CHALLENGE 분기를 targetId null 체크 밖으로 분리!
               if (noti.type == 'CHALLENGE') {
                 print(
                   '🐞 [디버그] CHALLENGE 타입 분기 진입 (성공:$isChallengeSuccess, 실패:$isChallengeFail)',
                 );
 
                 if (isChallengeSuccess || isChallengeFail) {
-                  print('🐞 [디버그] 성공/실패 알림 (이동 로직 주석 처리됨)');
-                  // 성공/실패 챌린지 이동은 targetId가 필요하므로 내부에서 체크
-                  if (noti.targetId != null) {
-                    // Navigator.push( ... );
-                  } else {
-                    print('🐞 [디버그] ❌ 에러: 성공/실패 알림인데 targetId가 null입니다!');
-                  }
+                  print('🐞 [디버그] 성공/실패 알림');
+                  // 성공/실패 알림은 targetId가 없으므로 이동하지 않고 종료
+                  return;
+                } else if (noti.targetId != null) {
+                  print('🐞 [디버그] targetId가 존재하므로 챌린지 상세 페이지로 이동');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PostDetailScreen(postId: noti.targetId!),
+                    ),
+                  );
                 } else {
                   print('🐞 [디버그] 초대 알림 -> 탭 이동 시도');
                   if (widget.onMoveToInviteTab != null) {
