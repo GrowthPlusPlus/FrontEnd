@@ -95,7 +95,7 @@ class FeedPostCard extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
-              vertical: 8.0,
+              // vertical: 4.0,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +134,10 @@ class FeedPostCard extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 // 사진이 없을 때는 하단 아이콘과의 간격을 확보합니다.
-                if (!post.hasImage) const SizedBox(height: 15),
+                if (!post.hasImage)
+                  const SizedBox(height: 10)
+                else
+                  const SizedBox(height: 16), // 사진이 있을 때는 간격을 조금 줄입니다.
               ],
             ),
           ),

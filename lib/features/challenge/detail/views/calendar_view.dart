@@ -285,7 +285,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                       stats.currentStreakDays,
                       appColors,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     _buildCalendarHeader(_focusedDay, appColors),
                     const SizedBox(height: 10),
                     _buildWeekdayHeader(appColors),
@@ -503,7 +503,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
           child: Center(
             child: Text(
               weekdays[i],
-              style: AppTypography.b3.copyWith(color: appColors.blackToWhite),
+              style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
             ),
           ),
         ),
