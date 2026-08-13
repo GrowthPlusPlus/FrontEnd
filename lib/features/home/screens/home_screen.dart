@@ -181,7 +181,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         backgroundColor: FABColor,
         shape: const CircleBorder(),
-        child: Icon(Icons.add, size: 32, color: FABplusColor),
+        child: Icon(Icons.add, size: 36, color: FABplusColor),
       ),
     );
   }

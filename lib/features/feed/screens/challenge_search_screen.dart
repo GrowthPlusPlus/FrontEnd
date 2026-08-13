@@ -14,6 +14,7 @@ import 'package:haenaem/shared/widgets/slider_indicator.dart';
 import '../widgets/recommended_challenge_card.dart';
 import '../widgets/gradation_banner.dart';
 import '../provider/recommended_challenge_provider.dart';
+import 'package:haenaem/shared/widgets/custom_search_bar.dart';
 
 class ChallengeSearchScreen extends ConsumerStatefulWidget {
   const ChallengeSearchScreen({super.key});
@@ -28,6 +29,9 @@ class ChallengeSearchScreen extends ConsumerStatefulWidget {
 class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _currentKeyword = "";
+
+  // AI 추천 챌린지 요청 여부를 추적하는 상태 변수
+  bool _isRecommendationRequested = false;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +72,7 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
       body: Column(
         children: [
           // 검색창 영역
-          _buildSearchBar(appColors),
+          _buildSearchBar(),
           // 챌린지 카드 리스트 영역
           Expanded(
             child: _currentKeyword.isEmpty
@@ -89,6 +93,28 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
     AppColorsExtension appColors,
   ) {
     final userName = currentUser?.nickname ?? "해냄";
+
+    // 추천받기 버튼을 아직 누르지 않은 초기 상태
+    if (!_isRecommendationRequested) {
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            GradationBanner(
+              userName: userName,
+              onRequest: () {
+                // 버튼 클릭 시 Provider를 초기화하여 새 데이터를 불러오고 상태 변경
+                ref.invalidate(recommendedChallengesProvider);
+                setState(() {
+                  _isRecommendationRequested = true;
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 추천받기 버튼을 누른 후, Provider를 통해 데이터를 가져오는 상태
     final recommendedAsync = ref.watch(recommendedChallengesProvider);
 
     return recommendedAsync.when(
@@ -121,50 +147,36 @@ class _ChallengeSearchScreenState extends ConsumerState<ChallengeSearchScreen> {
           ],
         ),
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      // 로딩 중 상태
+      loading: () => SingleChildScrollView(
+        child: Column(
+          children: [GradationBanner(userName: userName, isLoading: true)],
+        ),
+      ),
       error: (err, _) => Center(child: Text("추천 챌린지를 불러오지 못했어요: $err")),
     );
   }
 
-  // 검색창 위젯 분리 (가독성용)
-  Widget _buildSearchBar(AppColorsExtension appColors) {
+  // 커스텀 검색 바 위젯
+  Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: TextField(
+      child: CustomSearchBar(
         controller: _searchController,
+        hintText: '이름으로 탐색하기',
         onSubmitted: (value) {
           setState(() {
             _currentKeyword = value;
           });
         },
-        decoration: InputDecoration(
-          hintText: '이름으로 탐색하기',
-          hintStyle: AppTypography.b2.copyWith(color: appColors.gray3),
-          prefixIcon: Padding(
-            padding: const EdgeInsets.all(14.0),
-            child: SvgPicture.asset('assets/images/icons/search_icon.svg'),
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, size: 20, color: appColors.gray3),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _currentKeyword = "");
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: appColors.whiteToBlack,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(9.5),
-            borderSide: BorderSide(color: appColors.gray4),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(9.5),
-            borderSide: BorderSide(color: appColors.gray4),
-          ),
-        ),
+        onChanged: (value) {
+          // 검색어가 모두 지워졌을 때 바로 추천 챌린지 화면으로 돌아가도록 처리
+          if (value.isEmpty) {
+            setState(() {
+              _currentKeyword = "";
+            });
+          }
+        },
       ),
     );
   }

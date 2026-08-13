@@ -285,7 +285,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                       stats.currentStreakDays,
                       appColors,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     _buildCalendarHeader(_focusedDay, appColors),
                     const SizedBox(height: 10),
                     _buildWeekdayHeader(appColors),
@@ -409,16 +409,15 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                 ],
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                  style: AppTypography.h1.copyWith(
+                    color: appColors.blackToWhite,
                   ),
                 ),
               ],
             ),
             Text(
               label,
-              style: TextStyle(color: appColors.blackToWhite, fontSize: 13),
+              style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
             ),
           ],
         ),
@@ -461,7 +460,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
             const SizedBox(width: 20),
             Text(
               '${date.year}년 ${date.month}월',
-              style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
+              style: AppTypography.h3.copyWith(color: appColors.blackToWhite),
             ),
             const SizedBox(width: 20),
             IconButton(
@@ -497,17 +496,25 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
 
   Widget _buildWeekdayHeader(AppColorsExtension appColors) {
     final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: weekdays
-          .map(
-            (day) => Text(
-              day,
+    final children = <Widget>[];
+    for (int i = 0; i < weekdays.length; i++) {
+      children.add(
+        Expanded(
+          child: Center(
+            child: Text(
+              weekdays[i],
               style: AppTypography.b1.copyWith(color: appColors.blackToWhite),
             ),
-          )
-          .toList(),
-    );
+          ),
+        ),
+      );
+
+      if (i < weekdays.length - 1) {
+        children.add(const SizedBox(width: 10));
+      }
+    }
+
+    return Row(children: children);
   }
 
   Widget _buildPostsHeaderForData(int count, AppColorsExtension appColors) {
@@ -517,7 +524,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
         const Text('내 인증글', style: AppTypography.b1),
         Text(
           '총 $count개',
-          style: AppTypography.c1.copyWith(color: appColors.gray2),
+          style: AppTypography.b2.copyWith(color: appColors.gray2),
         ),
       ],
     );

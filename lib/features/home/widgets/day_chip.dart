@@ -39,8 +39,8 @@ class DayChip extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
             decoration: ShapeDecoration(
               color: getBackgroundColor(appColors),
@@ -59,12 +59,9 @@ class DayChip extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               day,
-              style: TextStyle(
+              style: AppTypography.b1.copyWith(
                 color: isColoredStatus ? appColors.whiteToBlack : gray2,
-                fontSize: 14,
-                fontFamily: 'Pretendard',
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                height: 1.50,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ),

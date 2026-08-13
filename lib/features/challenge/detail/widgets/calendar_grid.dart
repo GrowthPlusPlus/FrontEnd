@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import '../models/calendar_post.dart';
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
+import 'package:haenaem/core/theme/app_typography.dart';
 
 // 최초 작성자 : 강선욱
 // 챌린지 인증 달력 그리드 위젯
@@ -141,7 +142,7 @@ class _CalendarCell extends StatelessWidget {
         ),
         child: Text(
           '$day',
-          style: TextStyle(
+          style: AppTypography.b1.copyWith(
             // 인증: 흰색 / 미인증: 회색
             color: isCertified ? AppColors.white : appColors.gray2,
             fontWeight: isToday ? FontWeight.bold : FontWeight.normal,

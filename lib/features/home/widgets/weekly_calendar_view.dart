@@ -67,7 +67,7 @@ class _WeeklyCalendarViewState extends State<WeeklyCalendarView> {
     DateTime now = DateTime.now();
 
     return SizedBox(
-      height: 72,
+      height: 82,
       child: PageView.builder(
         controller: _pageController,
         itemCount: _weeksInMonth.length,

@@ -90,10 +90,18 @@ class NotificationListTile extends StatelessWidget {
 
     if (iconType == NotiIconType.success) {
       bgColor = AppColors.blue;
-      iconWidget = const Icon(Icons.star, color: Colors.white, size: 20);
+      iconWidget = SvgPicture.asset(
+        'assets/images/icons/noti_success.svg',
+        width: 40,
+        height: 40,
+      );
     } else if (iconType == NotiIconType.fail) {
       bgColor = appColors.notification;
-      iconWidget = const Icon(Icons.close, color: Colors.white, size: 20);
+      iconWidget = SvgPicture.asset(
+        'assets/images/icons/noti_fail.svg',
+        width: 40,
+        height: 40,
+      );
     }
 
     return Container(

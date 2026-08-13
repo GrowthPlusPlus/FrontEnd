@@ -138,7 +138,10 @@ PODS:
   - nanopb/encode (3.30910.0)
   - native_camera_sound (0.0.1):
     - Flutter
-  - photo_manager (3.11.0):
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - photo_manager (3.10.0):
     - Flutter
     - FlutterMacOS
   - PromisesObjC (2.4.1)
@@ -180,6 +183,7 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - kakao_flutter_sdk_common (from `.symlinks/plugins/kakao_flutter_sdk_common/ios`)
   - native_camera_sound (from `.symlinks/plugins/native_camera_sound/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - photo_manager (from `.symlinks/plugins/photo_manager/darwin`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -243,6 +247,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/kakao_flutter_sdk_common/ios"
   native_camera_sound:
     :path: ".symlinks/plugins/native_camera_sound/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   photo_manager:
     :path: ".symlinks/plugins/photo_manager/darwin"
   share_plus:
@@ -286,7 +292,8 @@ SPEC CHECKSUMS:
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   native_camera_sound: 6304ac5ca3b45d88b1fba6f1bd9c6da9dbf947f1
-  photo_manager: 6ab48c2ce7ec21aa06d59e6cc049f0b6d9ba7f94
+  path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
+  photo_manager: 93cc83778e33d5fd49dfd7e34b73f8f5a4f10aaf
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
