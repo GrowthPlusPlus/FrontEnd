@@ -27,7 +27,7 @@ class CustomSearchBar extends StatelessWidget {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
 
     return Container(
-      height: 40,
+      height: 48,
       decoration: BoxDecoration(
         color: appColors.whiteToBlack,
         borderRadius: BorderRadius.circular(10),
@@ -50,7 +50,7 @@ class CustomSearchBar extends StatelessWidget {
               textInputAction: textInputAction,
               decoration: InputDecoration(
                 hintText: hintText,
-                hintStyle: AppTypography.b2,
+                hintStyle: AppTypography.b1.copyWith(color: appColors.gray3),
                 border: InputBorder.none,
                 isDense: true,
               ),

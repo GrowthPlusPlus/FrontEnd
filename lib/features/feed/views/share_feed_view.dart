@@ -108,12 +108,15 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
             );
           }
 
-          return FeedPostCard(
-            key: ValueKey(
-              '${feedState.posts[index].id}_${feedState.posts[index].isLiked}_${feedState.posts[index].likeCount}_${feedState.posts[index].commentCount}',
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: FeedPostCard(
+              key: ValueKey(
+                '${feedState.posts[index].id}_${feedState.posts[index].isLiked}_${feedState.posts[index].likeCount}_${feedState.posts[index].commentCount}',
+              ),
+              post: feedState.posts[index],
+              provider: widget.provider,
             ),
-            post: feedState.posts[index],
-            provider: widget.provider,
           );
         },
       ),

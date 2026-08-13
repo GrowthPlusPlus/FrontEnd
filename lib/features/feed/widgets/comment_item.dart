@@ -76,12 +76,12 @@ class CommentItem extends StatelessWidget {
                               color: appColors.blackToWhite,
                             ),
                           ),
-                          const SizedBox(height: 2), // 피그마 spacing: 6 적용
+                          // const SizedBox(height: 2), // 피그마 spacing: 6 적용
                           // 2-2. 본문 내용 (누락되었던 content 복구)
                           Text(
                             comment.content,
-                            style: AppTypography.b2.copyWith(
-                              color: appColors.blackToWhite,
+                            style: AppTypography.b1.copyWith(
+                              color: appColors.gray2,
                               height: 1.5,
                             ),
                           ),
@@ -99,13 +99,13 @@ class CommentItem extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 8), // 내용과 날짜 사이 간격
+                const SizedBox(height: 6), // 내용과 날짜 사이 간격
                 // 2-3. 하단 날짜
                 Row(
                   children: [
                     Text(
                       commentDate,
-                      style: AppTypography.c1.copyWith(
+                      style: AppTypography.b2.copyWith(
                         color: appColors.gray2,
                         height: 1.5,
                       ),
@@ -114,7 +114,7 @@ class CommentItem extends StatelessWidget {
                     if (comment.isEdited)
                       Text(
                         '수정됨',
-                        style: AppTypography.c1.copyWith(
+                        style: AppTypography.b2.copyWith(
                           color: appColors.gray3,
                         ),
                       ),

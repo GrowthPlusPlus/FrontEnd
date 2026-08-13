@@ -9,6 +9,7 @@ import 'package:haenaem/features/notification/screens/notification_main_screen.d
 import 'package:haenaem/features/notification/provider/notification_provider.dart';
 import 'package:haenaem/shared/models/home_challenge_card.dart';
 import '../widgets/challenge_card.dart';
+import '../widgets/weekly_calendar_view.dart';
 import '../widgets/day_chip.dart';
 import 'package:haenaem/features/home/models/home_response.dart';
 
@@ -64,44 +65,8 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
                     // 주간 캘린더
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 4,
-                      ),
-                      child: Row(
-                        children: weekDays.map((date) {
-                          final isToday =
-                              date.year == now.year &&
-                              date.month == now.month &&
-                              date.day == now.day;
-                          // 1. 날짜를 API와 동일한 포맷 'yyyy-MM-dd'로 변환
-                          final dateString =
-                              '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+                    WeeklyCalendarView(weekStatusList: data.weekStatus),
 
-                          // 2. weekStatus 배열에서 해당 날짜와 일치하는 상태 찾기
-                          final matchedStatus = data.weekStatus
-                              .firstWhere(
-                                (ws) => ws.date == dateString,
-                                orElse: () => const WeekStatus(
-                                  date: '',
-                                  status: 'GRAY',
-                                ), // 없으면 기본값
-                              )
-                              .status;
-
-                          debugPrint(
-                            '📅 [Calendar Match] 날짜: $dateString | 오늘여부: $isToday | 부여된 상태: $matchedStatus',
-                          );
-
-                          return DayChip(
-                            date: date,
-                            isSelected: isToday,
-                            status: matchedStatus, // 새로 받아온 상태값 전달
-                          );
-                        }).toList(),
-                      ),
-                    ),
                     const SizedBox(height: 24),
                     // 챌린지 리스트 (data.myChallenges 전달)
                     Expanded(
@@ -216,7 +181,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         backgroundColor: FABColor,
         shape: const CircleBorder(),
-        child: Icon(Icons.add, size: 32, color: FABplusColor),
+        child: Icon(Icons.add, size: 36, color: FABplusColor),
       ),
     );
   }

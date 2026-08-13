@@ -21,8 +21,8 @@ class DayChip extends StatelessWidget {
     Color gray2 = appColors.gray2;
 
     // 요일 레이블 매핑
-    const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토'];
-    String label = weekdayLabels[date.weekday % 7];
+    const weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+    String label = weekdayLabels[date.weekday - 1];
     String day = date.day.toString();
 
     // 상태가 RED나 GREEN일 때는 배경색이 들어가므로 테두리를 지우고 글자를 흰색으로 변경
@@ -39,8 +39,8 @@ class DayChip extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
             decoration: ShapeDecoration(
               color: getBackgroundColor(appColors),
@@ -59,12 +59,9 @@ class DayChip extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               day,
-              style: TextStyle(
+              style: AppTypography.b1.copyWith(
                 color: isColoredStatus ? appColors.whiteToBlack : gray2,
-                fontSize: 14,
-                fontFamily: 'Pretendard',
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                height: 1.50,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ),

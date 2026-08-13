@@ -10,10 +10,11 @@ import '../../../core/theme/app_colors.dart';
 
 import 'package:haenaem/features/social/screens/friend_add_screen.dart';
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
-import 'package:haenaem/features/notification/screens/challenge_invite_detail_screen.dart';
 
 class AllNotificationsView extends ConsumerStatefulWidget {
-  const AllNotificationsView({super.key});
+  final VoidCallback? onMoveToInviteTab; // 알림 화면에서 친구 초대 탭으로 이동할 때 호출되는 콜백
+
+  const AllNotificationsView({super.key, this.onMoveToInviteTab});
 
   @override
   ConsumerState<AllNotificationsView> createState() =>
@@ -99,15 +100,26 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
       for (var noti in notis) {
         NotiIconType iconType = NotiIconType.normal;
 
+        // 성공/실패 상태를 저장해둘 변수
+        bool isChallengeSuccess = false;
+        bool isChallengeFail = false;
+
         // API에서 정의한 type 값에 따라 아이콘 분기 처리
-        if (noti.type == 'CHALLENGE_SUCCESS') {
-          iconType = NotiIconType.success;
-        } else if (noti.type == 'CHALLENGE_FAIL') {
-          iconType = NotiIconType.fail;
+        if (noti.type == 'CHALLENGE') {
+          if (noti.message.contains('축하합니다') || noti.message.contains('훌륭하게')) {
+            iconType = NotiIconType.success;
+            isChallengeSuccess = true;
+          } else if (noti.message.contains('아쉬워요') ||
+              noti.message.contains('실패')) {
+            iconType = NotiIconType.fail;
+            isChallengeFail = true;
+          } else {
+            // 키워드가 없으면 일반 챌린지 초대 알림으로 간주
+            iconType = NotiIconType.profile;
+          }
         } else if (noti.type == 'FRIEND_REQUEST' ||
             noti.type == 'COMMENT' ||
             noti.type == 'LIKE' ||
-            noti.type == 'CHALLENGE' ||
             noti.type == 'FRIEND_ACCEPT') {
           iconType = NotiIconType.profile;
         }
@@ -115,9 +127,16 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
         listItems.add(
           InkWell(
             onTap: () {
+              // 🐞 디버깅 시작 (클릭 시 터미널(Run 탭)을 확인하세요!)
+              print('====================================');
+              print('🐞 [디버그] 알림 카드 클릭됨!');
+              print('🐞 [디버그] 알림 타입(type): ${noti.type}');
+              print('🐞 [디버그] 목적지 ID(targetId): ${noti.targetId}');
+              print('🐞 [디버그] 알림 메시지: ${noti.message}');
               // 알림 타입(type)별 페이지 이동 분기
               if (noti.type == 'FRIEND_REQUEST') {
                 // 친구 요청 알림 -> 소셜(친구추가) 페이지로 이동
+                print('🐞 [디버그] 친구 요청 탭으로 이동');
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -128,11 +147,44 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                 return;
               }
 
+              if (noti.type == 'CHALLENGE') {
+                print(
+                  '🐞 [디버그] CHALLENGE 타입 분기 진입 (성공:$isChallengeSuccess, 실패:$isChallengeFail)',
+                );
+
+                if (isChallengeSuccess || isChallengeFail) {
+                  print('🐞 [디버그] 성공/실패 알림');
+                  // 성공/실패 알림은 targetId가 없으므로 이동하지 않고 종료
+                  return;
+                } else if (noti.targetId != null) {
+                  print('🐞 [디버그] targetId가 존재하므로 챌린지 상세 페이지로 이동');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PostDetailScreen(postId: noti.targetId!),
+                    ),
+                  );
+                } else {
+                  print('🐞 [디버그] 초대 알림 -> 탭 이동 시도');
+                  if (widget.onMoveToInviteTab != null) {
+                    print('🐞 [디버그] onMoveToInviteTab 콜백 호출 완료!');
+                    widget.onMoveToInviteTab!();
+                  } else {
+                    print(
+                      '🐞 [디버그] ❌ 에러: onMoveToInviteTab 콜백이 부모로부터 전달되지 않았습니다!',
+                    );
+                  }
+                }
+                return; // CHALLENGE 처리가 끝났으므로 종료
+              }
+
               // targetId가 있는 경우 (댓글, 좋아요, 챌린지 관련)
               if (noti.targetId != null) {
                 switch (noti.type) {
                   case 'LIKE':
                   case 'COMMENT':
+                    print('🐞 [디버그] 피드 상세(PostDetailScreen)로 이동');
                     // 피드 인증글로 이동 (postId 전달)
                     Navigator.push(
                       context,
@@ -142,45 +194,11 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                       ),
                     );
                     break;
-
-                  case 'CHALLENGE':
-                    // 챌린지 초대 알림 -> 알림 전용 챌린지 상세(수락/거절) 페이지로 이동
-                    // message("눅님이 친구 초대...")에서 "눅"이라는 이름만 파싱해서 전달
-                    String inviterName = '친구';
-                    if (noti.message.contains('님이')) {
-                      inviterName = noti.message.split('님이').first.trim();
-                    }
-
-                  // ChallengeInviteDetailScreen에서는 challengeTitle값이 필요한데 이 화면에는 존재하지 않아서 일단 주석 처리
-
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => ChallengeInviteDetailScreen(
-                  //       challengeId: noti.targetId!,
-                  //       challengeTitle: ,
-                  //       inviterName: inviterName,
-                  //       inviterProfileImageUrl: noti.profileImageUrl,
-                  //     ),
-                  //   ),
-                  // );
-                  // break;
-
-                  // TODO: 챌린지 성공/실패 알림 타입 추가 시 여기에 케이스 추가
-                  /*
-                  case 'CHALLENGE_SUCCESS':
-                  case 'CHALLENGE_FAIL':
-                    // 챌린지 성공/실패 -> 기존 챌린지 메인 탭(소개/현황/멤버)으로 이동
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChallengeMainScreen(challengeId: noti.targetId!),
-                      ),
-                    );
-                    break;
-                    */
                 }
+              } else {
+                print('🐞 [디버그] ❌ 에러: targetId가 null이므로 이동할 수 없습니다.');
               }
+              print('====================================');
             },
             child: NotificationListTile(
               message: noti.message,

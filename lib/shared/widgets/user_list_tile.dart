@@ -17,7 +17,7 @@ class UserListTile extends StatelessWidget {
     super.key,
     required this.user,
     this.trailing,
-    this.padding = const EdgeInsets.symmetric(vertical: 8), // 기본값 8
+    this.padding = const EdgeInsets.symmetric(vertical: 10),
   });
 
   @override

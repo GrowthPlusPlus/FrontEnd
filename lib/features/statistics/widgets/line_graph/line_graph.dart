@@ -91,7 +91,7 @@ class LineGraph extends ConsumerWidget {
       spacing: 4,
       children: [
         SvgPicture.asset(iconPath, width: 16, height: 16),
-        Text(label, style: AppTypography.c1.copyWith(color: appColors.gray1)),
+        Text(label, style: AppTypography.b2.copyWith(color: appColors.gray1)),
       ],
     );
   }
@@ -105,7 +105,7 @@ class LineGraph extends ConsumerWidget {
       width: double.infinity,
       height: 35.99,
       decoration: ShapeDecoration(
-        color: AppColors.gray5,
+        color: appColors.gray5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
       ),
       child: Row(
@@ -150,7 +150,7 @@ class LineGraph extends ConsumerWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: AppTypography.b2.copyWith(
+            style: AppTypography.b1.copyWith(
               color: isSelected
                   ? appColors.whiteToBlack
                   : appColors.blackToWhite,

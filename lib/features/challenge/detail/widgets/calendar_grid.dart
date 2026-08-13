@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import '../models/calendar_post.dart';
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
+import 'package:haenaem/core/theme/app_typography.dart';
 
 // 최초 작성자 : 강선욱
 // 챌린지 인증 달력 그리드 위젯
@@ -25,10 +26,8 @@ class CalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 해당 월 1일의 요일 (0: 일요일 기준으로 맞추기 위해 % 7 처리)
-    // ex) 1일이 화요일이면 skipDays = 2 → 앞에 빈 셀 2개 추가
     final int skipDays =
-        DateTime(focusedDay.year, focusedDay.month, 1).weekday % 7;
+        DateTime(focusedDay.year, focusedDay.month, 1).weekday - 1;
 
     // 해당 월의 마지막 날짜
     // ex) 3월이면 31, 4월이면 30
@@ -143,7 +142,7 @@ class _CalendarCell extends StatelessWidget {
         ),
         child: Text(
           '$day',
-          style: TextStyle(
+          style: AppTypography.b1.copyWith(
             // 인증: 흰색 / 미인증: 회색
             color: isCertified ? AppColors.white : appColors.gray2,
             fontWeight: isToday ? FontWeight.bold : FontWeight.normal,

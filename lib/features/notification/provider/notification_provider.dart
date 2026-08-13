@@ -76,39 +76,6 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
   Future<void> refresh() async {
     await fetchInitial();
   }
-
-  /*
-  void markAsRead(NotificationModel targetNoti) {
-    if (targetNoti.read) return; // 이미 읽은 거면 무시
-
-    // 선택한 알림만 read: true로 바꾼 새로운 리스트 생성
-    final updatedList = state.notifications.map((noti) {
-      if (identical(noti, targetNoti)) {
-        return noti.copyWith(read: true);
-      }
-      return noti;
-    }).toList();
-
-    // 상태 업데이트 (UI 즉시 반영)
-    state = state.copyWith(notifications: updatedList);
-
-    // TODO: 단건 읽음 처리 API가 있다면 여기에 추가
-  }
-
-  // 👇 아까 추가했던 전체 읽음 함수 (이것도 잘 들어있는지 확인!)
-  Future<void> markAllAsRead() async {
-    final hasUnread = state.notifications.any((n) => !n.read);
-    if (!hasUnread) return;
-
-    final updatedList = state.notifications.map((noti) {
-      return noti.copyWith(read: true);
-    }).toList();
-
-    state = state.copyWith(notifications: updatedList);
-
-    // TODO: 전체 읽음 처리 API 호출
-  }
-  */
 }
 
 class ChallengeInviteState {

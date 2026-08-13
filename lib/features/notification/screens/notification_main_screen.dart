@@ -17,11 +17,14 @@ class NotificationMainScreen extends ConsumerStatefulWidget {
       _NotificationMainScreenState();
 }
 
-class _NotificationMainScreenState
-    extends ConsumerState<NotificationMainScreen> {
+class _NotificationMainScreenState extends ConsumerState<NotificationMainScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
 
     // 화면에 진입한 직후 두 탭의 데이터를 최신으로 새로고침합니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -30,6 +33,12 @@ class _NotificationMainScreenState
       // 2. '챌린지 초대' 탭 새로고침
       ref.read(challengeInviteProvider.notifier).fetchInvites();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -50,10 +59,16 @@ class _NotificationMainScreenState
         scrolledUnderElevation: 0,
       ),
       body: CustomTabBar(
+        controller: _tabController,
         tabs: ['모두', '챌린지 초대'],
-        children: const [
-          AllNotificationsView(), // '모두' 탭
-          ChallengeInvitesView(), // '챌린지 초대' 탭
+        children: [
+          AllNotificationsView(
+            onMoveToInviteTab: () {
+              // 인덱스 1 (챌린지 초대 탭)로 스르륵 이동
+              _tabController.animateTo(1);
+            },
+          ),
+          const ChallengeInvitesView(),
         ],
       ),
     );
