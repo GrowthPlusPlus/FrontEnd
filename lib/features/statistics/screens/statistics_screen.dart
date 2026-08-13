@@ -74,7 +74,7 @@ class StatisticsScreen extends ConsumerWidget {
                 activity: data.activity,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             // 나의 해냄 분포
             distributionAsync.when(
               loading: () => const SizedBox(
@@ -111,7 +111,7 @@ class StatisticsScreen extends ConsumerWidget {
                 totalCount: data.totalCount,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             // 나의 해냄 추이
             monthlyWeeklyAsync.when(
               loading: () => const SizedBox(
@@ -144,10 +144,10 @@ class StatisticsScreen extends ConsumerWidget {
               data: (data) =>
                   LineGraph(monthlyData: data.monthly, weeklyData: data.weekly),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             // AI 코칭 카드 (나의 해냄 포인트 / 이것만 해내면 완벽해요 / 다음 단계 해내기)
             const AiCoachingSection(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
           ],
         ),
       ),

@@ -6,10 +6,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 // 사진 첨부 필수를 누를 경우 안내 박스
 class AiNoticeBox extends StatelessWidget {
-  const AiNoticeBox({super.key, this.autoVerifiable});
+  const AiNoticeBox({
+    super.key,
+    this.autoVerifiable,
+    this.isCheckingPreview = false,
+  });
 
   // null: 아직 검사 전(또는 검사 실패), true/false: 검사 결과
   final bool? autoVerifiable;
+
+  final bool isCheckingPreview; // true면 현재 AI 이름 검사가 진행 중 (스피너 표시)
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +47,35 @@ class AiNoticeBox extends StatelessWidget {
                   '정확한 인증을 위해 AI 검증 단계를 거치게 됩니다.\n환경에 따라 인식이 지연되거나 재촬영이 필요할 수 있습니다.',
                   style: AppTypography.c1.copyWith(color: appColors.gray1),
                 ),
-                if (autoVerifiable == false) ...[
+                // ✅ 검사 중일 때: 스피너 + 안내 문구
+                if (isCheckingPreview) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.5,
+                          color: appColors.primaryAble,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '챌린지 이름을 확인하고 있어요...',
+                        style: AppTypography.c1.copyWith(
+                          color: appColors.gray1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else if (autoVerifiable == false) ...[
+                  // ✅ 검사 중이 아닐 때만 결과 문구 표시
                   const SizedBox(height: 4),
                   Text(
                     '현재 입력한 챌린지 이름은 AI가 자동으로 판별하기 어려운 주제예요. 인증 시 지연되거나 재촬영이 필요할 가능성이 높아요.',
                     style: AppTypography.c1.copyWith(
-                      color: appColors.primaryAble,
+                      color: appColors.notification,
                     ),
                   ),
                 ],

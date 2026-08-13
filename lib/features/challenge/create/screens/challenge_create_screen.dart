@@ -76,6 +76,9 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
   // 모든 조건이 충족되었는지 확인
   bool get _isFormValid {
+    // ✅ 사진 필수 선택 + AI 이름 검사가 진행 중이면, 아직 최종 결과를 못 봤으니 버튼 잠금
+    final bool blockedByPreviewCheck = selectedType == 1 && _isCheckingPreview;
+
     return _nameController.text.trim().isNotEmpty && // 이름 입력
         _selectedDay != null && // 시작일 선택
         _selectedDuration != null && // 기간 선택
@@ -83,7 +86,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
         _selectedTagModels.isNotEmpty && // 태그
         _descriptionController.text.trim().isNotEmpty && // 설명 입력
         selectedType != 0 && // 인증 방식 선택
-        selectedVisibility != 0; // 공개범위 선택
+        selectedVisibility != 0 && // 공개범위 선택
+        !blockedByPreviewCheck; // AI 검사 진행 중이면 버튼 잠금
   }
 
   // 상태 초기화
@@ -122,11 +126,13 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
     // 사진 필수가 선택된 상태에서만 재검사 (디바운스)
     if (selectedType == 1) {
       _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _debounceTimer = Timer(const Duration(milliseconds: 700), () {
         _checkAutoVerifiable();
       });
     }
   }
+
+  int _previewRequestId = 0; // 요청 순번 추적용 (같은 제목이라도 최신 요청만 반영하기 위함)
 
   // 사진 첨부 필수를 선택했을 때, 현재 입력된 이름으로 AI 판별 난이도 사전 안내 조회
   Future<void> _checkAutoVerifiable() async {
@@ -135,6 +141,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
       setState(() => _autoVerifiable = null);
       return;
     }
+
+    final int requestId = ++_previewRequestId; // 이 호출만의 고유 순번 부여
 
     setState(() => _isCheckingPreview = true);
     try {
@@ -146,7 +154,12 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
         '🔍 [AI Notice] title: "$title" → autoVerifiable: ${result.autoVerifiable}, category: ${result.category}',
       );
 
-      // ✅ ChallengePreviewResponse -> bool로 꺼내서 저장
+      // 내가 보낸 이후에 더 최신 요청이 나갔다면, 내 응답은 무시
+      if (requestId != _previewRequestId) {
+        debugPrint('🔍 [AI Notice] "$title" (id=$requestId) 응답은 낡은 요청이라 무시');
+        return;
+      }
+
       if (mounted) setState(() => _autoVerifiable = result.autoVerifiable);
     } catch (e) {
       debugPrint('🔍 [AI Notice] 검사 실패: $e');
@@ -437,12 +450,14 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
               ChallengeTypeSelector(
                 selectedType: selectedType,
                 autoVerifiable: _autoVerifiable,
+                isCheckingPreview: _isCheckingPreview,
                 onChanged: (type) {
                   setState(() => selectedType = type);
 
                   // 사진 첨부 필수를 눌렀을 때만 하단으로 스크롤 이동 + AI 이름 검사
                   if (type == 1) {
-                    _checkAutoVerifiable();
+                    _debounceTimer?.cancel(); // 대기 중이던 디바운스 요청 취소
+                    _checkAutoVerifiable(); // 즉시 1번만 호출
 
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       _scrollController.animateTo(
