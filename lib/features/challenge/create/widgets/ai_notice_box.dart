@@ -47,7 +47,7 @@ class AiNoticeBox extends StatelessWidget {
                   '정확한 인증을 위해 AI 검증 단계를 거치게 됩니다.\n환경에 따라 인식이 지연되거나 재촬영이 필요할 수 있습니다.',
                   style: AppTypography.c1.copyWith(color: appColors.gray1),
                 ),
-                // ✅ 검사 중일 때: 스피너 + 안내 문구
+                // 검사 중일 때: 스피너 + 안내 문구
                 if (isCheckingPreview) ...[
                   const SizedBox(height: 6),
                   Row(
@@ -70,13 +70,54 @@ class AiNoticeBox extends StatelessWidget {
                     ],
                   ),
                 ] else if (autoVerifiable == false) ...[
-                  // ✅ 검사 중이 아닐 때만 결과 문구 표시
+                  // 검사 중이 아닐 때만 결과 문구 표시 (실패)
                   const SizedBox(height: 4),
-                  Text(
-                    '현재 입력한 챌린지 이름은 AI가 자동으로 판별하기 어려운 주제예요. 인증 시 지연되거나 재촬영이 필요할 가능성이 높아요.',
-                    style: AppTypography.c1.copyWith(
-                      color: appColors.notification,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2), // ✅ 아이콘만 살짝 아래로
+                        child: SvgPicture.asset(
+                          'assets/images/icons/warning.svg',
+                          width: 14,
+                          height: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '현재 입력한 챌린지 이름은 AI가 자동으로 판별하기 어려운 주제예요. 인증 시 지연되거나 재촬영이 필요할 수 있어요.',
+                          style: AppTypography.c1.copyWith(
+                            color: appColors.notification,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else if (autoVerifiable == true) ...[
+                  // 검사 성공 시 안내 문구
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: SvgPicture.asset(
+                          'assets/images/icons/success_check.svg',
+                          width: 14,
+                          height: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '현재 입력한 챌린지 이름은 AI가 자동으로 판별하기 쉬운 주제예요. 인증이 원활하게 진행될 거예요.',
+                          style: AppTypography.c1.copyWith(
+                            color: appColors.primaryAble,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],

@@ -44,7 +44,7 @@ class ChallengeCreateScreen extends ConsumerStatefulWidget {
 class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   final List<ChallengeTagModel> _selectedTagModels = []; // 선택된 태그를 모델 리스트로 관리
   int selectedType = 0; // 현재 선택된 방식을 저장 (0: 미선택, 1: 사진 필수, 2: 체크 자유)
-  int selectedVisibility = 0; // 1: 비공개, 2: 공개, 3: 친구 공개
+  int selectedVisibility = 2; // 1: 비공개, 2: 공개(기본값), 3: 친구 공개
 
   // AI 사진 검증 사전 안내용 상태
   bool? _autoVerifiable; // null: 미검사, true/false: 검사 결과
@@ -63,7 +63,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   final DateTime _today = DateTime.now();
 
   // 선택된 값들을 저장할 상태 변수
-  String? _selectedDuration; // 인증 기간
+  String? _selectedDuration = '30일'; // 인증 기간 (기본값: 30일)
   String? _selectedFrequency; // 인증 빈도
 
   bool _isSubmitting = false;
@@ -96,6 +96,10 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
     super.initState();
 
     _focusedDay = _today;
+    _selectedDay = _today;
+    _dateHintText =
+        "${_today.year}-${_today.month.toString().padLeft(2, '0')}-${_today.day.toString().padLeft(2, '0')}";
+
     _scrollController.addListener(_onScroll); // 스크롤 리스너 추가
 
     // 텍스트 입력 시마다 버튼 활성화 여부 판단 + (사진 필수 선택 시) 이름 재검사
@@ -385,7 +389,24 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
               const ChallengeLabel(label: '챌린지 이름'),
               ChallengeInputBox(
                 controller: _nameController, // 연결
-                hintText: '챌린지 이름을 입력하세요',
+                hintText: '어떤 챌린지를 시작해볼까요?',
+              ),
+
+              const SizedBox(height: 16),
+
+              ChallengeTypeSelector(
+                selectedType: selectedType,
+                autoVerifiable: _autoVerifiable,
+                isCheckingPreview: _isCheckingPreview,
+                onChanged: (type) {
+                  setState(() => selectedType = type);
+
+                  // 사진 첨부 필수를 눌렀을 때
+                  if (type == 1) {
+                    _debounceTimer?.cancel(); // 대기 중이던 디바운스 요청 취소
+                    _checkAutoVerifiable(); // 즉시 1번만 호출
+                  }
+                },
               ),
 
               const SizedBox(height: 16),
@@ -406,7 +427,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
               const ChallengeLabel(label: '인증 기간'),
               ChallengeInputBox(
-                hintText: _selectedDuration ?? '인증 기간을 선택하세요',
+                hintText: _selectedDuration ?? '얼마나 해내볼까요?',
                 textColor: _selectedDuration == null
                     ? appColors.gray3
                     : appColors.blackToWhite,
@@ -418,7 +439,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
               const ChallengeLabel(label: '인증 빈도'),
               ChallengeInputBox(
-                hintText: _selectedFrequency ?? '인증 빈도를 선택하세요',
+                hintText: _selectedFrequency ?? '얼마나 자주 인증할까요?',
                 textColor: _selectedFrequency == null
                     ? appColors.gray3
                     : appColors.blackToWhite,
@@ -430,7 +451,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
               const ChallengeLabel(label: '챌린지 태그'),
               ChallengeInputBox(
-                hintText: '태그를 선택하세요',
+                hintText: '어떤 주제와 어울릴까요?',
                 iconPath: 'assets/images/icons/big_down_arrow.svg',
                 onTap: showChallengeTagBottomSheet,
                 tag: _selectedTagModels.isEmpty ? null : buildSelectedTags(),
@@ -443,31 +464,6 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
                 controller: _descriptionController,
                 hintText: '예: 오전 6시~8시 사이 운동 인증샷 업로드',
                 height: 139,
-              ),
-
-              const SizedBox(height: 16),
-
-              ChallengeTypeSelector(
-                selectedType: selectedType,
-                autoVerifiable: _autoVerifiable,
-                isCheckingPreview: _isCheckingPreview,
-                onChanged: (type) {
-                  setState(() => selectedType = type);
-
-                  // 사진 첨부 필수를 눌렀을 때만 하단으로 스크롤 이동 + AI 이름 검사
-                  if (type == 1) {
-                    _debounceTimer?.cancel(); // 대기 중이던 디바운스 요청 취소
-                    _checkAutoVerifiable(); // 즉시 1번만 호출
-
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                      );
-                    });
-                  }
-                },
               ),
 
               const SizedBox(height: 16),
