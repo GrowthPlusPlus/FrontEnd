@@ -80,6 +80,7 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
       return RefreshIndicator(
         onRefresh: () => ref.read(widget.provider.notifier).fetchFeeds(),
         child: ListView(
+          controller: widget.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             SizedBox(height: MediaQuery.of(context).size.height * 0.3),
@@ -99,6 +100,9 @@ class _ShareFeedViewState extends ConsumerState<ShareFeedView>
       onRefresh: () => ref.read(widget.provider.notifier).fetchFeeds(),
       child: ListView.builder(
         controller: widget.scrollController,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
         itemCount: feedState.posts.length + (feedState.isLastPage ? 0 : 1),
         itemBuilder: (context, index) {
           if (index == feedState.posts.length) {

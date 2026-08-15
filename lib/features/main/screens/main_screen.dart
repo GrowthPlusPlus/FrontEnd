@@ -25,22 +25,29 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
 
+  late final PageController _pageController;
+
+  final bool _isMainSwipeEnabled = true;
+
   // 딥링크 수신 관리를 위한 변수 선언
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
 
   // 하단 바를 통해 전환될 화면 리스트
-  final List<Widget> _pages = [
-    const HomeScreen(),
-    const StatisticsScreen(),
-    const FeedScreen(),
-    const SocialMainScreen(),
-    const MyPageMainScreen(),
-  ];
+  // final List<Widget> _pages = [
+  //   const HomeScreen(),
+  //   const StatisticsScreen(),
+  //   const FeedScreen(),
+  //   const SocialMainScreen(),
+  //   const MyPageMainScreen(),
+  // ];
 
   @override
   void initState() {
     super.initState();
+
+    _pageController = PageController(initialPage: _selectedIndex);
+
     // 화면이 켜질 때 딥링크 모니터링 시스템 작동 시작
     _initDeepLinkMonitoring();
   }
@@ -108,10 +115,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               content: '이미 참여하고 있는 챌린지입니다.\n홈 화면에서 확인해 주세요.',
               buttonText: '확인',
               onConfirm: () {
-                // 💡 확인 버튼 클릭 시 메인 내비게이션 바의 0번째 인덱스(HomeScreen)로 이동
-                setState(() {
-                  _selectedIndex = 0;
-                });
+                _onItemTapped(0);
               },
             ),
           );
@@ -150,25 +154,69 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
+  // 하단 탭 클릭 시 페이지 애니메이션 이동 공통 메서드
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
   @override
   void dispose() {
     // 💡 메모리 누수 방지를 위한 감시 스트림 구독 해제 필수 보장
     _linkSubscription?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      const HomeScreen(),
+      const StatisticsScreen(),
+      FeedScreen(
+        onSwipeToMain: (isNext) {
+          if (isNext) {
+            // '둘러보기' 탭(1번 인덱스)에서 오른쪽으로 밀었을 때 -> 소셜 화면으로 이동
+            _pageController.nextPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          } else {
+            // '친구' 탭(0번 인덱스)에서 왼쪽으로 밀었을 때 -> 통계 화면으로 이동
+            _pageController.previousPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          }
+        },
+      ),
+      const SocialMainScreen(),
+      const MyPageMainScreen(),
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
-      // 분리한 하단 바 위젯 호출
-      bottomNavigationBar: MainBottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
+      body: PageView(
+        controller: _pageController,
+        physics: _selectedIndex == 2
+            ? const NeverScrollableScrollPhysics()
+            : const BouncingScrollPhysics(),
+        onPageChanged: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
+        children: pages,
+      ),
+      // 분리한 하단 바 위젯 호출
+      bottomNavigationBar: MainBottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
