@@ -119,7 +119,7 @@ class _AiCoachingCardState extends State<AiCoachingCard>
     const outerRadius = 12.0;
     const innerRadius = outerRadius - borderWidth;
 
-    final card = Container(
+    return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(borderWidth),
       decoration: ShapeDecoration(
@@ -155,36 +155,31 @@ class _AiCoachingCardState extends State<AiCoachingCard>
               title: widget.data.title,
             ),
             const SizedBox(height: 20),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int i = 0; i < widget.data.bullets.length; i++) ...[
-                  if (i != 0) const SizedBox(height: 20),
-                  _buildBulletLine(i),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              alignment: Alignment.topLeft,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (int i = 0; i < widget.data.bullets.length; i++)
+                    if (_started && i <= _bulletIndex) ...[
+                      if (i != 0) const SizedBox(height: 20),
+                      _buildBulletLine(i),
+                    ],
                 ],
-              ],
+              ),
             ),
           ],
         ),
       ),
     );
-
-    // ✅ 카드 자체가 페이드인 + 아래에서 위로 슬라이드하며 등장
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: SlideTransition(position: _slideAnim, child: card),
-    );
   }
 
-  // 인덱스별 불릿 줄 렌더링: 순서 전 → 숨김 / 타이핑 중 → 부분 텍스트+커서 / 완료 → 전체 텍스트
+  // 인덱스별 불릿 줄 렌더링: 타이핑 중 → 부분 텍스트+커서 / 완료 → 전체 텍스트
   Widget _buildBulletLine(int index) {
     final fullText = widget.data.bullets[index];
-
-    if (!_started || index > _bulletIndex) {
-      // 아직 차례가 안 된 줄: 레이아웃 높이는 유지하되 안 보이게 처리
-      return Opacity(opacity: 0, child: _BulletText(text: fullText));
-    }
 
     final isCurrentLine = index == _bulletIndex;
     final visibleText = isCurrentLine
