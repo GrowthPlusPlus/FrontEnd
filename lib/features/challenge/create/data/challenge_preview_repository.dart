@@ -14,7 +14,7 @@ class ChallengePreviewRepository {
 
   /// 챌린지 이름 사전 검사
   /// AI가 이 이름/주제로 사진 검증(CLIP 검사)을 자동으로 수행할 수 있는지 여부를 안내용으로 반환
-  /// (백엔드 확인 결과, true/false 모두 정상 응답이며 생성 로직 자체를 막을 필요는 없음)
+  /// (autoVerifiable == false면 사진 필수 챌린지 생성을 막고, 이름 재입력을 유도함)
   Future<ChallengePreviewResponse> checkPreview(String title) async {
     debugPrint('🔍 [Preview API] 요청 title: "$title"');
 
