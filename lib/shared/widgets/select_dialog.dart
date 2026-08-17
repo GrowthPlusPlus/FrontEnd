@@ -20,6 +20,9 @@ class SelectDialog extends StatelessWidget {
   final Color? cancelBackgroundColor;
   final Color? cancelTextColor;
 
+  // true면 확인 버튼이 왼쪽, 취소 버튼이 오른쪽 (기본값 false: 기존과 동일하게 취소-확인 순)
+  final bool swapButtonOrder;
+
   const SelectDialog({
     super.key,
     this.emoji,
@@ -35,11 +38,50 @@ class SelectDialog extends StatelessWidget {
     this.confirmTextColor,
     this.cancelBackgroundColor,
     this.cancelTextColor,
+    this.swapButtonOrder = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+
+    final cancelButton = Expanded(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: cancelBackgroundColor ?? appColors.gray5,
+          foregroundColor: cancelTextColor ?? appColors.gray2,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+        onPressed: () {
+          Navigator.of(context).pop();
+          onCancel();
+        },
+        child: Text(cancelText, style: AppTypography.b1.copyWith()),
+      ),
+    );
+
+    final confirmButton = Expanded(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: confirmBackgroundColor ?? appColors.gray5,
+          foregroundColor: confirmTextColor ?? appColors.gray2,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+        onPressed: () {
+          Navigator.of(context).pop();
+          onConfirm();
+        },
+        child: Text(confirmText, style: AppTypography.b1.copyWith()),
+      ),
+    );
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -54,7 +96,6 @@ class SelectDialog extends StatelessWidget {
               Text(emoji!, style: const TextStyle(fontSize: 64)),
               const SizedBox(height: 8),
             ],
-
             if (title != null) ...[
               Text(
                 title!,
@@ -73,53 +114,10 @@ class SelectDialog extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Row(
-              children: [
-                // 취소 버튼
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cancelBackgroundColor ?? appColors.gray5,
-                      foregroundColor: cancelTextColor ?? appColors.gray2,
-                      elevation: 0, // 다이얼로그 내부 버튼이므로 입체감 제거
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // 부드러운 라운딩 처리
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                      ), // 터치 영역 확보
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      onCancel();
-                    },
-                    child: Text(cancelText, style: AppTypography.b1.copyWith()),
-                  ),
-                ),
-                const SizedBox(width: 10), // 버튼 사이의 간격 추가
-                // 확인 버튼
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          confirmBackgroundColor ?? appColors.gray5,
-                      foregroundColor: confirmTextColor ?? appColors.gray2,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      onConfirm();
-                    },
-                    child: Text(
-                      confirmText,
-                      style: AppTypography.b1.copyWith(),
-                    ),
-                  ),
-                ),
-              ],
+              // swapButtonOrder에 따라 배치 순서만 바꿈 (로직은 각 버튼 위젯 그대로)
+              children: swapButtonOrder
+                  ? [confirmButton, const SizedBox(width: 10), cancelButton]
+                  : [cancelButton, const SizedBox(width: 10), confirmButton],
             ),
           ],
         ),

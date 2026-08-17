@@ -380,119 +380,136 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
       ),
 
       // 입력 폼
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0), // 아이콘 위치와 정렬
-        child: SingleChildScrollView(
-          // 입력 항목이 많아질 것을 대비해 스크롤 추가
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+              ), // 아이콘 위치와 정렬
+              child: SingleChildScrollView(
+                // 입력 항목이 많아질 것을 대비해 스크롤 추가
 
-          // 컨트롤러 연결
-          controller: _scrollController,
+                // 컨트롤러 연결
+                controller: _scrollController,
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const ChallengeLabel(label: '챌린지 이름'),
-              ChallengeInputBox(
-                controller: _nameController, // 연결
-                hintText: '어떤 챌린지를 시작해볼까요?',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ChallengeLabel(label: '챌린지 이름'),
+                    ChallengeInputBox(
+                      controller: _nameController, // 연결
+                      hintText: '어떤 챌린지를 시작해볼까요?',
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    ChallengeTypeSelector(
+                      selectedType: selectedType,
+                      autoVerifiable: _autoVerifiable,
+                      isCheckingPreview: _isCheckingPreview,
+                      onChanged: (type) {
+                        setState(() => selectedType = type);
+
+                        // 사진 첨부 필수를 눌렀을 때
+                        if (type == 1) {
+                          _debounceTimer?.cancel(); // 대기 중이던 디바운스 요청 취소
+                          _checkAutoVerifiable(); // 즉시 1번만 호출
+                        }
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const ChallengeLabel(label: '챌린지 시작일'),
+                    ChallengeInputBox(
+                      leadingIconPath: 'assets/images/icons/calendar.svg',
+                      hintText: _dateHintText,
+                      // 선택된 날짜가 없으면 gray3, 날짜가 선택되면 black으로 설정
+                      textColor: _selectedDay == null
+                          ? appColors.gray3
+                          : appColors.blackToWhite,
+                      iconPath: 'assets/images/icons/big_down_arrow.svg',
+                      onTap: _showCalendarBottomSheet,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const ChallengeLabel(label: '인증 기간'),
+                    ChallengeInputBox(
+                      hintText: _selectedDuration ?? '얼마나 해내볼까요?',
+                      textColor: _selectedDuration == null
+                          ? appColors.gray3
+                          : appColors.blackToWhite,
+                      iconPath: 'assets/images/icons/big_down_arrow.svg',
+                      onTap: showDurationBottomSheet,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const ChallengeLabel(label: '인증 빈도'),
+                    ChallengeInputBox(
+                      hintText: _selectedFrequency ?? '얼마나 자주 인증할까요?',
+                      textColor: _selectedFrequency == null
+                          ? appColors.gray3
+                          : appColors.blackToWhite,
+                      iconPath: 'assets/images/icons/big_down_arrow.svg',
+                      onTap: showFrequencyBottomSheet,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const ChallengeLabel(label: '챌린지 태그'),
+                    ChallengeInputBox(
+                      hintText: '어떤 주제와 어울릴까요?',
+                      iconPath: 'assets/images/icons/big_down_arrow.svg',
+                      onTap: showChallengeTagBottomSheet,
+                      tag: _selectedTagModels.isEmpty
+                          ? null
+                          : buildSelectedTags(),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const ChallengeLabel(label: '챌린지 설명'),
+                    ChallengeInputBox(
+                      controller: _descriptionController,
+                      hintText: '예: 오전 6시~8시 사이 운동 인증샷 업로드',
+                      height: 139,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // 챌린지 공개 범위
+                    ChallengeVisibilitySelector(
+                      selectedVisibility: selectedVisibility,
+                      onChanged: (value) =>
+                          setState(() => selectedVisibility = value),
+                    ),
+                    const SizedBox(height: 26),
+                  ],
+                ),
               ),
-
-              const SizedBox(height: 16),
-
-              ChallengeTypeSelector(
-                selectedType: selectedType,
-                autoVerifiable: _autoVerifiable,
-                isCheckingPreview: _isCheckingPreview,
-                onChanged: (type) {
-                  setState(() => selectedType = type);
-
-                  // 사진 첨부 필수를 눌렀을 때
-                  if (type == 1) {
-                    _debounceTimer?.cancel(); // 대기 중이던 디바운스 요청 취소
-                    _checkAutoVerifiable(); // 즉시 1번만 호출
-                  }
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              const ChallengeLabel(label: '챌린지 시작일'),
-              ChallengeInputBox(
-                leadingIconPath: 'assets/images/icons/calendar.svg',
-                hintText: _dateHintText,
-                // 선택된 날짜가 없으면 gray3, 날짜가 선택되면 black으로 설정
-                textColor: _selectedDay == null
-                    ? appColors.gray3
-                    : appColors.blackToWhite,
-                iconPath: 'assets/images/icons/big_down_arrow.svg',
-                onTap: _showCalendarBottomSheet,
-              ),
-
-              const SizedBox(height: 16),
-
-              const ChallengeLabel(label: '인증 기간'),
-              ChallengeInputBox(
-                hintText: _selectedDuration ?? '얼마나 해내볼까요?',
-                textColor: _selectedDuration == null
-                    ? appColors.gray3
-                    : appColors.blackToWhite,
-                iconPath: 'assets/images/icons/big_down_arrow.svg',
-                onTap: showDurationBottomSheet,
-              ),
-
-              const SizedBox(height: 16),
-
-              const ChallengeLabel(label: '인증 빈도'),
-              ChallengeInputBox(
-                hintText: _selectedFrequency ?? '얼마나 자주 인증할까요?',
-                textColor: _selectedFrequency == null
-                    ? appColors.gray3
-                    : appColors.blackToWhite,
-                iconPath: 'assets/images/icons/big_down_arrow.svg',
-                onTap: showFrequencyBottomSheet,
-              ),
-
-              const SizedBox(height: 16),
-
-              const ChallengeLabel(label: '챌린지 태그'),
-              ChallengeInputBox(
-                hintText: '어떤 주제와 어울릴까요?',
-                iconPath: 'assets/images/icons/big_down_arrow.svg',
-                onTap: showChallengeTagBottomSheet,
-                tag: _selectedTagModels.isEmpty ? null : buildSelectedTags(),
-              ),
-
-              const SizedBox(height: 16),
-
-              const ChallengeLabel(label: '챌린지 설명'),
-              ChallengeInputBox(
-                controller: _descriptionController,
-                hintText: '예: 오전 6시~8시 사이 운동 인증샷 업로드',
-                height: 139,
-              ),
-
-              const SizedBox(height: 16),
-
-              // 챌린지 공개 범위
-              ChallengeVisibilitySelector(
-                selectedVisibility: selectedVisibility,
-                onChanged: (value) =>
-                    setState(() => selectedVisibility = value),
-              ),
-              const SizedBox(height: 26),
-            ],
+            ),
           ),
-        ),
-      ),
+          // 하단 버튼 배치
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+              child: BottomActionButton(
+                iconPath: 'assets/images/icons/plus.svg',
+                text: '만들기',
 
-      // 하단 버튼 배치
-      bottomNavigationBar: BottomActionButton(
-        text: '만들기',
-        onPressed: (_isFormValid && !_isSubmitting)
-            ? () {
-                _submitChallenge();
-              }
-            : null,
+                onPressed: (_isFormValid && !_isSubmitting)
+                    ? () {
+                        _submitChallenge();
+                      }
+                    : null,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

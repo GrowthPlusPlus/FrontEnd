@@ -27,6 +27,7 @@ import '../widgets/verification_info_box.dart';
 import '../widgets/ai_success_box.dart';
 import '../widgets/ai_fail_box.dart';
 import 'package:haenaem/features/challenge/verification/widgets/reverification_guide_box.dart';
+import '../../../../shared/widgets/confetti_overlay.dart';
 // import '../widgets/verification_submit_button.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/select_dialog.dart';
@@ -757,12 +758,12 @@ class _ChallengeVerificationScreenState
                 ),
               ),
             ),
+            // 하단 버튼 통합
+            BottomActionButton(
+              text: isEditMode ? '수정하기' : '인증하기',
+              onPressed: _isFormValid ? _onSave : null,
+            ),
           ],
-        ),
-        // 하단 버튼 통합
-        bottomNavigationBar: BottomActionButton(
-          text: isEditMode ? '수정하기' : '인증하기',
-          onPressed: _isFormValid ? _onSave : null,
         ),
       ),
     );
@@ -795,6 +796,10 @@ class _ChallengeVerificationScreenState
     if (!mounted) return;
 
     if (success) {
+      if (!isEditMode) {
+        showConfetti(context);
+      }
+
       displayToast(context, isEditMode ? '수정 완료!' : '인증 완료!');
       Navigator.pop(context);
     } else {
