@@ -174,11 +174,13 @@ class ChallengePopupMenu extends ConsumerWidget {
             title: '챌린지를 나가시겠어요?',
             content: '지금까지의 진행 상황이 모두 사라지며,\n복구할 수 없습니다.',
             contentColor: appColors.notification,
-            confirmText: '취소',
-            cancelText: '나가기',
-            cancelBackgroundColor: appColors.notification, // 나가기 버튼은 경고색으로 강조
-            cancelTextColor: appColors.whiteToBlack, // 나가기 버튼 텍스트는 흰색
-            onCancel: () async {
+            confirmText: '나가기',
+            cancelText: '취소',
+            confirmBackgroundColor: appColors.notification,
+            confirmTextColor: appColors.whiteToBlack,
+            swapButtonOrder: true,
+            onConfirm: () async {
+              // ✅ "나가기" 버튼 로직을 onConfirm으로 이동
               debugPrint('나가기 버튼 눌림');
               final success = await ref
                   .read(challengeLeaveNotifierProvider.notifier)
@@ -191,7 +193,7 @@ class ChallengePopupMenu extends ConsumerWidget {
                 displayToast(context, '나가기 처리 중 오류가 발생했습니다.');
               }
             },
-            onConfirm: () {},
+            onCancel: () {}, // ✅ "취소" 버튼은 아무것도 안 함
           ),
         );
         break;

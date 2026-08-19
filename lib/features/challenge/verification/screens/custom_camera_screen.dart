@@ -194,7 +194,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
             child: SizedBox(
               width: size,
               // 카메라의 실제 종횡비(aspectRatio)를 반영하여 높이 계산
-              height: size / _controller!.value.aspectRatio,
+              height: size * _controller!.value.aspectRatio,
               child: CameraPreview(_controller!),
             ),
           ),
