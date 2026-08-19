@@ -9,12 +9,14 @@ class ChallengeTypeSelector extends StatelessWidget {
   final int selectedType;
   final ValueChanged<int> onChanged;
   final bool? autoVerifiable;
+  final bool isCheckingPreview;
 
   const ChallengeTypeSelector({
     super.key,
     required this.selectedType,
     required this.onChanged,
     this.autoVerifiable,
+    this.isCheckingPreview = false,
   });
 
   @override
@@ -42,7 +44,10 @@ class ChallengeTypeSelector extends StatelessWidget {
         // 선택된 타입이 1(사진 필수)일 때만 AI 안내 박스 표시
         if (selectedType == 1) ...[
           const SizedBox(height: 12),
-          AiNoticeBox(autoVerifiable: autoVerifiable),
+          AiNoticeBox(
+            autoVerifiable: autoVerifiable,
+            isCheckingPreview: isCheckingPreview,
+          ),
         ],
       ],
     );
