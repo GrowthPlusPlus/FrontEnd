@@ -76,8 +76,12 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
   // 모든 조건이 충족되었는지 확인
   bool get _isFormValid {
-    // ✅ 사진 필수 선택 + AI 이름 검사가 진행 중이면, 아직 최종 결과를 못 봤으니 버튼 잠금
+    // 사진 필수 선택 + AI 이름 검사가 진행 중이면, 아직 최종 결과를 못 봤으니 버튼 잠금
     final bool blockedByPreviewCheck = selectedType == 1 && _isCheckingPreview;
+
+    // 사진 필수 선택 + 이름 검사 결과가 "판별 어려움(false)"이면 생성 자체를 막음
+    final bool blockedByUnsupportedName =
+        selectedType == 1 && _autoVerifiable == false;
 
     return _nameController.text.trim().isNotEmpty && // 이름 입력
         _selectedDay != null && // 시작일 선택
@@ -87,7 +91,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
         _descriptionController.text.trim().isNotEmpty && // 설명 입력
         selectedType != 0 && // 인증 방식 선택
         selectedVisibility != 0 && // 공개범위 선택
-        !blockedByPreviewCheck; // AI 검사 진행 중이면 버튼 잠금
+        !blockedByPreviewCheck && // AI 검사 진행 중이면 버튼 잠금
+        !blockedByUnsupportedName; // AI 검사 결과가 false면 버튼 잠금
   }
 
   // 상태 초기화

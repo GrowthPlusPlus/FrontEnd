@@ -70,13 +70,13 @@ class AiNoticeBox extends StatelessWidget {
                     ],
                   ),
                 ] else if (autoVerifiable == false) ...[
-                  // 검사 중이 아닐 때만 결과 문구 표시 (실패)
+                  // 검사 중이 아닐 때만 결과 문구 표시 (실패 → 재입력 유도)
                   const SizedBox(height: 4),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(top: 2), // ✅ 아이콘만 살짝 아래로
+                        padding: const EdgeInsets.only(top: 2),
                         child: SvgPicture.asset(
                           'assets/images/icons/warning.svg',
                           width: 14,
@@ -86,7 +86,7 @@ class AiNoticeBox extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          '현재 입력한 챌린지 이름은 AI가 자동으로 판별하기 어려운 주제예요. 인증 시 지연되거나 재촬영이 필요할 수 있어요.',
+                          '현재 챌린지 이름으로는 AI 사진 인증이 어려워요.\n챌린지 이름을 다시 입력해주세요.',
                           style: AppTypography.c1.copyWith(
                             color: appColors.notification,
                           ),
