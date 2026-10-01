@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:haenaem/shared/models/post.dart';
 // 💡 FeedRepository가 있는 경로를 임포트해주세요. (feed_provider.dart 내부에 있다면 해당 파일 임포트)
 import '../data/feed_repository.dart';
+import './feed_provider.dart';
 import '../../../../shared/provider/post_provider.dart'; // monthlyChallengePostsProvider
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import 'package:haenaem/features/challenge/detail/provider/stats_provider.dart';
@@ -82,7 +83,8 @@ class PostUpdateNotifier extends _$PostUpdateNotifier {
     if (!result.hasError) {
       // 💡 수정 완료 후 상세 페이지 무효화(새로고침)
       ref.invalidate(postDetailProvider(postId: postId));
-      //ref.invalidate(challengePostsProvider); // 필요하다면 챌린지 피드도 무효화하여 목록 갱신
+      ref.read(exploreFeedProvider.notifier).refresh();
+      ref.read(friendFeedProvider.notifier).refresh();
     }
 
     state = result;
