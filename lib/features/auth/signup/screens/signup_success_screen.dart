@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/signup_provider.dart';
-import '../widgets/emoji_firework_widget.dart';
+import 'package:haenaem/shared/widgets/confetti_overlay.dart';
 import 'package:haenaem/features/auth/signup/widgets/signup_progress.bar.dart';
 import 'package:haenaem/features/main/screens/main_screen.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
@@ -21,28 +21,25 @@ class SignupSuccessScreen extends ConsumerStatefulWidget {
 }
 
 class _SignupSuccessScreenState extends ConsumerState<SignupSuccessScreen> {
-  // 폭죽 애니메이션 관리 객체
-  final EmojiFireWork _firework = EmojiFireWork(
-    emojiAsset: const AssetImage('assets/images/illustrations/heart_icon.png'),
-  );
-
   @override
   void initState() {
     super.initState();
     // 화면이 그려진 직후 폭죽 애니메이션 시작
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startAutoFirework();
+      _startAutoConfetti();
     });
   }
 
-  // 자동으로 폭죽을 여러 번 터뜨리는 비동기 함수
-  void _startAutoFirework() async {
+  // 화면 중앙에서 사방으로 컨페티를 여러 번 터뜨림 (기존 폭죽과 동일한 3연발 패턴)
+  void _startAutoConfetti() async {
     for (int i = 0; i < 3; i++) {
       if (!mounted) return;
-      setState(() {
-        _firework.addFireworkWidget();
-      });
-      // 0.3초 간격으로 다음 폭죽 발사
+      showConfetti(
+        context,
+        origin: Alignment.center,
+        allDirections: true,
+        pieceCount: 40,
+      );
       await Future.delayed(const Duration(milliseconds: 300));
     }
   }
@@ -64,109 +61,92 @@ class _SignupSuccessScreenState extends ConsumerState<SignupSuccessScreen> {
             stops: [0.0, 0.5, 1.0],
           ),
         ),
-        child: Stack(
+        child: SafeArea(
           // Stack으로 전체 구조를 잡아야 폭죽이 텍스트 위를 날아다님
-          children: [
-            // 배경 위 콘텐츠 레이어
-            SafeArea(
-              child: Column(
-                children: [
-                  // 커스텀 AppBar
-                  Container(
-                    height: 46,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              // 커스텀 AppBar
+              Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                alignment: Alignment.center,
+                child: Text(
+                  '회원가입',
+                  style: AppTypography.h3.copyWith(color: AppColors.white),
+                ),
+              ),
+              // 진행률 바 배치
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: SignupProgressBar(
+                  currentStep: 5,
+                  totalSteps: 5,
+                  activeColor: AppColors.white,
+                  inactiveColor: AppColors.white,
+                ),
+              ),
+
+              // 메인 콘텐츠 영역
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 36,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 3,
+                    children: [
+                      Text(
+                        '가입을 해냈어요! 🎉\n당신의 첫 번째 성취를 축하합니다.',
+                        style: AppTypography.h2.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '멋진 챌린지들이 기다리고 있어요.\n함께 해낼 준비 됐나요?',
+                        style: AppTypography.h3.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 시작하기 버튼 (텍스트 커스텀 버튼)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                child: GestureDetector(
+                  onTap: () {
+                    // 리버팟 상태 초기화 (다음 가입자를 위해!)
+                    ref.read(signupProvider.notifier).resetState();
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MainScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  behavior: HitTestBehavior.opaque, // 투명한 영역도 터치 가능하게
+                  child: Container(
+                    width: double.infinity,
+                    height: 60,
                     alignment: Alignment.center,
+
                     child: Text(
-                      '회원가입',
+                      '시작하기',
                       style: AppTypography.h3.copyWith(color: AppColors.white),
                     ),
                   ),
-                  // 진행률 바 배치
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: SignupProgressBar(
-                      currentStep: 5,
-                      totalSteps: 5,
-                      activeColor: AppColors.white,
-                      inactiveColor: AppColors.white,
-                    ),
-                  ),
-
-                  // 메인 콘텐츠 영역
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 36,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 3,
-                        children: [
-                          Text(
-                            '가입을 해냈어요! 🎉\n당신의 첫 번째 성취를 축하합니다.',
-                            style: AppTypography.h2.copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '멋진 챌린지들이 기다리고 있어요.\n함께 해낼 준비 됐나요?',
-                            style: AppTypography.h3.copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // 시작하기 버튼 (텍스트 커스텀 버튼)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                    child: GestureDetector(
-                      onTap: () {
-                        // 리버팟 상태 초기화 (다음 가입자를 위해!)
-                        ref.read(signupProvider.notifier).resetState();
-
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MainScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      },
-                      behavior: HitTestBehavior.opaque, // 투명한 영역도 터치 가능하게
-                      child: Container(
-                        width: double.infinity,
-                        height: 60,
-                        alignment: Alignment.center,
-
-                        child: Text(
-                          '시작하기',
-                          style: AppTypography.h3.copyWith(
-                            color: AppColors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-
-            // 폭죽 레이어 (최상단에 위치시켜야 텍스트 위로 터짐)
-            IgnorePointer(
-              // 폭죽이 클릭을 방해하지 않도록 추가
-              child: Stack(
-                children: _firework.fireworkWidgets.values.map((widget) {
-                  return Center(child: widget); // 화면 중앙에서 터지도록 설정
-                }).toList(),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

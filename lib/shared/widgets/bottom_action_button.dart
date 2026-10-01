@@ -1,6 +1,7 @@
 // 최초 작성자: 강선욱
 // 화면 하단에 표시되는 버튼을 커스텀할 수 있는 클래스
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
 
@@ -8,6 +9,7 @@ class BottomActionButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final IconData? icon;
+  final String? iconPath;
 
   // 커스텀 파라미터 추가
   final Color? backgroundColor; // 버튼 배경색
@@ -22,6 +24,7 @@ class BottomActionButton extends StatefulWidget {
     required this.text,
     this.onPressed,
     this.icon,
+    this.iconPath,
     this.backgroundColor,
     this.textColor,
     this.borderColor,
@@ -84,7 +87,18 @@ class _BottomActionButtonState extends State<BottomActionButton> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (widget.icon != null) ...[
+            if (widget.iconPath != null) ...[
+              SvgPicture.asset(
+                widget.iconPath!,
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(
+                  effectiveTextColor,
+                  BlendMode.srcIn,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ] else if (widget.icon != null) ...[
               Icon(widget.icon, size: 20, color: effectiveTextColor),
               const SizedBox(width: 8),
             ],

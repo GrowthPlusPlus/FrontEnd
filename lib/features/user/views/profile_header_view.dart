@@ -68,15 +68,20 @@ class ProfileHeaderView extends StatelessWidget {
       return (indexA == -1 ? 99 : indexA).compareTo(indexB == -1 ? 99 : indexB);
     });
 
-    // 2. 태그 리스트를 3개씩 묶기 (Chunking)
+    // 2. 태그 리스트를 줄 단위로 묶기 (Chunking)
+    // ✅ 태그가 정확히 4개일 때만 2+2로, 그 외에는 기존처럼 3개씩(마지막 줄만 나머지)
     List<List<String>> rows = [];
-    for (var i = 0; i < sortedTags.length; i += 3) {
-      rows.add(
-        sortedTags.sublist(
-          i,
-          i + 3 > sortedTags.length ? sortedTags.length : i + 3,
-        ),
-      );
+    if (sortedTags.length == 4) {
+      rows = [sortedTags.sublist(0, 2), sortedTags.sublist(2, 4)];
+    } else {
+      for (var i = 0; i < sortedTags.length; i += 3) {
+        rows.add(
+          sortedTags.sublist(
+            i,
+            i + 3 > sortedTags.length ? sortedTags.length : i + 3,
+          ),
+        );
+      }
     }
 
     // 3. UI 생성 (Column 안에 Row 배치)

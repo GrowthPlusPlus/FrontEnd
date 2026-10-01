@@ -95,7 +95,7 @@ class EnterConfirmDialog extends ConsumerWidget {
                 ),
                 child: Text(
                   '확인',
-                  style: AppTypography.b1.copyWith(
+                  style: AppTypography.h3.copyWith(
                     color: appColors.whiteToBlack,
                   ),
                 ),

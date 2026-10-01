@@ -9,6 +9,7 @@ import '../provider/challenge_member_provider.dart';
 import '../provider/challenge_delete_provider.dart';
 import 'package:haenaem/shared/provider/home_provider.dart';
 import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
+import 'package:haenaem/shared/widgets/animated_toast.dart';
 
 import 'challenge_members_screen.dart';
 
@@ -172,6 +173,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                   confirmBackgroundColor: appColors.notification,
                   confirmTextColor: appColors.whiteToBlack,
                   cancelText: '취소',
+                  swapButtonOrder: true,
                   onConfirm: () async {
                     final currentFilter = MemberFilter(
                       challengeId: challengeId,
@@ -183,6 +185,8 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                         .delegateOwnerAuto(challengeId: challengeId);
 
                     if (success && context.mounted) {
+                      displayToast(context, '챌린지장을 위임하고 나갔습니다.');
+
                       Navigator.pop(context); // 다이얼로그 닫기
                       Navigator.pop(context); // 챌린지 화면 나가기 (이전 화면으로 돌아감)
                     }
@@ -222,6 +226,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                   confirmTextColor: appColors.whiteToBlack,
                   cancelText: '취소',
                   cancelTextColor: appColors.gray2,
+                  swapButtonOrder: true,
                   onConfirm: () async {
                     // 기존 다이얼로그에 있던 삭제 로직 그대로 이식
                     final success = await ref
@@ -229,6 +234,8 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                         .removeChallenge(challengeId);
 
                     if (success && context.mounted) {
+                      displayToast(context, '챌린지를 성공적으로 삭제했습니다.');
+
                       // 상태 갱신
                       ref.read(homeNotifierProvider.notifier).refresh();
                       ref.invalidate(myInProgressChallengesProvider);

@@ -37,14 +37,18 @@ class _MyChallengeSectionViewState
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: appColors.gray4, width: 1),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHeader(appColors),
-          Divider(height: 1, color: appColors.gray4),
-          _buildChallengeListArea(appColors),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(
+          11,
+        ), // 테두리 두께(1)만큼 안쪽으로 살짝 줄여서 테두리 선과 안 겹치게
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(appColors),
+            Divider(height: 1, color: appColors.gray4),
+            _buildChallengeListArea(appColors),
+          ],
+        ),
       ),
     );
   }
@@ -204,10 +208,23 @@ class _MyChallengeSectionViewState
         return Column(
           children: list.asMap().entries.map((entry) {
             final isLast = entry.key == (list.length - 1);
+            final isFirst = entry.key == 0;
             final challenge = entry.value;
+
             return Column(
               children: [
-                MyChallengeCard(item: challenge),
+                MyChallengeCard(
+                  item: challenge,
+                  // ✅ 첫 번째 카드만 위쪽 모서리를 직각으로 지정 (헤더 바로 아래에 평평하게 붙도록)
+                  borderRadius: isFirst
+                      ? const BorderRadius.only(
+                          topLeft: Radius.zero,
+                          topRight: Radius.zero,
+                          bottomLeft: Radius.zero,
+                          bottomRight: Radius.zero,
+                        )
+                      : const BorderRadius.all(Radius.zero),
+                ),
                 if (!isLast) Divider(height: 1, color: appColors.gray5),
               ],
             );

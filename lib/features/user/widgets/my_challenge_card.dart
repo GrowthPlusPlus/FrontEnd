@@ -10,8 +10,13 @@ import '../models/my_page_challenge_card.dart';
 // mypage challenge card 모델을 데이터로 받아서 화면에 그린다
 class MyChallengeCard extends StatelessWidget {
   final MyPageChallengeCard item;
+  final BorderRadiusGeometry borderRadius;
 
-  const MyChallengeCard({super.key, required this.item});
+  const MyChallengeCard({
+    super.key,
+    required this.item,
+    this.borderRadius = const BorderRadius.all(Radius.circular(12)),
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +48,7 @@ class MyChallengeCard extends StatelessWidget {
       decoration: ShapeDecoration(
         color: appColors.whiteToBlack,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: borderRadius,
           side: BorderSide(width: 0.69, color: appColors.gray5),
         ),
       ),
