@@ -59,6 +59,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
     if (widget.isJustCreated) {
       // 프레임이 그려진 직후에 다이얼로그를 띄우기 위해 postFrameCallback 사용
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        FocusManager.instance.primaryFocus?.unfocus();
         showDialog(
           context: context,
           barrierColor: const Color(0x7F1A1D1B),
