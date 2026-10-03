@@ -25,6 +25,9 @@ void main() async {
   // 전역 에러 핸들러
   FlutterError.onError = (FlutterErrorDetails details) {
     debugPrint('🔴 Flutter 에러: ${details.exception}');
+    debugPrint(
+      '🔴 위젯: ${details.informationCollector?.call().map((e) => e.toString()).join('\n')}',
+    );
     debugPrint('🔴 스택: ${details.stack}');
   };
 

@@ -120,8 +120,7 @@ class _ChallengeInviteContentState
             _buildLinkShareBox(widget.challengeUrl, appColors),
             const SizedBox(height: 10),
             _buildSearchBar(appColors),
-            const SizedBox(height: 50),
-            const CircularProgressIndicator(),
+            const Expanded(child: Center(child: CircularProgressIndicator())),
           ],
         );
       },
@@ -159,8 +158,7 @@ class _ChallengeInviteContentState
     );
 
     if (filteredFriends.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.only(top: 50),
+      return Center(
         child: Text(
           friends.isEmpty ? '초대할 수 있는 친구가 없습니다.' : '검색 결과가 없습니다.',
           style: AppTypography.b2.copyWith(color: appColors.gray2),
@@ -168,12 +166,12 @@ class _ChallengeInviteContentState
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
+    return ListView.separated(
+      padding: EdgeInsets.zero,
       itemCount: filteredFriends.length,
-      itemBuilder: (context, index) {
-        return _buildFriendInviteItem(filteredFriends[index], appColors);
-      },
+      separatorBuilder: (_, __) => const SizedBox(height: 4),
+      itemBuilder: (context, index) =>
+          _buildFriendInviteItem(filteredFriends[index], appColors),
     );
   }
 
@@ -324,8 +322,8 @@ class _ChallengeInviteContentState
     bool isInvited =
         friend.isInvited || _newlyInvitedFriends.contains(friend.id);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+    return SizedBox(
+      height: 56,
       child: Row(
         children: [
           // 프로필 이미지
