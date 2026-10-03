@@ -1,4 +1,5 @@
 // 최초 작성자 : 김채영
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
@@ -19,6 +20,8 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final double dialogHeight = math.min(630.0, screenHeight * 0.9);
 
     return Dialog(
       alignment: const Alignment(0, -0.3),
@@ -26,7 +29,7 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: double.infinity,
-        height: 700,
+        height: dialogHeight,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: appColors.whiteToBlack,
@@ -40,7 +43,7 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
             // 공통 초대 위젯 (여기서 검색, 리스트, 초대 로직 다 처리)
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: ChallengeInviteContent(
                   // 공통 위젯 사용!
                   challengeId: challengeId,
@@ -96,7 +99,7 @@ class ChallengeCreateSuccessDialog extends StatelessWidget {
   Widget buildLaterButton(BuildContext context, AppColorsExtension appColors) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
       child: GestureDetector(
         onTap: () => Navigator.pop(context),
         child: Container(

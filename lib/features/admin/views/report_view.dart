@@ -134,6 +134,9 @@ class _ReportedCommentViewState extends ConsumerState<CommentView>
     super.initState();
     Future.microtask(() {
       final currentState = ref.read(reportedCommentProvider);
+      debugPrint(
+        '🟡 CommentView initState 진입, comments.isEmpty=${currentState.comments.isEmpty}',
+      );
       if (currentState.comments.isEmpty) {
         ref.read(reportedCommentProvider.notifier).fetchReportedComments();
       }

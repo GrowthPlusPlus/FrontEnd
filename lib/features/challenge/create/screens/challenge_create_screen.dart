@@ -212,6 +212,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
   // 챌린지 생성 데이터 제출 준비 로직
   void _submitChallenge() async {
     if (_isSubmitting) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _isSubmitting = true);
 
     try {
