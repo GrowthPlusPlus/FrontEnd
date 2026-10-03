@@ -109,6 +109,7 @@ class PostUpdateNotifier extends _$PostUpdateNotifier {
 
   Future<bool> editArticle({
     required int postId,
+    required int challengeId,
     required String content,
     List<int> deleteImageIds = const [],
     List<int> tempImageIds = const [],
@@ -127,7 +128,12 @@ class PostUpdateNotifier extends _$PostUpdateNotifier {
     );
 
     if (!result.hasError) {
-      _refreshAllRelatedFeeds(ref, postId: postId);
+      _refreshAllRelatedFeeds(
+        ref,
+        postId: postId,
+        challengeId: challengeId,
+        isFullStatsRefresh: true,
+      );
     }
 
     state = result;
