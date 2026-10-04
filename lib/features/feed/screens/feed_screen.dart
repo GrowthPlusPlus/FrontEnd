@@ -73,7 +73,7 @@ class _FeedScreenState extends State<FeedScreen>
                     settings: const RouteSettings(
                       name: ChallengeSearchScreen.routeName,
                     ),
-                    builder: (context) => const ChallengeSearchScreen(),
+                    builder: (_) => const ChallengeSearchScreen(),
                   ),
                 );
               },
