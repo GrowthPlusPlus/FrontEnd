@@ -16,15 +16,23 @@ Future<List<SearchChallengeCard>> aiRecommendation(AiRecommendationRef ref) {
 @riverpod
 class FeedNotifier extends _$FeedNotifier {
   @override
-  FeedState build(String apiPath) => FeedState();
+  FeedState build(String apiPath) {
+    Future.microtask(() => fetchFeeds());
+    return FeedState(isLoading: true);
+  }
 
   // feed_repository.dart의 @riverpod 어노테이션으로 생성된 Provider를 사용
   FeedRepository get _repository => ref.read(feedRepositoryProvider);
 
+  // ── 피드 새로고침 (수정, 삭제, 작성 후 호출용) ─────────────────────
+  Future<void> refresh() async {
+    await fetchFeeds();
+  }
+
   // ── 피드 최초 로드 ────────────────────────────
 
   Future<void> fetchFeeds() async {
-    if (state.isLoading) return;
+    // if (state.isLoading) return;
 
     state = state.copyWith(
       isLoading: true,

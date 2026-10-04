@@ -57,7 +57,6 @@ class SelectDialog extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
         onPressed: () {
-          Navigator.of(context).pop();
           onCancel();
         },
         child: Text(cancelText, style: AppTypography.b1.copyWith()),
@@ -76,7 +75,6 @@ class SelectDialog extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
         onPressed: () {
-          Navigator.of(context).pop();
           onConfirm();
         },
         child: Text(confirmText, style: AppTypography.b1.copyWith()),

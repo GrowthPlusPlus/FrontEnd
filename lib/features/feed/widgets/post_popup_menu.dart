@@ -1,4 +1,5 @@
 // 최초 작성자 : 강선욱
+import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -210,34 +211,11 @@ class PostPopupMenu extends ConsumerWidget {
             confirmText: '삭제',
             confirmTextColor: appColors.notification,
             cancelText: '취소',
-            onConfirm: () async {
-              try {
-                // 💡 삭제 시도
-                final success = await ref
-                    .read(postDeleteNotifierProvider.notifier)
-                    .removeArticle(post.id, post.challengeId);
-
-                if (success && context.mounted) {
-                  displayToast(context, "인증글이 삭제되었습니다.");
-
-                  // 만약 상세페이지라면 뒤로가기
-                  Navigator.pop(context);
-                }
-              } catch (e) {
-                // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
-                String errorMessage = "삭제에 실패했습니다.";
-
-                if (e.toString().contains("PAST_POST_CANNOT_DELETE")) {
-                  errorMessage = "지나간 날짜의 인증글은 삭제할 수 없습니다. ✊";
-                }
-
-                if (context.mounted) {
-                  displayToast(context, errorMessage);
-                }
-              }
+            onConfirm: () {
+              Navigator.of(context).pop(true);
             },
             onCancel: () {
-              Navigator.of(context).pop(true);
+              Navigator.of(context).pop(false);
             },
           ),
         );

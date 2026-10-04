@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/features/feed/provider/feed_provider.dart';
+import 'package:haenaem/features/feed/provider/post_detail_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/verification_repository.dart';
 import 'package:haenaem/shared/models/post.dart';
@@ -17,8 +18,15 @@ import '../data/clip_verify_result.dart';
 part 'verification_provider.g.dart';
 
 // 인증글 생성, 수정 시 관련된 캐시를 한번에 갱신하는 함수
-void _refreshRelatedProviders(Ref ref, int challengeId) {
+void _refreshRelatedProviders(Ref ref, int challengeId, {int? postId}) {
   final now = DateTime.now();
+
+  ref.read(exploreFeedProvider.notifier).refresh();
+  ref.read(friendFeedProvider.notifier).refresh();
+
+  if (postId != null) {
+    ref.invalidate(postDetailProvider(postId: postId));
+  }
 
   // 1. 해당 챌린지의 월간 포스트 리스트 갱신
   ref.invalidate(
@@ -146,7 +154,7 @@ class ArticleUpdateNotifier extends _$ArticleUpdateNotifier {
     );
 
     if (!result.hasError && result.value != null) {
-      _refreshRelatedProviders(ref, challengeId);
+      _refreshRelatedProviders(ref, challengeId, postId: postId);
     }
 
     state = result;
