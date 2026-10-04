@@ -111,6 +111,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
           detailAsync.when(
             data: (detail) {
               final myInfo = ref.watch(currentUserProvider);
+
               final bool isHost = detail.leader.id == myInfo?.id;
 
               return ChallengePopupMenu(
