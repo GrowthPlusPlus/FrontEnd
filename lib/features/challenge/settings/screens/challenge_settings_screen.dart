@@ -10,7 +10,8 @@ import '../provider/challenge_delete_provider.dart';
 import 'package:haenaem/shared/provider/home_provider.dart';
 import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
-
+import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
+import 'package:haenaem/features/feed/provider/challenge_search_provider.dart';
 import 'challenge_members_screen.dart';
 
 // 챌린지 설정화면
@@ -166,7 +167,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
               // 1. 다이얼로그 호출 (결과값은 int? 타입)
               showDialog(
                 context: context,
-                builder: (context) => SelectDialog(
+                builder: (dialogContext) => SelectDialog(
                   title: '챌린지장 위임하기',
                   content: '다른 멤버에게 챌린지장을 위임하고\n정말 이 챌린지에서 나가시겠습니까?',
                   confirmText: '나가기',
@@ -187,11 +188,19 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                     if (success && context.mounted) {
                       displayToast(context, '챌린지장을 위임하고 나갔습니다.');
 
-                      Navigator.pop(context); // 다이얼로그 닫기
-                      Navigator.pop(context); // 챌린지 화면 나가기 (이전 화면으로 돌아감)
+                      ref.read(homeNotifierProvider.notifier).refresh();
+                      ref.invalidate(myInProgressChallengesProvider);
+                      ref.invalidate(searchChallengesProvider);
+
+                      Navigator.of(context).popUntil(
+                        (route) =>
+                            route.settings.name ==
+                                ChallengeSearchScreen.routeName ||
+                            route.isFirst,
+                      );
                     }
                   },
-                  onCancel: () {},
+                  onCancel: () => Navigator.of(dialogContext).pop(),
                 ),
               );
             },
@@ -215,7 +224,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
             onTap: () {
               showDialog(
                 context: context,
-                builder: (context) => SelectDialog(
+                builder: (dialogContext) => SelectDialog(
                   emoji: '🚨', // 간단하게 아이콘 대신 이모지로 대체할 경우
                   title: '챌린지를 삭제하시겠습니까?',
                   titleColor: AppColors.notification, // 제목 빨간색 스타일 반영
@@ -244,7 +253,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                   },
-                  onCancel: () {},
+                  onCancel: () => Navigator.of(dialogContext).pop(),
                 ),
               );
             },

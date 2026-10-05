@@ -52,7 +52,7 @@ class _ScreenState extends ConsumerState<ChallengeMemberManagementScreen> {
       final currentFilter = MemberFilter(
         challengeId: widget.challengeId,
         page: 0,
-        nickname: _searchQuery, // 현재 검색어 상태 유지
+        nickname: null, // 현재 검색어 상태 유지
       );
 
       // 해당 필터에 대한 캐시를 날려서 다시 API를 호출하게 만듦
@@ -305,15 +305,16 @@ class _MemberTile extends StatelessWidget {
               onTap: () {
                 showDialog(
                   context: context,
-                  builder: (context) => SelectDialog(
+                  builder: (dialogContext) => SelectDialog(
                     title: '강제 퇴장',
                     content: '\'${member.nickname}\' 님을 강퇴하시겠습니까?',
                     confirmText: '강제 퇴장',
                     confirmTextColor: appColors.notification,
                     onConfirm: () {
+                      Navigator.of(dialogContext).pop();
                       onKick();
                     },
-                    onCancel: () {},
+                    onCancel: () => Navigator.of(dialogContext).pop(),
                   ),
                 );
               },

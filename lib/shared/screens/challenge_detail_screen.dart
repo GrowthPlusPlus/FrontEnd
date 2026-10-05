@@ -14,6 +14,7 @@ import 'package:haenaem/shared/widgets/confirm_dialog.dart';
 import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
+import 'package:haenaem/features/feed/provider/challenge_search_provider.dart';
 
 class ChallengeDetailScreen extends ConsumerStatefulWidget {
   final int challengeId;
@@ -126,6 +127,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
 
                 // 성공 시 다이얼로그 노출 (챌린지 제목 전달)
                 if (success && context.mounted) {
+                  ref.invalidate(searchChallengesProvider);
                   showDialog(
                     context: context,
                     barrierDismissible: false,
