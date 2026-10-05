@@ -8,9 +8,14 @@ import 'package:haenaem/features/challenge/invite/screens/challenge_invite_scree
 import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:haenaem/features/challenge/detail/widgets/notification_settings_dialog.dart';
 import 'package:haenaem/features/challenge/settings/screens/challenge_settings_screen.dart';
-// import 'package:haenaem/features/challenge/provider/challenge_provider.dart'; // 추가
+// import 'package:haenaem/features/challenge/provider/challenge_provider.dart';
+import 'package:haenaem/shared/provider/home_provider.dart';
+import 'package:haenaem/features/user/provider/my_challenge_provider.dart';
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 import '../provider/challenge_leave_provider.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
+import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
+import 'package:haenaem/features/feed/provider/challenge_search_provider.dart';
 
 // 챌린지방 팝업 (방장일 경우/멤버일 경우)
 class ChallengePopupMenu extends ConsumerWidget {
@@ -188,12 +193,25 @@ class ChallengePopupMenu extends ConsumerWidget {
 
               if (success && context.mounted) {
                 displayToast(context, '챌린지에서 성공적으로 나갔습니다.');
-                Navigator.pop(context);
+
+                ref.read(homeNotifierProvider.notifier).refresh();
+                ref.invalidate(myInProgressChallengesProvider);
+                ref.invalidate(
+                  challengeDetailProvider(challengeId: challengeId),
+                );
+                ref.invalidate(searchChallengesProvider);
+
+                Navigator.of(context).popUntil(
+                  (route) =>
+                      route.settings.name == ChallengeSearchScreen.routeName ||
+                      route.isFirst,
+                );
               } else if (context.mounted) {
                 displayToast(context, '나가기 처리 중 오류가 발생했습니다.');
               }
             },
-            onCancel: () {}, // ✅ "취소" 버튼은 아무것도 안 함
+            onCancel: () =>
+                Navigator.of(dialogContext).pop(), // ✅ "취소" 버튼은 아무것도 안 함
           ),
         );
         break;

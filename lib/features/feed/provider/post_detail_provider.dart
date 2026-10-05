@@ -158,7 +158,7 @@ class PostDeleteNotifier extends _$PostDeleteNotifier {
       // 💡 삭제 성공 시 피드 목록 + 챌린지/홈/통계 전체 새로고침
       _refreshAllRelatedFeeds(
         ref,
-        postId: postId,
+        // postId: postId, 삭제 시에는 상세를 다시 불러올 필요 없기 때문
         challengeId: challengeId,
         isFullStatsRefresh: true,
       );
