@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // 추가
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
+import 'package:haenaem/features/home/screens/home_screen.dart';
 import 'package:haenaem/features/challenge/invite/screens/challenge_invite_screen.dart';
 import 'package:haenaem/shared/widgets/select_dialog.dart';
 import 'package:haenaem/features/challenge/detail/widgets/notification_settings_dialog.dart';
@@ -185,8 +186,9 @@ class ChallengePopupMenu extends ConsumerWidget {
             confirmTextColor: appColors.whiteToBlack,
             swapButtonOrder: true,
             onConfirm: () async {
-              // ✅ "나가기" 버튼 로직을 onConfirm으로 이동
+              Navigator.of(context).pop(true);
               debugPrint('나가기 버튼 눌림');
+
               final success = await ref
                   .read(challengeLeaveNotifierProvider.notifier)
                   .leaveChallenge(challengeId);
@@ -210,8 +212,9 @@ class ChallengePopupMenu extends ConsumerWidget {
                 displayToast(context, '나가기 처리 중 오류가 발생했습니다.');
               }
             },
-            onCancel: () =>
-                Navigator.of(dialogContext).pop(), // ✅ "취소" 버튼은 아무것도 안 함
+            onCancel: () {
+              Navigator.of(context).pop(true);
+            },
           ),
         );
         break;

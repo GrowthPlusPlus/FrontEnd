@@ -44,7 +44,9 @@ class MyPageMenuView extends ConsumerWidget {
                 content: '로그아웃 하시겠습니까?',
                 cancelText: '취소',
                 confirmText: '로그아웃',
-                onCancel: () {},
+                onCancel: () {
+                  Navigator.of(context).pop(false);
+                },
                 onConfirm: () async {
                   try {
                     try {

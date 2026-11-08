@@ -1,11 +1,13 @@
 // 최초 작성자: 김채영
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:haenaem/features/user/provider/user_provider.dart';
 import '../../../core/network/dio_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 토큰 저장을 위해 필요
 import 'package:haenaem/features/auth/signup/screens/signup_main_screen.dart';
@@ -36,10 +38,38 @@ class AuthService {
   static const String naverRedirectUri =
       'http://158.247.216.11:8080/oauth/naver/callback';
 
+  static final Dio _dio = _createDio();
+
+  static Dio _createDio() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: 'http://158.247.216.11:8080',
+        connectTimeout: const Duration(seconds: 5),
+      ),
+    );
+
+    // 💡 요청 시마다 스토리지에서 토큰을 확인하고 없으면 Authorization 헤더 제거
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final String? token = await _storage.read(key: 'accessToken');
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          } else {
+            options.headers.remove('Authorization'); // 👈 토큰 없으면 확실히 삭제
+          }
+          return handler.next(options);
+        },
+      ),
+    );
+
+    return dio;
+  }
+
   // ♥️ 기존 서버
-  static final Dio _dio = Dio(
-    BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
-  );
+  // static final Dio _dio = Dio(
+  //   BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
+  // );
 
   // ♥️ 로컬 서버로 테스트
   // static final Dio _dio = Dio(
@@ -73,6 +103,7 @@ class AuthService {
     required String code,
     required String state,
     required BuildContext context,
+    WidgetRef? ref,
   }) async {
     try {
       debugPrint("🚀 서버로 네이버 인가 데이터 전송 시작...");
@@ -90,7 +121,7 @@ class AuthService {
       debugPrint("📥 네이버 로그인 서버 응답 코드: ${response.statusCode}");
 
       if (response.statusCode == 200 && response.data != null) {
-        await _handleAuthResponse(response.data, context);
+        await _handleAuthResponse(response.data, context, ref);
       }
     } on DioException catch (e) {
       debugPrint('🌐 네이버 서버 통신 에러: ${e.response?.statusCode}');
@@ -147,6 +178,7 @@ class AuthService {
     required String code,
     required String codeVerifier,
     required BuildContext context,
+    WidgetRef? ref,
   }) async {
     try {
       debugPrint("🚀 서버로 카카오 인가 데이터 전송 시작...");
@@ -166,7 +198,7 @@ class AuthService {
       debugPrint("📥 서버 응답 데이터: ${response.data}");
 
       if (response.statusCode == 200 && response.data != null) {
-        await _handleAuthResponse(response.data, context);
+        await _handleAuthResponse(response.data, context, ref);
       }
     } on DioException catch (e) {
       debugPrint('🌐 서버 통신 에러: ${e.response?.statusCode}');
@@ -178,6 +210,7 @@ class AuthService {
   static Future<void> _handleAuthResponse(
     Map<String, dynamic> data,
     BuildContext context,
+    WidgetRef? ref,
   ) async {
     final String? accessToken = data['accessToken'];
     final String? refreshToken = data['refreshToken'];
@@ -186,6 +219,20 @@ class AuthService {
     if (accessToken != null) {
       await _storage.write(key: 'accessToken', value: accessToken);
       await _storage.write(key: 'refreshToken', value: refreshToken);
+
+      if (ref != null) {
+        ref.invalidate(dioProvider);
+        ref.invalidate(myProfileProvider);
+
+        // 최신 프로필 정보 GET API를 바로 불러와 CurrentUser에 수동 주입
+        try {
+          final detail = await ref.read(myProfileProvider.future);
+          ref.read(currentUserProvider.notifier).setUser(detail.user);
+          debugPrint('✅ 로그인 성공 후 유저 정보 갱신 완료: ${detail.user.nickname}');
+        } catch (e) {
+          debugPrint('⚠️ 로그인 후 유저 정보 불러오기 실패: $e');
+        }
+      }
     }
 
     if (!context.mounted) return;
@@ -234,6 +281,7 @@ class AuthService {
     required String code,
     required String codeVerifier,
     required BuildContext context,
+    WidgetRef? ref,
   }) async {
     try {
       debugPrint(
@@ -251,35 +299,36 @@ class AuthService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
-        final String? accessToken = data['accessToken'];
-        final String? refreshToken = data['refreshToken'];
-        final String? userStatus = data['userStatus'];
+        await _handleAuthResponse(response.data, context, ref);
+        // final data = response.data;
+        // final String? accessToken = data['accessToken'];
+        // final String? refreshToken = data['refreshToken'];
+        // final String? userStatus = data['userStatus'];
 
-        // 받은 토큰을 기기에 안전하게 저장
-        if (accessToken != null) {
-          await _storage.write(key: 'accessToken', value: accessToken);
-          await _storage.write(key: 'refreshToken', value: refreshToken);
-        }
+        // // 받은 토큰을 기기에 안전하게 저장
+        // if (accessToken != null) {
+        //   await _storage.write(key: 'accessToken', value: accessToken);
+        //   await _storage.write(key: 'refreshToken', value: refreshToken);
+        // }
 
-        debugPrint("🎉 로그인 성공! 유저 상태: $userStatus");
+        // debugPrint("🎉 로그인 성공! 유저 상태: $userStatus");
 
-        if (!context.mounted) return;
+        // if (!context.mounted) return;
 
-        // 유저 상태에 따른 화면 전환
-        if (userStatus == "NEW") {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const SignupMainScreen()),
-          );
-        } else if (userStatus == "ACTIVE") {
-          // 기존 유저 -> 홈 화면(MainScreen)으로 바로 이동
-          debugPrint("✅ 기존 유저: 홈 화면으로 이동합니다.");
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-          );
-        }
+        // // 유저 상태에 따른 화면 전환
+        // if (userStatus == "NEW") {
+        //   Navigator.pushReplacement(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => const SignupMainScreen()),
+        //   );
+        // } else if (userStatus == "ACTIVE") {
+        //   // 기존 유저 -> 홈 화면(MainScreen)으로 바로 이동
+        //   debugPrint("✅ 기존 유저: 홈 화면으로 이동합니다.");
+        //   Navigator.pushReplacement(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => const MainScreen()),
+        //   );
+        // }
       }
     } on DioException catch (e) {
       debugPrint(
@@ -327,7 +376,7 @@ class AuthService {
   }
 
   // 로그아웃: 서버의 리프레시 토큰을 삭제하고, 앱(클라이언트)의 모든 토큰을 삭제합니다.
-  static Future<void> logout() async {
+  static Future<void> logout([WidgetRef? ref]) async {
     try {
       // 1. 사전 준비 단계 (Access Token 확인)
       final String? accessToken = await _storage.read(key: 'accessToken');
@@ -349,6 +398,13 @@ class AuthService {
       // 4. 로컬 정리 단계 (기존 logout기능)
       // 서버 성공 여부와 상관없이 '무조건' 내 폰의 토큰을 싹 지웁니다.
       await _storage.deleteAll();
+
+      _dio.options.headers.remove('Authorization');
+
+      if (ref != null) {
+        ref.read(currentUserProvider.notifier).clearUser();
+      }
+
       debugPrint("✅ 클라이언트 엑세스 토큰 및 모든 정보 삭제 완료");
     }
   }

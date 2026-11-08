@@ -278,11 +278,6 @@ class _MemberTile extends StatelessWidget {
                 member.nickname,
                 style: AppTypography.b2.copyWith(color: appColors.blackToWhite),
               ),
-              Text(
-                '사용자 칭호',
-                // TODO: 실제 칭호 데이터로 교체 필요
-                style: AppTypography.c1.copyWith(color: appColors.gray2),
-              ),
             ],
           ),
           const Spacer(),
@@ -311,10 +306,12 @@ class _MemberTile extends StatelessWidget {
                     confirmText: '강제 퇴장',
                     confirmTextColor: appColors.notification,
                     onConfirm: () {
-                      Navigator.of(dialogContext).pop();
+                      Navigator.of(context).pop(true);
                       onKick();
                     },
-                    onCancel: () => Navigator.of(dialogContext).pop(),
+                    onCancel: () {
+                      Navigator.of(context).pop(true);
+                    },
                   ),
                 );
               },

@@ -667,7 +667,7 @@ class _ChallengeVerificationScreenState
         confirmText: isEditMode ? '수정 취소' : '작성 취소',
         confirmTextColor: appColors.notification,
         onConfirm: () {
-          Navigator.pop(context);
+          Navigator.of(context).pop(true);
         },
         cancelText: '계속 작성하기',
         onCancel: () {

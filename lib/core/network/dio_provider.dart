@@ -27,6 +27,9 @@ Dio dio(DioRef ref) {
         debugPrint('🕵️‍♂️ [Interceptor] Storage Read (accessToken): $token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+        } else {
+          // 💡 [핵심 수정] 로그아웃 등으로 토큰이 없을 때는 기존 Authorization 헤더를 반드시 삭제!
+          options.headers.remove('Authorization');
         }
         return handler.next(options);
       },

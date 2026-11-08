@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/challenge_member_repository.dart';
 import 'package:haenaem/shared/models/user.dart';
 import 'package:haenaem/shared/provider/home_provider.dart';
+import './challenge_delete_provider.dart';
 
 part 'challenge_member_provider.g.dart';
 
@@ -45,25 +46,47 @@ class ChallengeMembers extends _$ChallengeMembers {
     );
   }
 
-  /// 🚀 새로 추가된 방장 위임 API 호출 메소드
-  /// 성공하면 true, 실패하면 false를 반환하여 UI에서 분기 처리할 수 있게 합니다.
+  /// 🚀 방장 위임 및 탈퇴 (멤버 1명이면 자동 삭제 처리)
   Future<bool> delegateOwnerAuto({required int challengeId}) async {
-    // 변경 작업이 일어나는 동안 UI에 로딩 상태를 알리기 위해 state를 loading으로 전환합니다.
     state = const AsyncValue.loading();
 
     try {
-      final repository = ref.read(challengeMemberRepositoryProvider);
+      final memberRepository = ref.read(challengeMemberRepositoryProvider);
 
-      // 1. Repository의 API 호출 실행
-      await repository.delegateChallengeOwnerAuto(challengeId);
+      // 1. 현재 챌린지 멤버 목록 조회 (상태값 참조 또는 API 직접 확인)
+      List<User> members = state.value ?? [];
+      if (members.isEmpty) {
+        members = await memberRepository.getChallengeMembers(challengeId);
+      }
 
+      // 2. 멤버가 1명 이하(본인뿐)인 경우 ➡️ ChallengeDeleteNotifier 사용해서 삭제 실행
+      if (members.length <= 1) {
+        debugPrint('ℹ️ [Provider] 멤버가 1명이므로 챌린지 삭제를 실행합니다. (ID: $challengeId)');
+
+        // 작성하신 ChallengeDeleteNotifier 호출
+        final isDeleted = await ref
+            .read(challengeDeleteNotifierProvider.notifier)
+            .removeChallenge(challengeId);
+
+        if (isDeleted) {
+          debugPrint('✅ [Provider] 챌린지 삭제 성공 및 홈 리스트 새로고침 완료');
+          return true;
+        } else {
+          debugPrint('❌ [Provider] 챌린지 삭제 실패');
+          return false;
+        }
+      }
+
+      // 3. 멤버가 2명 이상인 경우 ➡️ 방장 자동 위임 API 실행
+      await memberRepository.delegateChallengeOwnerAuto(challengeId);
+
+      // 홈 리스트 갱신
       ref.read(homeNotifierProvider.notifier).refresh();
 
       debugPrint('✅ [Provider] 방장 위임 성공 및 리스트 새로고침 완료');
       return true;
     } catch (e, stackTrace) {
-      debugPrint('❌ [Provider] 방장 위임 실패: $e');
-      // 에러가 발생하면 기존 상태에 에러를 얹어줍니다.
+      debugPrint('❌ [Provider] 처리 실패: $e');
       state = AsyncValue.error(e, stackTrace);
       return false;
     }

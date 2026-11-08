@@ -207,50 +207,96 @@ class PostPopupMenu extends ConsumerWidget {
         );
         break;
       case 'delete':
-        final bool? confirmed = await showDialog<bool>(
+        showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => SelectDialog(
+          builder: (dialogContext) => SelectDialog(
             title: '인증글 삭제',
             content: '작성하신 인증글을 삭제하시겠습니까?\n삭제된 인증글은 되돌릴 수 없습니다.',
             confirmText: '삭제',
             confirmTextColor: appColors.notification,
             cancelText: '취소',
-            onConfirm: () {
-              Navigator.of(context).pop(true);
+            onConfirm: () async {
+              // 1. 다이얼로그 먼저 닫기 (dialogContext 사용)
+              Navigator.of(dialogContext).pop();
+
+              // 2. 삭제 API 호출
+              try {
+                final success = await ref
+                    .read(postDeleteNotifierProvider.notifier)
+                    .removeArticle(post.id, post.challengeId);
+
+                if (success && context.mounted) {
+                  displayToast(context, "인증글이 삭제되었습니다.");
+
+                  // 상세 페이지일 경우 이전 화면(목록)으로 이동
+                  // (만약 피드 목록 바텀시트에서 튼 거라면 아래 line은 주석 처리)
+                  // Navigator.of(context).pop();
+                }
+              } catch (e) {
+                String errorMessage = "삭제에 실패했습니다.";
+                if (e.toString().contains("PAST_POST_CANNOT_DELETE")) {
+                  errorMessage = "지나간 날짜의 인증글은 삭제할 수 없습니다. ✊";
+                }
+
+                if (context.mounted) {
+                  displayToast(context, errorMessage);
+                }
+              }
             },
             onCancel: () {
-              Navigator.of(context).pop(false);
+              // 취소 시 다이얼로그만 닫기
+              Navigator.of(dialogContext).pop();
             },
           ),
         );
-
-        if (confirmed == true) {
-          try {
-            // 💡 삭제 시도
-            final success = await ref
-                .read(postDeleteNotifierProvider.notifier)
-                .removeArticle(post.id, post.challengeId);
-
-            if (success && context.mounted) {
-              displayToast(context, "인증글이 삭제되었습니다.");
-
-              if (popOnDelete) Navigator.pop(context);
-            }
-          } catch (e) {
-            // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
-            String errorMessage = "삭제에 실패했습니다.";
-
-            if (e.toString().contains("PAST_POST_CANNOT_DELETE")) {
-              errorMessage = "지나간 날짜의 인증글은 삭제할 수 없습니다. ✊";
-            }
-
-            if (context.mounted) {
-              displayToast(context, errorMessage);
-            }
-          }
-        }
         break;
+      // case 'delete':
+      //   final bool? confirmed = await showDialog<bool>(
+      //     context: context,
+      //     barrierDismissible: false,
+      //     builder: (context) => SelectDialog(
+      //       title: '인증글 삭제',
+      //       content: '작성하신 인증글을 삭제하시겠습니까?\n삭제된 인증글은 되돌릴 수 없습니다.',
+      //       confirmText: '삭제',
+      //       confirmTextColor: appColors.notification,
+      //       cancelText: '취소',
+      //       onConfirm: () {
+      //         Navigator.of(context).pop(true);
+      //       },
+      //       onCancel: () {
+      //         Navigator.of(context).pop(false);
+      //       },
+      //     ),
+      //   );
+
+      //   if (confirmed == true) {
+      //     try {
+      //       // 💡 삭제 시도
+      //       final success = await ref
+      //           .read(postDeleteNotifierProvider.notifier)
+      //           .removeArticle(post.id, post.challengeId);
+
+      //       if (success && context.mounted) {
+      //         displayToast(context, "인증글이 삭제되었습니다.");
+
+      //         // 만약 상세페이지라면 뒤로가기
+      //         Navigator.pop(context);
+      //       }
+      //     } catch (e) {
+      //       // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
+      //       String errorMessage = "삭제에 실패했습니다.";
+
+      //       if (e.toString().contains("PAST_POST_CANNOT_DELETE")) {
+      //         errorMessage = "지나간 날짜의 인증글은 삭제할 수 없습니다. ✊";
+      //       }
+
+      //       if (context.mounted) {
+      //         displayToast(context, errorMessage);
+      //       }
+      //     }
+      //   }
+      //   break;
       case 'view_challenge':
         debugPrint('보내는 ID: ${post.challengeId}');
         Navigator.push(
