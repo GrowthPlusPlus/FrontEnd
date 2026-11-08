@@ -32,7 +32,9 @@ class SearchChallengeCard {
     return SearchChallengeCard(
       base: ChallengeBase.fromJson(json),
       participantCount: (json['participantNumber']) as int,
-      dDay: 7, // json['end_date'] as int,
+      dDay:
+          (json['remainingDays'] as num?)?.toInt() ??
+          0, // json['end_date'] as int,
       tags: (json['tags'] as List? ?? [])
           .map((t) => ChallengeTagModel.fromJson(t as Map<String, dynamic>))
           .toList(),

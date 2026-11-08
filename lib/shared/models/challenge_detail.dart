@@ -17,6 +17,7 @@ class ChallengeDetail {
   final int participantCount; // 참여자 수
   final List<User> todaySuccessUsers; // 오늘 인증 완료한 유저 리스트
   final DateTime? joinDate;
+  final bool join;
 
   const ChallengeDetail({
     required this.startDate,
@@ -29,6 +30,7 @@ class ChallengeDetail {
     required this.participantCount,
     required this.todaySuccessUsers,
     this.joinDate,
+    this.join = false,
   });
 
   factory ChallengeDetail.fromJson(Map<String, dynamic> json) {
@@ -45,6 +47,7 @@ class ChallengeDetail {
       joinDate: json['joinDate'] != null
           ? DateTime.parse(json['joinDate'] as String)
           : null,
+      join: json['join'] as bool? ?? false,
       todaySuccessUsers: (json['todaySuccessUsers'] as List)
           .map((e) => User.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -62,6 +65,7 @@ class ChallengeDetail {
     int? participantCount,
     DateTime? joinDate,
     List<User>? todaySuccessUsers,
+    bool? join,
   }) {
     return ChallengeDetail(
       startDate: startDate ?? this.startDate,
@@ -74,6 +78,7 @@ class ChallengeDetail {
       participantCount: participantCount ?? this.participantCount,
       joinDate: joinDate ?? this.joinDate,
       todaySuccessUsers: todaySuccessUsers ?? this.todaySuccessUsers,
+      join: join ?? this.join,
     );
   }
 }
