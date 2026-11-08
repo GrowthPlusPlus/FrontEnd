@@ -37,11 +37,37 @@ class ChallengeSearchCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 챌린지 제목
-                  Text(
-                    challenge.base.title,
-                    style: AppTypography.b3.copyWith(
-                      color: appColors.blackToWhite,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          challenge.base.title,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.b3.copyWith(
+                            color: appColors.blackToWhite,
+                          ),
+                        ),
+                      ),
+                      if (challenge.join) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: appColors.selected,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '참여 중',
+                            style: AppTypography.b2.copyWith(
+                              color: appColors.primaryAble,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 10),
 

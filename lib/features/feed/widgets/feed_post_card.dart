@@ -18,12 +18,14 @@ class FeedPostCard extends ConsumerWidget {
   final Post post;
   final VoidCallback? onTap;
   final dynamic provider; // 어떤 Provider(친구/둘러보기)인지 받음
+  final bool isDetail;
 
   const FeedPostCard({
     super.key,
     required this.post,
     this.onTap,
     this.provider,
+    this.isDetail = false,
   });
 
   @override
@@ -87,7 +89,7 @@ class FeedPostCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                PostPopupMenu(post: post),
+                PostPopupMenu(post: post, popOnDelete: isDetail),
               ],
             ),
           ),

@@ -74,6 +74,7 @@ class PostDetailScreen extends ConsumerWidget {
                       FeedPostCard(
                         post: latestPost,
                         provider: feedProvider,
+                        isDetail: true,
                         onTap: () {}, // 상세 페이지 내에서는 클릭 시 아무 동작 안 함
                       ),
 

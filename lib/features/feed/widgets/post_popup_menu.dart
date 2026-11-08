@@ -24,7 +24,12 @@ import 'package:haenaem/shared/widgets/animated_toast.dart';
 // 인증글 다이얼로그 (내 인증글일 경우와 타인의 인증글일 경우)
 class PostPopupMenu extends ConsumerWidget {
   final Post post; // 인증글 데이터
-  const PostPopupMenu({super.key, required this.post});
+  final bool popOnDelete; // 상세 화면에서만 true
+  const PostPopupMenu({
+    super.key,
+    required this.post,
+    this.popOnDelete = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -230,8 +235,7 @@ class PostPopupMenu extends ConsumerWidget {
             if (success && context.mounted) {
               displayToast(context, "인증글이 삭제되었습니다.");
 
-              // 만약 상세페이지라면 뒤로가기
-              Navigator.pop(context);
+              if (popOnDelete) Navigator.pop(context);
             }
           } catch (e) {
             // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
