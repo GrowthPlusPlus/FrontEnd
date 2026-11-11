@@ -51,6 +51,102 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
     final challenge = challengeAsync.value;
     final isJoined = challenge?.join ?? false;
 
+    // ── 버튼 상태 계산 ─────────────────────────────────────
+    String buttonText = '참여하기';
+    Color? buttonBgColor;
+    VoidCallback? buttonOnPressed;
+
+    if (challenge != null) {
+      final now = DateTime.now();
+      // 시간 계산 시 시/분/초 오차 방지를 위한 오늘 자정 기준 날짜 계산
+      final today = DateTime(now.year, now.month, now.day);
+      final endDate = DateTime(
+        challenge.endDate.year,
+        challenge.endDate.month,
+        challenge.endDate.day,
+      );
+
+      // 1. 종료된 챌린지 (endDate가 오늘 이전)
+      if (endDate.isBefore(today)) {
+        buttonText = '종료됨';
+        buttonBgColor = AppColors.disable;
+        buttonOnPressed = () => displayToast(context, '이미 종료된 챌린지입니다.');
+      }
+      // 2. 이전에 참여/탈퇴한 챌린지 (joinedBefore == true)
+      else if (challenge.joinedBefore == true && challenge.join == false) {
+        buttonText = '재참여 불가'; // 또는 '탈퇴 완료'
+        buttonBgColor = AppColors.disable;
+        buttonOnPressed = () => displayToast(context, '이전에 탈퇴하여 재참여할 수 없습니다.');
+      }
+      // 3. 현재 참여 중인 챌린지 (join == true)
+      else if (challenge.join == true) {
+        buttonText = '참여 중';
+        buttonBgColor = appColors.primaryAble; // 브랜드 초록색 유지
+        buttonOnPressed = () => displayToast(context, '이미 참여 중인 챌린지입니다.');
+      }
+      // 4. 정상 참여 가능 (위 3가지 모두 아님)
+      else {
+        buttonText = '참여하기';
+        buttonBgColor = null; // 기본 활성화 컬러 적용
+        buttonOnPressed = () async {
+          final success = await ref
+              .read(challengeParticipateNotifierProvider.notifier)
+              .participate(widget.challengeId);
+
+          if (success && context.mounted) {
+            ref.invalidate(searchChallengesProvider);
+            // 참여 성공 시 상세 정보 리프레시
+            ref.invalidate(
+              challengeDetailProvider(challengeId: widget.challengeId),
+            );
+
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (dialogContext) => ConfirmDialog(
+                icon: SizedBox(
+                  width: 42,
+                  height: 42,
+                  child: SvgPicture.asset(
+                    'assets/images/icons/round_check_icon.svg',
+                    width: 42,
+                    height: 42,
+                  ),
+                ),
+                title: '챌린지 참여 완료!',
+                content: '‘${widget.challengeTitle}’\n지금부터 함께 도전해요!',
+                buttonText: '확인',
+                onConfirm: () {
+                  if (context.mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChallengeMainScreen(
+                          challengeId: widget.challengeId,
+                          challengeTitle: widget.challengeTitle,
+                        ),
+                      ),
+                      (route) =>
+                          route.settings.name ==
+                              ChallengeSearchScreen.routeName ||
+                          route.isFirst,
+                    );
+                  }
+                },
+              ),
+            );
+          } else {
+            final state = ref.read(challengeParticipateNotifierProvider);
+            final errorMessage =
+                state.error?.toString().replaceAll('Exception: ', '') ??
+                '참여 처리에 실패했습니다.';
+
+            displayToast(context, errorMessage);
+          }
+        };
+      }
+    }
+
     return Scaffold(
       backgroundColor: appColors.whiteToBlack,
       appBar: AppBar(
@@ -110,73 +206,9 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
       ),
       // 하단 고정 - 참여하기 버튼
       bottomNavigationBar: BottomActionButton(
-        text: isJoined ? '참여 중' : '참여하기',
-        backgroundColor: isJoined ? AppColors.disable : null,
-        onPressed: challenge == null
-            ? null // 로딩 중에는 비활성
-            : isJoined
-            ? () => displayToast(context, '이미 참여 중인 챌린지입니다.')
-            : () async {
-                // 데이터가 없는 상태에서 클릭 방지
-                if (challenge == null) return;
-
-                // 참여 API 호출
-                final success = await ref
-                    .read(challengeParticipateNotifierProvider.notifier)
-                    .participate(widget.challengeId);
-
-                // 성공 시 다이얼로그 노출 (챌린지 제목 전달)
-                if (success && context.mounted) {
-                  ref.invalidate(searchChallengesProvider);
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (dialogContext) => ConfirmDialog(
-                      // 원래 쓰던 예쁜 녹색 체크 아이콘 그대로 주입!
-                      icon: SizedBox(
-                        width: 42,
-                        height: 42,
-                        child: SvgPicture.asset(
-                          'assets/images/icons/round_check_icon.svg',
-                          width: 42,
-                          height: 42,
-                        ),
-                      ),
-                      title: '챌린지 참여 완료!',
-                      content: '‘${widget.challengeTitle}’\n지금부터 함께 도전해요!',
-                      buttonText: '확인',
-                      // 확인 버튼 누르면 팝업 닫고 메인 챌린지 룸으로 화면 이동 타기
-                      onConfirm: () {
-                        if (context.mounted) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChallengeMainScreen(
-                                challengeId: widget.challengeId,
-                                challengeTitle: widget.challengeTitle,
-                              ),
-                            ),
-                            (route) =>
-                                route.settings.name ==
-                                    ChallengeSearchScreen.routeName ||
-                                route.isFirst,
-                          );
-                        }
-                      },
-                    ),
-                  );
-                } else {
-                  // 이미 참여중인 챌린지인 경우 토스트(스낵바) 노출
-                  final state = ref.read(challengeParticipateNotifierProvider);
-
-                  // Repository에서 throw한 Exception 메시지를 가져옵니다.
-                  final errorMessage =
-                      state.error?.toString().replaceAll('Exception: ', '') ??
-                      '이미 참여 중인 챌린지입니다.';
-
-                  displayToast(context, errorMessage);
-                }
-              },
+        text: buttonText,
+        backgroundColor: buttonBgColor,
+        onPressed: challenge == null ? null : buttonOnPressed,
       ),
     );
   }
