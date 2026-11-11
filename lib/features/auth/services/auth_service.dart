@@ -30,8 +30,11 @@ class AuthService {
   // 카카오 설정 정보
   static String kakaoRestApiKey = dotenv.env['KAKAO_REST_API_KEY'] ?? '';
   static String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
+  // static const String kakaoRedirectUri = 'http://158.247.216.11:8080/oauth/kakao/callback';
+
+  // ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️
   static const String kakaoRedirectUri =
-      'http://158.247.216.11:8080/oauth/kakao/callback';
+      'https://haenaem1.duckdns.org/oauth/kakao/callback';
 
   // 네이버 설정 정보
   static String naverClientId = dotenv.env['NAVER_CLIENT_ID'] ?? '';
@@ -67,9 +70,12 @@ class AuthService {
   }
 
   // ♥️ 기존 서버
-  // static final Dio _dio = Dio(
-  //   BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
-  // );
+  static final Dio _dio = Dio(
+    // BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
+
+    // ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️
+    BaseOptions(baseUrl: 'https://haenaem1.duckdns.org'),
+  );
 
   // ♥️ 로컬 서버로 테스트
   // static final Dio _dio = Dio(
@@ -125,7 +131,7 @@ class AuthService {
       }
     } on DioException catch (e) {
       debugPrint('🌐 네이버 서버 통신 에러: ${e.response?.statusCode}');
-      debugPrint('내용: ${e.response?.data}');
+      debugPrint('🌐 내용: ${e.response?.data}');
     }
   }
 
@@ -201,7 +207,9 @@ class AuthService {
         await _handleAuthResponse(response.data, context, ref);
       }
     } on DioException catch (e) {
-      debugPrint('🌐 서버 통신 에러: ${e.response?.statusCode}');
+      debugPrint(
+        '🌐 서버 통신 에러: ${e.response?.statusCode} → ${e.response?.headers.value('location')}',
+      );
       debugPrint('내용: ${e.response?.data}');
     }
   }
@@ -332,7 +340,7 @@ class AuthService {
       }
     } on DioException catch (e) {
       debugPrint(
-        '🌐 서버 통신 에러: ${e.response?.statusCode} - ${e.response?.data ?? e.message}',
+        '🌐 서버 통신 에러: ${e.response?.statusCode} → ${e.response?.headers.value('location')}',
       );
     } catch (e) {
       debugPrint('🚨 예상치 못한 에러: $e');

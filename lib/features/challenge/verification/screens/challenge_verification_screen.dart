@@ -13,7 +13,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haenaem/shared/models/post.dart';
 import '../provider/verification_provider.dart';
 import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
-import '';
 import '../data/clip_verify_result.dart';
 
 import '../../../../shared/widgets/challenge_label.dart';
@@ -659,19 +658,17 @@ class _ChallengeVerificationScreenState
     final bool? shouldExit = await showDialog<bool>(
       context: context,
       barrierColor: const Color(0x7F1A1D1B),
-      builder: (context) => SelectDialog(
+      builder: (dialogContext) => SelectDialog(
         title: isEditMode ? '수정을 취소하시겠어요?' : '작성을 취소하시겠어요?',
         content: isEditMode
             ? '지금 나가면 수정 중인 내용은\n저장되지 않고 모두 삭제됩니다.'
             : '지금 나가면 작성 중인 내용은\n저장되지 않고 모두 삭제됩니다.',
         confirmText: isEditMode ? '수정 취소' : '작성 취소',
         confirmTextColor: appColors.notification,
-        onConfirm: () {
-          Navigator.of(context).pop(true);
-        },
+        onConfirm: () => Navigator.of(dialogContext).pop(true),
         cancelText: '계속 작성하기',
         onCancel: () {
-          Navigator.of(context).pop(false);
+          Navigator.of(dialogContext).pop(false);
         },
       ),
     );

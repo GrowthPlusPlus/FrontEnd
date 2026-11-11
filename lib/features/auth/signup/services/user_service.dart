@@ -6,7 +6,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // 유저 정보와 관련된 API 통신을 담당하는 서비스 클래스
 class UserService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://158.247.216.11:8080'));
+  // final Dio _dio = Dio(BaseOptions(baseUrl: 'http://158.247.216.11:8080'));
+
+  // ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://haenaem1.duckdns.org'));
+
   // final Dio _dio = Dio(
   //   BaseOptions(
   //     // 1. 서버 주소를 팀원이 준 ngrok 주소로 변경

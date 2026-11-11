@@ -48,9 +48,9 @@ class PostPopupMenu extends ConsumerWidget {
     // 1. user 전역값 가져오기
     final currentUser = ref.watch(currentUserProvider);
 
-    // 2. 내 닉네임과 게시글 작성자 닉네임을 비교하여 '내 글' 여부 판단
-    final bool isMine = (post.writer.id == currentUser?.id);
-
+    // 서버 판단(isAuthor)을 우선 사용, 값이 없는 API를 대비해 ID 비교는 보조로 유지
+    final bool isMine = post.isAuthor || post.writer.id == currentUser?.id;
+    debugPrint('Is Author (server): ${post.isAuthor}');
     // 2. [날짜 체크] 오늘 날짜 문자열(yyyy-MM-dd) 생성
     final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
 

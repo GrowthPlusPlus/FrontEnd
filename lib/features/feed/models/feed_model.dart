@@ -22,13 +22,14 @@ class FeedState {
     List<Post>? posts,
     bool? isLoading,
     String? errorMessage,
+    bool clearError = false,
     int? currentPage,
     bool? isLastPage,
   }) {
     return FeedState(
       posts: posts ?? this.posts,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       currentPage: currentPage ?? this.currentPage,
       isLastPage: isLastPage ?? this.isLastPage,
     );
