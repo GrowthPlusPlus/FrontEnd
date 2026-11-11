@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:crypto/crypto.dart'; // PKCE 해싱용
 import 'package:webview_flutter/webview_flutter.dart'; // 웹뷰용
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haenaem/core/theme/app_colors.dart';
 import 'package:haenaem/core/theme/app_typography.dart';
@@ -17,14 +18,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform; // 기기 OS 확인용
 
 // 소셜 로그인 화면
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   int _logoClickCount = 0;
 
   @override
@@ -125,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         code: kakaoAuthCode!,
                         codeVerifier: pkce['codeVerifier']!,
                         context: context,
+                        ref: ref,
                       );
                     }
                   },
@@ -140,6 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderColor: const Color(0xFFD1D5DC),
                   onTap: () async {
                     try {
+                      await AuthService.logout(ref);
+
                       final authResult = await AuthService.signInWithGoogle();
 
                       if (authResult != null) {
@@ -147,6 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           code: authResult['code']!,
                           codeVerifier: authResult['codeVerifier']!,
                           context: context,
+                          ref: ref,
                         );
                       }
                     } catch (e) {
@@ -195,6 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         code: naverAuthCode!,
                         state: state,
                         context: context,
+                        ref: ref,
                       );
                     }
                   },

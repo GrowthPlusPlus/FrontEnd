@@ -98,7 +98,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                     (route) => false,
                   );
                 },
-                onCancel: () {},
+                onCancel: () {
+                  Navigator.of(context).pop(true);
+                },
               ),
             );
           },

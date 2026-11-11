@@ -9,7 +9,11 @@ import '../widgets/notification_list_tile.dart';
 import '../../../core/theme/app_colors.dart';
 
 import 'package:haenaem/features/social/screens/friend_add_screen.dart';
+import 'package:haenaem/shared/screens/challenge_detail_screen.dart';
 import 'package:haenaem/features/feed/screens/post_detail_screen.dart';
+import 'package:haenaem/shared/widgets/confirm_dialog.dart';
+
+import 'package:haenaem/shared/provider/challenge_detail_provider.dart';
 
 class AllNotificationsView extends ConsumerStatefulWidget {
   final VoidCallback? onMoveToInviteTab; // 알림 화면에서 친구 초대 탭으로 이동할 때 호출되는 콜백
@@ -126,7 +130,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
 
         listItems.add(
           InkWell(
-            onTap: () {
+            onTap: () async {
               // 🐞 디버깅 시작 (클릭 시 터미널(Run 탭)을 확인하세요!)
               print('====================================');
               print('🐞 [디버그] 알림 카드 클릭됨!');
@@ -145,9 +149,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                   ),
                 );
                 return;
-              }
-
-              if (noti.type == 'CHALLENGE') {
+              } else if (noti.type == 'CHALLENGE') {
                 print(
                   '🐞 [디버그] CHALLENGE 타입 분기 진입 (성공:$isChallengeSuccess, 실패:$isChallengeFail)',
                 );
@@ -157,14 +159,45 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                   // 성공/실패 알림은 targetId가 없으므로 이동하지 않고 종료
                   return;
                 } else if (noti.targetId != null) {
-                  print('🐞 [디버그] targetId가 존재하므로 챌린지 상세 페이지로 이동');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PostDetailScreen(postId: noti.targetId!),
-                    ),
-                  );
+                  try {
+                    final challengeDetail = await ref.read(
+                      challengeDetailProvider(
+                        challengeId: noti.targetId!,
+                      ).future,
+                    );
+
+                    if (!context.mounted) return;
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChallengeDetailScreen(
+                          challengeId: noti.targetId!,
+                          challengeTitle: challengeDetail.title,
+                        ),
+                      ),
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (dialogContext) => ConfirmDialog(
+                        title: '알림',
+                        content: '해당 챌린지 정보를 찾을 수 없습니다.',
+                        onConfirm: () {},
+                      ),
+                    );
+                  }
+                  // print('🐞 [디버그] targetId가 존재하므로 챌린지 상세 페이지로 이동');
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) =>
+                  //         PostDetailScreen(postId: noti.targetId!),
+                  //   ),
+                  // );
                 } else {
                   print('🐞 [디버그] 초대 알림 -> 탭 이동 시도');
                   if (widget.onMoveToInviteTab != null) {
@@ -221,7 +254,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
           // 마지막 아이템이고 추가 로딩 중이면 로딩 인디케이터 표시
           if (index == listItems.length) {
             return Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: CircularProgressIndicator(color: appColors.primaryAble),
               ),

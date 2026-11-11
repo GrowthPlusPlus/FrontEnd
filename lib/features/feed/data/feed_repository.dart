@@ -122,6 +122,11 @@ class FeedRepository {
       }
     } on DioException catch (e) {
       debugPrint('❌ 상세 조회 에러: ${e.response?.data}');
+
+      if (e.response?.statusCode == 404) {
+        throw Exception('해당 게시물 정보를 찾을 수 없습니다.');
+      }
+
       throw Exception('정보를 불러오지 못했습니다.');
     }
   }
