@@ -34,12 +34,6 @@ class CommentPopupMenu extends ConsumerWidget {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
 
     return PopupMenuButton<String>(
-      child: SvgPicture.asset(
-        'assets/images/icons/dots_vert_icon.svg',
-        width: 24,
-        height: 24,
-        colorFilter: ColorFilter.mode(appColors.gray3, BlendMode.srcIn),
-      ),
       offset: const Offset(0, 40),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -81,6 +75,12 @@ class CommentPopupMenu extends ConsumerWidget {
       },
       onSelected: (value) =>
           _handleMenuSelection(context, ref, value, appColors),
+      child: SvgPicture.asset(
+        'assets/images/icons/dots_vert_icon.svg',
+        width: 24,
+        height: 24,
+        colorFilter: ColorFilter.mode(appColors.gray3, BlendMode.srcIn),
+      ),
     );
   }
 
@@ -145,7 +145,9 @@ class CommentPopupMenu extends ConsumerWidget {
           break;
         }
       case 'delete':
-        final bool? confirmed = await showDialog<bool>(
+        bool isConfirmed = false;
+
+        await showDialog<bool>(
           context: context,
           barrierDismissible: false,
           builder: (context) => SelectDialog(
@@ -154,48 +156,30 @@ class CommentPopupMenu extends ConsumerWidget {
             confirmText: '삭제',
             confirmTextColor: appColors.notification,
             cancelText: '취소',
-            onCancel: () {
+            onConfirm: () {
+              isConfirmed = true; // 삭제 진행 확정
               Navigator.of(context).pop(true);
             },
-            onConfirm: () async {
-              try {
-                // 💡 삭제 시도
-                final success = await ref
-                    .read(commentDeleteNotifierProvider.notifier)
-                    .removeComment(postId: postId, commentId: comment.id);
-
-                if (success && context.mounted) {
-                  displayToast(context, "댓글이 삭제되었습니다.");
-                }
-              } catch (e) {
-                // 💡 서버의 에러 메시지(PAST_POST_CANNOT_DELETE) 예외 처리 유지
-                String errorMessage = "삭제에 실패했습니다.";
-
-                if (context.mounted) {
-                  displayToast(context, errorMessage);
-                }
-              }
+            onCancel: () {
+              isConfirmed = false; // 삭제 취소
+              Navigator.of(context).pop(true);
             },
           ),
         );
 
-        // 뜬금없이 나오는 키보드 문제 디버깅용 유지
-        FocusManager.instance.primaryFocus?.unfocus();
+        if (isConfirmed && context.mounted) {
+          try {
+            final success = await ref
+                .read(commentDeleteNotifierProvider.notifier)
+                .removeComment(postId: postId, commentId: comment.id);
 
-        if (confirmed == true) {
-          // 댓글 삭제 API 호출
-          final success = await ref
-              .read(commentDeleteNotifierProvider.notifier)
-              .removeComment(postId: postId, commentId: comment.id);
-
-          if (success && context.mounted) {
-            if (feedProvider != null) {
-              ref
-                  .read(feedProvider.notifier)
-                  .decrementCommentCountLocally(postId);
+            if (success && context.mounted) {
+              displayToast(context, "댓글이 삭제되었습니다.");
             }
-
-            displayToast(context, "댓글이 삭제되었습니다.");
+          } catch (e) {
+            if (context.mounted) {
+              displayToast(context, "삭제에 실패했습니다.");
+            }
           }
         }
         break;

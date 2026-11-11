@@ -149,7 +149,7 @@ class UserRepository {
 }
 
 // 💡 UserRepository를 공급할 프로바이더
-@riverpod
+@Riverpod(keepAlive: true)
 UserRepository userRepository(Ref ref) {
   final dio = ref.watch(dioProvider);
   return UserRepository(dio);

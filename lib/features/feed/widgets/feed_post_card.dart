@@ -13,6 +13,7 @@ import '../provider/post_detail_provider.dart';
 import 'package:haenaem/shared/models/post.dart';
 import 'package:haenaem/features/feed/widgets/post_popup_menu.dart';
 import 'package:haenaem/shared/widgets/slider_indicator.dart';
+import 'package:haenaem/shared/widgets/confirm_dialog.dart';
 
 class FeedPostCard extends ConsumerWidget {
   final Post post;
@@ -45,17 +46,37 @@ class FeedPostCard extends ConsumerWidget {
       onTap:
           onTap ??
           () async {
-            // 상세 페이지로 이동하고, 상세 페이지가 pop(닫힘) 될 때까지 기다립니다.
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PostDetailScreen(
-                  postId: post.id,
-                  post: post,
-                  feedProvider: provider, // 기존에 넘겨주던 프로바이더
+            try {
+              // 이미 삭제되었거나 존재하지 않는 글인지 미리 확인
+              await ref.read(postDetailProvider(postId: post.id).future);
+
+              if (!context.mounted) return;
+
+              // 2. 검증 성공 시에만 상세 페이지로 라우팅
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PostDetailScreen(
+                    postId: post.id,
+                    post: post,
+                    feedProvider: provider,
+                  ),
                 ),
-              ),
-            );
+              );
+            } catch (e) {
+              if (!context.mounted) return;
+
+              // 3. 존재하지 않는 게시물일 경우 피드 화면 위에 바로 알림 표시
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (dialogContext) => ConfirmDialog(
+                  title: '알림',
+                  content: '해당 게시물 정보를 찾을 수 없습니다.',
+                  onConfirm: () {},
+                ),
+              );
+            }
           },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

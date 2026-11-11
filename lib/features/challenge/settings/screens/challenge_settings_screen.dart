@@ -176,6 +176,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                   cancelText: '취소',
                   swapButtonOrder: true,
                   onConfirm: () async {
+                    Navigator.of(context).pop(true);
                     final currentFilter = MemberFilter(
                       challengeId: challengeId,
                     );
@@ -208,7 +209,7 @@ class ChallengeSettingsScreen extends ConsumerWidget {
 
           // 중간 구분선
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 0),
             child: Divider(height: 1, color: appColors.gray4),
           ),
 
@@ -253,7 +254,9 @@ class ChallengeSettingsScreen extends ConsumerWidget {
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                   },
-                  onCancel: () => Navigator.of(dialogContext).pop(),
+                  onCancel: () {
+                    Navigator.of(context).pop(true);
+                  },
                 ),
               );
             },
