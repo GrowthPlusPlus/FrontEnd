@@ -15,6 +15,7 @@ import 'package:haenaem/shared/widgets/bottom_action_button.dart';
 import 'package:haenaem/shared/widgets/animated_toast.dart';
 import 'package:haenaem/features/feed/screens/challenge_search_screen.dart';
 import 'package:haenaem/features/feed/provider/challenge_search_provider.dart';
+import 'package:haenaem/features/notification/provider/notification_provider.dart';
 
 class ChallengeDetailScreen extends ConsumerStatefulWidget {
   final int challengeId;
@@ -49,7 +50,12 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
     );
 
     final challenge = challengeAsync.value;
-    final isJoined = challenge?.join ?? false;
+
+    final inviteState = ref.watch(challengeInviteProvider);
+
+    final isInvited = inviteState.invites.any(
+      (invite) => invite.challengeInfo.base.id == widget.challengeId,
+    );
 
     // ── 버튼 상태 계산 ─────────────────────────────────────
     String buttonText = '참여하기';
@@ -86,12 +92,27 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
       }
       // 4. 정상 참여 가능 (위 3가지 모두 아님)
       else {
-        buttonText = '참여하기';
+        buttonText = isInvited ? '초대 수락하기' : '참여하기';
         buttonBgColor = null; // 기본 활성화 컬러 적용
         buttonOnPressed = () async {
-          final success = await ref
-              .read(challengeParticipateNotifierProvider.notifier)
-              .participate(widget.challengeId);
+          bool success = false;
+
+          if (isInvited) {
+            // 초대를 받은 경우: 초대 수락 API 호출
+            try {
+              await ref
+                  .read(challengeInviteProvider.notifier)
+                  .acceptInvite(widget.challengeId);
+              success = true;
+            } catch (e) {
+              success = false;
+            }
+          } else {
+            // 일반 참여: 기존 참여 API 호출
+            success = await ref
+                .read(challengeParticipateNotifierProvider.notifier)
+                .participate(widget.challengeId);
+          }
 
           if (success && context.mounted) {
             ref.invalidate(searchChallengesProvider);
@@ -113,7 +134,7 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
                     height: 42,
                   ),
                 ),
-                title: '챌린지 참여 완료!',
+                title: isInvited ? '초대 수락 완료!' : '챌린지 참여 완료!',
                 content: '‘${widget.challengeTitle}’\n지금부터 함께 도전해요!',
                 buttonText: '확인',
                 onConfirm: () {
