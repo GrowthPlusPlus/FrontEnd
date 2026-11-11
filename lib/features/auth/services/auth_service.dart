@@ -70,12 +70,12 @@ class AuthService {
   }
 
   // ♥️ 기존 서버
-  static final Dio _dio = Dio(
-    // BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
+  // static final Dio _dio = Dio(
+  //   // BaseOptions(baseUrl: 'http://158.247.216.11:8080'),
 
-    // ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️
-    BaseOptions(baseUrl: 'https://haenaem1.duckdns.org'),
-  );
+  //   // ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️
+  //   BaseOptions(baseUrl: 'https://haenaem1.duckdns.org'),
+  // );
 
   // ♥️ 로컬 서버로 테스트
   // static final Dio _dio = Dio(
