@@ -36,7 +36,7 @@ class FeedNotifier extends _$FeedNotifier {
 
     state = state.copyWith(
       isLoading: true,
-      errorMessage: null,
+      clearError: true,
       currentPage: 0,
       isLastPage: false,
     );
