@@ -1,5 +1,6 @@
 // 최초 작성자 : 강선욱
 import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:haenaem/features/feed/provider/feed_provider.dart';
 import 'package:haenaem/features/user/data/user_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -229,9 +230,11 @@ class PostPopupMenu extends ConsumerWidget {
                 if (success && context.mounted) {
                   displayToast(context, "인증글이 삭제되었습니다.");
 
-                  // 상세 페이지일 경우 이전 화면(목록)으로 이동
-                  // (만약 피드 목록 바텀시트에서 튼 거라면 아래 line은 주석 처리)
-                  // Navigator.of(context).pop();
+                  if (popOnDelete) {
+                    Navigator.of(context).pop();
+                  }
+
+                  ref.invalidate(feedNotifierProvider);
                 }
               } catch (e) {
                 String errorMessage = "삭제에 실패했습니다.";
