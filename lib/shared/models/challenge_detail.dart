@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 // ChallengeBase에 정의된 필드(id, title, isLeader)를 재사용
 // User 모델을 방장(host), 오늘 인증한 유저 리스트(todaySuccessUsers)에 재사용
 class ChallengeDetail {
+  final String title;
   final DateTime startDate; // 챌린지 시작 날짜
   final DateTime endDate; // 챌린지 종료 날짜
   final int weeklyFrequency; // 주간 최소 인증 빈도
@@ -20,6 +21,7 @@ class ChallengeDetail {
   final bool join;
 
   const ChallengeDetail({
+    required this.title,
     required this.startDate,
     required this.endDate,
     required this.weeklyFrequency,
@@ -36,6 +38,7 @@ class ChallengeDetail {
   factory ChallengeDetail.fromJson(Map<String, dynamic> json) {
     debugPrint('🕵️ ChallengeDetail raw json: $json');
     return ChallengeDetail(
+      title: json['title'] as String? ?? '',
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
       weeklyFrequency: json['requiredWeeklyCount'] as int,
@@ -55,6 +58,7 @@ class ChallengeDetail {
   }
 
   ChallengeDetail copyWith({
+    String? title,
     DateTime? startDate,
     DateTime? endDate,
     int? weeklyFrequency,
@@ -68,6 +72,7 @@ class ChallengeDetail {
     bool? join,
   }) {
     return ChallengeDetail(
+      title: title ?? this.title,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       weeklyFrequency: weeklyFrequency ?? this.weeklyFrequency,
