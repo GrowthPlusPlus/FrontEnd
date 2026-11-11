@@ -301,7 +301,8 @@ class _SocialLoginWebViewState extends State<SocialLoginWebView> {
       NavigationDelegate(
         onWebResourceError: (error) {
           if (error.errorCode == -1002) return;
-          debugPrint("🌐 웹 리소스 에러: ${error.description}");
+          if (error.isForMainFrame == false) return;
+          debugPrint("🌐 웹 리소스 에러: ${error.description}  / URL: ${error.url}");
         },
         onNavigationRequest: (NavigationRequest request) async {
           final url = request.url;

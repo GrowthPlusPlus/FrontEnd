@@ -9,7 +9,9 @@ part 'dio_provider.g.dart';
 
 // 토큰 주입과 네트워크 설정을 모든 레포지토리에서 공유하도록 함
 
-const _baseUrl = 'http://158.247.216.11:8080';
+//const _baseUrl = 'http://158.247.216.11:8080';
+// ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️
+const _baseUrl = 'https://haenaem1.duckdns.org';
 const _connectTimeout = Duration(seconds: 5);
 
 @riverpod
