@@ -33,15 +33,12 @@ class VerificationRepository {
 
       // ✅ 204 = 성공, passed 필드 없어짐 — 상태 코드만으로 판단
       if (response.statusCode == 204 || response.statusCode == 200) {
-        debugPrint('✅ 이미지 업로드 성공: ${response.data}');
         return response.data?['tempImageId'];
       }
       return null;
     } on DioException catch (e) {
-      debugPrint('❌ 이미지 업로드 에러: ${e.response?.data}');
       return null;
     } catch (e) {
-      debugPrint('❌ 알 수 없는 에러: $e');
       return null;
     }
   }
@@ -52,9 +49,6 @@ class VerificationRepository {
     int temporaryImageId,
   ) async {
     try {
-      debugPrint(
-        '🔍 [CLIP API] 요청: challengeId=$challengeId, tempId=$temporaryImageId',
-      );
       final response = await _dio.post(
         '/api/image/clip',
         data: {
@@ -63,15 +57,12 @@ class VerificationRepository {
         },
       );
 
-      debugPrint('🔍 [CLIP API] 응답 상태코드: ${response.statusCode}');
-      debugPrint('🔍 [CLIP API] 응답 바디: ${response.data}');
-
       // 200/204 둘 다 바디가 있으면 바디의 passed 값을 그대로 신뢰
       if (response.data is Map) {
         final result = ClipVerifyResult.fromJson(
           response.data as Map<String, dynamic>,
         );
-        debugPrint(result.passed ? '✅ CLIP 검사 통과' : '❌ CLIP 검사 실패');
+
         return result;
       }
 
@@ -80,10 +71,6 @@ class VerificationRepository {
           response.statusCode == 200 || response.statusCode == 204;
       return ClipVerifyResult(passed: passed);
     } on DioException catch (e) {
-      debugPrint(
-        '🔍 [CLIP API] DioException: ${e.response?.statusCode} / ${e.response?.data}',
-      );
-
       if (e.response?.data is Map) {
         return ClipVerifyResult.fromJson(
           e.response!.data as Map<String, dynamic>,
@@ -91,7 +78,6 @@ class VerificationRepository {
       }
       return const ClipVerifyResult(passed: false);
     } catch (e) {
-      debugPrint('🔍 [CLIP API] 알 수 없는 에러: $e');
       return const ClipVerifyResult(passed: false);
     }
   }
@@ -113,15 +99,12 @@ class VerificationRepository {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        debugPrint('📦 서버 응답 데이터: ${response.data}');
-
         // [변경] CertificationPostModel -> Post
         return Post.fromJson(response.data);
       } else {
         throw Exception('인증글 생성 실패: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 인증글 생성 에러: ${e.response?.data}');
       throw Exception(e.response?.data?['message'] ?? '게시글 업로드 실패');
     }
   }
@@ -144,14 +127,12 @@ class VerificationRepository {
       );
 
       if (response.statusCode == 200) {
-        debugPrint('✅ 인증글 수정 성공: ${response.data}');
         // [변경] CertificationPostModel -> Post
         return Post.fromJson(response.data);
       } else {
         throw Exception('수정 실패: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 수정 에러 상세: ${e.response?.data}');
       throw Exception(e.response?.data?['message'] ?? '수정 중 오류 발생');
     }
   }

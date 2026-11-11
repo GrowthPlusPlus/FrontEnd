@@ -22,27 +22,12 @@ void main() async {
   // .env 파일 로드
   await dotenv.load(fileName: ".env");
 
-  // 전역 에러 핸들러
-  FlutterError.onError = (FlutterErrorDetails details) {
-    debugPrint('🔴 Flutter 에러: ${details.exception}');
-    debugPrint(
-      '🔴 위젯: ${details.informationCollector?.call().map((e) => e.toString()).join('\n')}',
-    );
-    debugPrint('🔴 스택: ${details.stack}');
-  };
-
   // 저장소 인스턴스 생성
   const storage = FlutterSecureStorage();
 
   // 저장된 토큰 읽기
   String? accessToken = await storage.read(key: 'accessToken');
   String? refreshToken = await storage.read(key: 'refreshToken');
-
-  print("--------------------------------");
-  print("🔑 [토큰 검사 결과]");
-  print("Access Token: ${accessToken ?? '없음 (삭제됨)'}");
-  print("Refresh Token: ${refreshToken ?? '없음 (삭제됨)'}");
-  print("--------------------------------");
 
   // 한국어 날짜 데이터 로드
   await initializeDateFormatting('ko_KR', null);

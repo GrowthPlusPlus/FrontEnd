@@ -39,7 +39,6 @@ class PushNotificationRepository {
       await _dio.put('/api/fcm/notification/all', data: {'enabled': enabled});
       return true;
     } on DioException catch (e) {
-      debugPrint('전체 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -55,7 +54,6 @@ class PushNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('전체 좋아요 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -69,7 +67,6 @@ class PushNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('전체 댓글 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -83,7 +80,6 @@ class PushNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('친구 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -97,7 +93,6 @@ class PushNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('전체 멤버 인증 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -113,7 +108,6 @@ class PushNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('챌린지 초대 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -127,7 +121,6 @@ class PushNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('동기부여 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -141,7 +134,6 @@ class PushNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('일일 리마인더 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -171,16 +163,14 @@ class PushNotificationRepository {
   /// PUT /api/notification/reminder/time
   Future<bool> setWeeklyReminderTime(String timeString) async {
     try {
-      debugPrint('📤 실패 방지 리마인더 시간 전송: $timeString'); // ✅ 추가
+      // ✅ 추가
       await _dio.put(
         '/api/notification/reminder/time',
         data: {'notificationTime': timeString},
       );
-      debugPrint('✅ 실패 방지 리마인더 시간 설정 성공'); // ✅ 추가
+      // ✅ 추가
       return true;
     } on DioException catch (e) {
-      debugPrint('❌ 실패 방지 리마인더 시간 설정 실패: ${e.response?.data}');
-      debugPrint('❌ 상태 코드: ${e.response?.statusCode}');
       return false;
     }
   }

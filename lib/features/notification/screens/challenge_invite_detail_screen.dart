@@ -150,9 +150,7 @@ class ChallengeInviteDetailScreen extends ConsumerWidget {
                     content: '\'$challengeTitle\'\n지금부터 함께 도전해요!',
                     buttonText: '확인',
                     // 혹시 확인 버튼을 누른 뒤 홈으로 보내거나 추가 액션이 필요하다면 여기에 주입 가능합니다.
-                    onConfirm: () {
-                      print('✅ \'$challengeTitle\' 참여 완료 팝업 닫힘');
-                    },
+                    onConfirm: () {},
                   ),
                 );
               }

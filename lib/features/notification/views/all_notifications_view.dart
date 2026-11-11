@@ -132,15 +132,11 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
           InkWell(
             onTap: () async {
               // 🐞 디버깅 시작 (클릭 시 터미널(Run 탭)을 확인하세요!)
-              print('====================================');
-              print('🐞 [디버그] 알림 카드 클릭됨!');
-              print('🐞 [디버그] 알림 타입(type): ${noti.type}');
-              print('🐞 [디버그] 목적지 ID(targetId): ${noti.targetId}');
-              print('🐞 [디버그] 알림 메시지: ${noti.message}');
+
               // 알림 타입(type)별 페이지 이동 분기
               if (noti.type == 'FRIEND_REQUEST') {
                 // 친구 요청 알림 -> 소셜(친구추가) 페이지로 이동
-                print('🐞 [디버그] 친구 요청 탭으로 이동');
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -150,12 +146,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                 );
                 return;
               } else if (noti.type == 'CHALLENGE') {
-                print(
-                  '🐞 [디버그] CHALLENGE 타입 분기 진입 (성공:$isChallengeSuccess, 실패:$isChallengeFail)',
-                );
-
                 if (isChallengeSuccess || isChallengeFail) {
-                  print('🐞 [디버그] 성공/실패 알림');
                   // 성공/실패 알림은 targetId가 없으므로 이동하지 않고 종료
                   return;
                 } else if (noti.targetId != null) {
@@ -190,7 +181,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                       ),
                     );
                   }
-                  // print('🐞 [디버그] targetId가 존재하므로 챌린지 상세 페이지로 이동');
+                  //
                   // Navigator.push(
                   //   context,
                   //   MaterialPageRoute(
@@ -199,14 +190,8 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                   //   ),
                   // );
                 } else {
-                  print('🐞 [디버그] 초대 알림 -> 탭 이동 시도');
                   if (widget.onMoveToInviteTab != null) {
-                    print('🐞 [디버그] onMoveToInviteTab 콜백 호출 완료!');
                     widget.onMoveToInviteTab!();
-                  } else {
-                    print(
-                      '🐞 [디버그] ❌ 에러: onMoveToInviteTab 콜백이 부모로부터 전달되지 않았습니다!',
-                    );
                   }
                 }
                 return; // CHALLENGE 처리가 끝났으므로 종료
@@ -217,7 +202,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                 switch (noti.type) {
                   case 'LIKE':
                   case 'COMMENT':
-                    print('🐞 [디버그] 피드 상세(PostDetailScreen)로 이동');
+
                     // 피드 인증글로 이동 (postId 전달)
                     Navigator.push(
                       context,
@@ -228,10 +213,7 @@ class _AllNotificationsViewState extends ConsumerState<AllNotificationsView> {
                     );
                     break;
                 }
-              } else {
-                print('🐞 [디버그] ❌ 에러: targetId가 null이므로 이동할 수 없습니다.');
-              }
-              print('====================================');
+              } else {}
             },
             child: NotificationListTile(
               message: noti.message,

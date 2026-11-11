@@ -187,7 +187,6 @@ class ChallengePopupMenu extends ConsumerWidget {
             swapButtonOrder: true,
             onConfirm: () async {
               Navigator.of(context).pop(true);
-              debugPrint('나가기 버튼 눌림');
 
               final success = await ref
                   .read(challengeLeaveNotifierProvider.notifier)

@@ -40,7 +40,6 @@ class AuthGate extends ConsumerWidget {
 
               // 💡 에러가 발생한 경우 (예: 토큰 만료 후 재발급 실패 등) -> 로그인 화면으로
               if (profileSnapshot.hasError) {
-                debugPrint("⚠️ 프로필 로드 실패 (에러): 로그인 화면으로 안내");
                 return const LoginScreen();
               }
 
@@ -49,7 +48,6 @@ class AuthGate extends ConsumerWidget {
 
               // 가입 미완료 판별 로직
               if (user == null) {
-                debugPrint("⚠️ 가입 미완료 유저: 회원가입 화면으로 안내");
                 return const SignupMainScreen();
               }
 

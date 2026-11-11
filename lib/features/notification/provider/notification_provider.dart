@@ -42,7 +42,6 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       );
     } catch (e) {
       state = state.copyWith(isLoading: false);
-      print(e);
     }
   }
 
@@ -68,7 +67,6 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       );
     } catch (e) {
       state = state.copyWith(isFetchingMore: false);
-      print(e);
     }
   }
 
@@ -116,7 +114,6 @@ class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
       state = state.copyWith(invites: invites, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false);
-      print(e);
     }
   }
 
@@ -131,7 +128,6 @@ class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
             .toList(),
       );
     } catch (e) {
-      print('수락 에러: $e');
       rethrow;
     }
   }
@@ -147,7 +143,6 @@ class ChallengeInviteNotifier extends StateNotifier<ChallengeInviteState> {
             .toList(),
       );
     } catch (e) {
-      print('거절 에러: $e');
       rethrow;
     }
   }

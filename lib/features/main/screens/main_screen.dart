@@ -64,28 +64,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       }
 
       // 2. 앱이 백그라운드에 켜져 있는 상태에서 딥링크를 탄 경우 (Warm Start)
-      _linkSubscription = _appLinks.uriLinkStream.listen(
-        (uri) {
-          _processIncomingDeepLink(uri);
-        },
-        onError: (Object error) {
-          debugPrint('❌ [딥링크 감시 에러]: $error');
-        },
-      );
-    } catch (e) {
-      debugPrint('⚠️ [딥링크 서비스 연동 실패]: $e');
-    }
+      _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+        _processIncomingDeepLink(uri);
+      }, onError: (Object error) {});
+    } catch (e) {}
   }
 
   /// 인입된 딥링크 URI 분석 및 화면 이동 처리
   void _processIncomingDeepLink(Uri uri) async {
-    debugPrint(
-      '📥 [딥링크 포착 완전 분석]: scheme=${uri.scheme}, host=${uri.host}, pathSegments=${uri.pathSegments}',
-    );
-
     // 1. 규격 검증: scheme이 맞는지, 그리고 host가 'invite'인지 확인
     if (uri.scheme != 'haenaem' || uri.host != 'invite') {
-      debugPrint('⚠️ [딥링크 스킵] 올바른 초대 링크 규격이 아닙니다.');
       return;
     }
 
@@ -93,7 +81,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     if (uri.pathSegments.isNotEmpty) {
       // host가 invite이므로, 첫 번째 세그먼트가 바로 초대 코드가 됩니다.
       final String inviteCode = uri.pathSegments.first;
-      debugPrint('🔍 [딥링크 코드 포착]: $inviteCode');
 
       if (!mounted) return;
 
@@ -124,8 +111,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
         // 정상 케이스: 유효한 ID를 받았으므로 상세 페이지로 Push 이동
         if (response.challengeId != 0) {
-          debugPrint('✈️ [화면 라우팅] 챌린지 상세 페이지 이동 ID: ${response.challengeId}');
-
           if (!mounted) return;
           Navigator.push(
             context,

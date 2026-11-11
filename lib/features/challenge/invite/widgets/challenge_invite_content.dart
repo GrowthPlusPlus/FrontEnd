@@ -95,8 +95,6 @@ class _ChallengeInviteContentState
 
     return inviteInfoAsync.when(
       data: (info) {
-        debugPrint('📋 [UI 데이터 수신] 전체 친구: ${info.friends.length}명');
-
         return Column(
           children: [
             // 1. 링크 공유 섹션 (API에서 받아온 링크 사용)
@@ -114,7 +112,6 @@ class _ChallengeInviteContentState
       },
       // 로딩 중일 때도 기본 UI 틀은 보여줌 (링크는 생성자 값 사용)
       loading: () {
-        debugPrint('⏳ [UI 로딩 중...]');
         return Column(
           children: [
             _buildLinkShareBox(widget.challengeUrl, appColors),
@@ -125,7 +122,6 @@ class _ChallengeInviteContentState
         );
       },
       error: (err, stack) {
-        debugPrint('💥 [UI 에러] $err');
         return Center(
           child: Text(
             '정보를 불러오지 못했습니다.',
@@ -141,7 +137,6 @@ class _ChallengeInviteContentState
     List<InviteFriend> friends,
     AppColorsExtension appColors,
   ) {
-    debugPrint('🔍 [검색어] "$_searchQuery"');
     // 검색 필터링
     final filteredFriends = friends.where((friend) {
       final name = friend.nickname;
@@ -149,8 +144,6 @@ class _ChallengeInviteContentState
       return name.toLowerCase().contains(query) ||
           KoreanStringUtils.getChoseongString(name).contains(query);
     }).toList();
-
-    debugPrint('✨ [필터링 결과] ${filteredFriends.length}명 표시됨');
 
     // 정렬 (가나다순)
     filteredFriends.sort(

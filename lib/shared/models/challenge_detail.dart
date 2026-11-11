@@ -36,7 +36,6 @@ class ChallengeDetail {
   });
 
   factory ChallengeDetail.fromJson(Map<String, dynamic> json) {
-    debugPrint('🕵️ ChallengeDetail raw json: $json');
     return ChallengeDetail(
       title: json['title'] as String? ?? '',
       startDate: DateTime.parse(json['startDate'] as String),

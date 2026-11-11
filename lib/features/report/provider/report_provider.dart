@@ -45,13 +45,7 @@ class ReportController extends _$ReportController {
       return true;
     } catch (e) {
       if (e is DioException) {
-        debugPrint('---------- [신고 컨트롤러 오류] ----------');
-        debugPrint('타입: $targetType, ID: $targetId');
-        debugPrint('서버 응답: ${e.response?.data}');
-        debugPrint('---------------------------------------');
-      } else {
-        debugPrint('신고 처리 중 알 수 없는 에러: $e');
-      }
+      } else {}
 
       // state = AsyncValue.error(e, stack);
       return false;
