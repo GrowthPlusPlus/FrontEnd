@@ -1,4 +1,4 @@
-package com.example.haenaem
+package com.growthpp.haenaem
 
 import io.flutter.embedding.android.FlutterActivity
 

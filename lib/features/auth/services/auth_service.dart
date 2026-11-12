@@ -46,7 +46,7 @@ class AuthService {
   static Dio _createDio() {
     final dio = Dio(
       BaseOptions(
-        baseUrl: 'http://158.247.216.11:8080',
+        baseUrl: 'https://haenaem1.duckdns.org',
         connectTimeout: const Duration(seconds: 5),
       ),
     );
