@@ -107,9 +107,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _isImageDeleted = true;
         _showImageMenu = false;
       });
-    } catch (e) {
-      debugPrint('삭제 실패: $e');
-    }
+    } catch (e) {}
   }
 
   // 닉네임 실시간 유효성 검사

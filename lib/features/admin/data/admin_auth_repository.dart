@@ -23,7 +23,6 @@ class AdminAuthRepository {
         '/api/admin/auth/login',
         data: {'email': email, 'password': password, 'fcmToken': fcmToken},
       );
-      debugPrint('📥 관리자 로그인 응답: ${response.data}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data as Map<String, dynamic>;
@@ -31,10 +30,8 @@ class AdminAuthRepository {
         throw Exception('로그인 실패 (상태 코드: ${response.statusCode})');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 관리자 로그인 서버 에러: ${e.response?.data}');
       throw Exception(e.response?.statusCode);
     } catch (e) {
-      debugPrint('❌ 관리자 로그인 에러: $e');
       throw Exception('데이터 처리 중 오류가 발생했습니다.');
     }
   }
@@ -56,16 +53,13 @@ class AdminAuthRepository {
           'nickName': nickName,
         },
       );
-      debugPrint('📥 관리자 회원가입 응답: ${response.data}');
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('회원가입 실패 (상태 코드: ${response.statusCode})');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 관리자 회원가입 서버 에러: ${e.response?.data}');
       throw Exception(e.response?.statusCode);
     } catch (e) {
-      debugPrint('❌ 관리자 회원가입 에러: $e');
       throw Exception('데이터 처리 중 오류가 발생했습니다.');
     }
   }
@@ -80,16 +74,13 @@ class AdminAuthRepository {
         '/api/admin/auth/verifyEmail',
         data: {'email': email, 'code': code},
       );
-      debugPrint('📥 이메일 인증 응답: ${response.data}');
 
       if (response.statusCode != 200) {
         throw Exception('이메일 인증 실패 (상태 코드: ${response.statusCode})');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 이메일 인증 서버 에러: ${e.response?.data}');
       throw Exception(e.response?.statusCode);
     } catch (e) {
-      debugPrint('❌ 이메일 인증 에러: $e');
       throw Exception('데이터 처리 중 오류가 발생했습니다.');
     }
   }
@@ -101,16 +92,13 @@ class AdminAuthRepository {
         '/api/admin/auth/resendCode',
         data: {'email': email},
       );
-      debugPrint('📥 인증번호 재발송 응답: ${response.data}');
 
       if (response.statusCode != 200) {
         throw Exception('재발송 실패 (상태 코드: ${response.statusCode})');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 인증번호 재발송 서버 에러: ${e.response?.data}');
       throw Exception(e.response?.statusCode);
     } catch (e) {
-      debugPrint('❌ 인증번호 재발송 에러: $e');
       throw Exception('데이터 처리 중 오류가 발생했습니다.');
     }
   }

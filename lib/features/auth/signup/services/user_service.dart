@@ -44,7 +44,6 @@ class UserService {
       // 204 No Content: 성공 시 상태 코드만 오기.
       return response.statusCode;
     } on DioException catch (e) {
-      debugPrint("🚨 닉네임 변경 에러: ${e.response?.statusCode}");
       return e.response?.statusCode;
     }
   }

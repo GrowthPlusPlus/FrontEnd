@@ -155,12 +155,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         );
                       }
                     } catch (e) {
-                      debugPrint('========= [UI 레이어] 에러 포착 =========');
-                      debugPrint('에러 내용: $e');
-                      if (e is DioException) {
-                        debugPrint('서버가 준 데이터: ${e.response?.data}');
-                      }
-                      debugPrint('=======================================');
+                      if (e is DioException) {}
                     }
                   },
                 ),
@@ -308,15 +303,12 @@ class _SocialLoginWebViewState extends State<SocialLoginWebView> {
         onWebResourceError: (error) {
           if (error.errorCode == -1002) return;
           if (error.isForMainFrame == false) return;
-          debugPrint("🌐 웹 리소스 에러: ${error.description}  / URL: ${error.url}");
         },
         onNavigationRequest: (NavigationRequest request) async {
           final url = request.url;
-          debugPrint("🔗 현재 이동하려는 URL: $url");
 
           // ⭐️ [크로스 플랫폼 설정] 외부 앱(카카오톡 등) 실행 로직
           if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            debugPrint("🚀 외부 앱 실행 시도: $url");
             try {
               final Uri uri = Uri.parse(url);
 
@@ -337,9 +329,7 @@ class _SocialLoginWebViewState extends State<SocialLoginWebView> {
                   if (launched) debugPrint("✅ Android 외부 앱 실행 성공!");
                 }
               }
-            } catch (e) {
-              debugPrint('🚨 외부 앱 실행 중 예외 발생: $e');
-            }
+            } catch (e) {}
             return NavigationDecision.prevent;
           }
 

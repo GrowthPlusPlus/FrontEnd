@@ -26,15 +26,7 @@ class ReceivedRequests extends _$ReceivedRequests {
       ref.invalidate(friendListProvider); // 친구가 추가되었으니 친구 목록도 새로고침
     } catch (e) {
       if (e is DioException) {
-        debugPrint('---------- [친구 수락 실패] ----------');
-        debugPrint('대상 Request ID: $requestId');
-        debugPrint('상태 코드: ${e.response?.statusCode}');
-        debugPrint('에러 메시지: ${e.response?.data}');
-        debugPrint('요청 경로: ${e.requestOptions.path}');
-        debugPrint('------------------------------------');
-      } else {
-        debugPrint('수락 중 알 수 없는 에러: $e');
-      }
+      } else {}
       rethrow;
     }
   }
@@ -46,15 +38,7 @@ class ReceivedRequests extends _$ReceivedRequests {
       ref.invalidateSelf();
     } catch (e) {
       if (e is DioException) {
-        debugPrint('---------- [친구 거절 실패] ----------');
-        debugPrint('거절할 ID: $requestId');
-        debugPrint('상태 코드: ${e.response?.statusCode}');
-        debugPrint('에러 메시지: ${e.response?.data}');
-        debugPrint('요청 경로: ${e.requestOptions.path}');
-        debugPrint('------------------------------------');
-      } else {
-        debugPrint('거절 중 알 수 없는 에러: $e');
-      }
+      } else {}
       rethrow;
     }
   }
@@ -75,15 +59,7 @@ class SentRequests extends _$SentRequests {
       ref.invalidateSelf();
     } catch (e) {
       if (e is DioException) {
-        debugPrint('---------- [친구 요청 취소 실패] ----------');
-        debugPrint('취소할 Request ID: $requestId');
-        debugPrint('상태 코드: ${e.response?.statusCode}');
-        debugPrint('에러 메시지: ${e.response?.data}');
-        debugPrint('요청 경로: ${e.requestOptions.path}');
-        debugPrint('---------------------------------------');
-      } else {
-        debugPrint('요청 취소 중 알 수 없는 에러: $e');
-      }
+      } else {}
       rethrow;
     }
   }

@@ -15,13 +15,8 @@ class RankingRepository {
   /// 특정 챌린지의 멤버 랭킹 정보를 가져옵니다.
   /// GET /api/challenges/{challengeId}/ranking
   Future<RankingResponse> getChallengeRanking(int challengeId) async {
-    print('🔥 [API Request] 랭킹 정보 조회 요청 (ChallengeId: $challengeId)');
-
     try {
       final response = await _dio.get('/api/challenges/$challengeId/ranking');
-
-      print('✨ [API Response] Status: ${response.statusCode}');
-      print('📦 [API Response] Data: ${response.data}');
 
       if (response.statusCode == 200) {
         // 성공 시 JSON 데이터를 모델로 변환
@@ -33,10 +28,9 @@ class RankingRepository {
       }
     } on DioException catch (e) {
       // Dio 전용 에러 핸들링
-      print('🚨 [DioError] ${e.response?.statusCode} / ${e.response?.data}');
+
       throw Exception(e.response?.data['message'] ?? '서버 연결 실패');
     } catch (e) {
-      print('🚫 [Exception] $e');
       throw Exception('랭킹 정보를 불러오는데 실패했습니다.');
     }
   }

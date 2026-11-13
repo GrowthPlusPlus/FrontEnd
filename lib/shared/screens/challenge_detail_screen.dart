@@ -86,8 +86,6 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeDetailScreen> {
               ),
               error: (err, stack) {
                 // 터미널에 에러의 진짜 이유를 출력합니다.
-                debugPrint('❌ 상세페이지 에러 발생: $err');
-                debugPrint('❌ 스택트레이스: $stack');
 
                 return Center(
                   child: Text(

@@ -48,7 +48,6 @@ class FeedRepository {
       }
       throw Exception('AI 추천 로드 실패');
     } catch (e) {
-      debugPrint('❌ AI 추천 에러: $e');
       throw Exception('네트워크 에러가 발생했습니다.');
     }
   }
@@ -60,7 +59,7 @@ class FeedRepository {
         apiPath,
         queryParameters: {'page': page, 'size': 10},
       );
-      print("응답 데이터: ${response.data}"); // 💡 데이터가 오는지 확인
+      // 💡 데이터가 오는지 확인
 
       if (response.statusCode == 200) {
         final List<dynamic> content = response.data['content'] ?? [];
@@ -69,7 +68,6 @@ class FeedRepository {
           try {
             posts.add(Post.fromJson(item));
           } catch (e) {
-            print("⚠️ 특정 포스트 파싱 실패 (ID: ${item['postId']}): $e");
             // 에러가 난 포스트는 건너뜁니다.
           }
         }
@@ -96,14 +94,11 @@ class FeedRepository {
       if (isCurrentlyLiked) {
         // 💡 이미 좋아요 상태라면 DELETE 요청을 보냅니다.
         await _dio.delete('/api/article/$postId/like');
-        print("🗑️ [API] 좋아요 취소 성공 (DELETE)");
       } else {
         // 💡 좋아요 상태가 아니라면 POST 요청을 보냅니다.
         await _dio.post('/api/article/$postId/like');
-        print("❤️ [API] 좋아요 등록 성공 (POST)");
       }
     } catch (e) {
-      print("❌ [API] 좋아요 토글 에러: $e");
       rethrow;
     }
   }
@@ -111,18 +106,14 @@ class FeedRepository {
   // 인증글 상세 정보 가져오기
   Future<Post> getArticleDetail(int postId) async {
     try {
-      debugPrint('🚀 [GET Request] /api/articles/$postId');
       final response = await _dio.get('/api/articles/$postId');
 
       if (response.statusCode == 200) {
-        debugPrint('📥 상세조회 서버 응답 원본: ${response.data}');
         return Post.fromJson(response.data);
       } else {
         throw Exception('인증글 상세 조회 실패');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 상세 조회 에러: ${e.response?.data}');
-
       if (e.response?.statusCode == 404) {
         throw Exception('해당 게시물 정보를 찾을 수 없습니다.');
       }
@@ -153,7 +144,6 @@ class FeedRepository {
         throw Exception('인증글 생성 실패: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 인증글 생성 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '게시글 업로드 실패');
     }
   }
@@ -175,13 +165,11 @@ class FeedRepository {
         },
       );
       if (response.statusCode == 200) {
-        debugPrint('✅ 인증글 수정 성공: ${response.data}');
         return Post.fromJson(response.data);
       } else {
         throw Exception('수정 실패: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 수정 에러 상세: ${e.response?.data}');
       throw Exception(e.response?.data?['message'] ?? '수정 중 오류 발생');
     }
   }
@@ -189,15 +177,12 @@ class FeedRepository {
   // 인증글 삭제
   Future<void> deleteArticle(int postId) async {
     try {
-      debugPrint('🚀 [DELETE Request] /api/articles/$postId');
       final response = await _dio.delete('/api/articles/$postId');
 
       if (response.statusCode != 204 && response.statusCode != 200) {
         throw Exception('삭제 실패 (Status: ${response.statusCode})');
       }
-      debugPrint('✅ 인증글 삭제 성공');
     } on DioException catch (e) {
-      debugPrint('❌ 인증글 삭제 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '삭제 중 오류가 발생했습니다.');
     }
   }
@@ -217,7 +202,6 @@ class FeedRepository {
         throw Exception('댓글 목록 조회 실패');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 댓글 조회 에러: ${e.response?.data}');
       throw Exception('댓글을 불러오는 중 오류가 발생했습니다.');
     }
   }
@@ -237,7 +221,6 @@ class FeedRepository {
         throw Exception('댓글 생성 실패 (Status: ${response.statusCode})');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 댓글 생성 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '댓글 작성 중 오류가 발생했습니다.');
     }
   }
@@ -248,7 +231,6 @@ class FeedRepository {
     required String contents,
   }) async {
     try {
-      debugPrint('🚀 [PATCH Request] /api/comments/$commentId');
       final response = await _dio.patch(
         '/api/comments/$commentId',
         data: {"contents": contents},
@@ -257,9 +239,7 @@ class FeedRepository {
       if (response.statusCode != 204 && response.statusCode != 200) {
         throw Exception('댓글 수정 실패 (Status: ${response.statusCode})');
       }
-      debugPrint('✅ 댓글 수정 성공');
     } on DioException catch (e) {
-      debugPrint('❌ 댓글 수정 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '댓글 수정 중 오류가 발생했습니다.');
     }
   }
@@ -267,15 +247,12 @@ class FeedRepository {
   // 댓글 삭제
   Future<void> deleteComment(int commentId) async {
     try {
-      debugPrint('🚀 [DELETE Request] /api/comments/$commentId');
       final response = await _dio.delete('/api/comments/$commentId');
 
       if (response.statusCode != 204 && response.statusCode != 200) {
         throw Exception('댓글 삭제 실패 (Status: ${response.statusCode})');
       }
-      debugPrint('✅ 댓글 삭제 성공');
     } on DioException catch (e) {
-      debugPrint('❌ 댓글 삭제 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '댓글 삭제 중 오류가 발생했습니다.');
     }
   }

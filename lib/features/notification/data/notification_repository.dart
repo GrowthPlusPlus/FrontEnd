@@ -28,23 +28,23 @@ class NotificationRepository {
         queryParameters: {'page': page},
       );
 
-      // debugPrint('====================================================');
-      // debugPrint('🔔 [GET /api/notification] (page: $page) 요청 성공!');
-      // debugPrint('Status Code: ${response.statusCode}');
+      //
+      //
+      //
 
       // try {
       //   final encoder = const JsonEncoder.withIndent('  ');
       //   final prettyJson = encoder.convert(response.data);
 
-      //   debugPrint('Response Body:');
+      //
       //   // 긴 JSON 문자열이 중간에 잘리지 않도록 줄 단위로 출력
       //   for (final line in prettyJson.split('\n')) {
-      //     debugPrint(line);
+      //
       //   }
       // } catch (_) {
-      //   debugPrint('Response Body: ${response.data}');
+      //
       // }
-      // debugPrint('====================================================');
+      //
 
       return response.data;
     } on DioException catch (e) {

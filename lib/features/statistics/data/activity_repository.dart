@@ -42,8 +42,6 @@ class ActivityRepository extends _$ActivityRepository {
       queryParameters: {'year': year},
     );
     // ✅ API 응답 원본 확인
-    debugPrint('🌐 [ActivityRepository] status: ${response.statusCode}');
-    debugPrint('🌐 [ActivityRepository] raw data: ${response.data}');
 
     return ActivityData.fromJson(response.data);
   }

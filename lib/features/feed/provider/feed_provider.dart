@@ -42,9 +42,7 @@ class FeedNotifier extends _$FeedNotifier {
     );
 
     try {
-      print("📡 [FeedNotifier] 요청 → $apiPath");
       final result = await _repository.getFeeds(apiPath, 0);
-      print("✅ [FeedNotifier] ${result['posts'].length}개 수신");
 
       state = state.copyWith(
         posts: result['posts'],
@@ -52,7 +50,6 @@ class FeedNotifier extends _$FeedNotifier {
         isLoading: false,
       );
     } catch (e, st) {
-      print("❌ [FeedNotifier] fetchFeeds 에러: $e\n$st");
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
@@ -75,7 +72,6 @@ class FeedNotifier extends _$FeedNotifier {
         isLoading: false,
       );
     } catch (e) {
-      print("❌ [FeedNotifier] loadMore 에러: $e");
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
@@ -92,7 +88,6 @@ class FeedNotifier extends _$FeedNotifier {
       await _repository.toggleLike(postId, wasLiked);
     } catch (e) {
       toggleLikeLocally(postId); // 실패 시 롤백
-      print("⚠️ [FeedNotifier] 좋아요 실패 → 롤백: $e");
     }
   }
 

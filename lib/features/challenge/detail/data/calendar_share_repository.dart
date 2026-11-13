@@ -28,7 +28,6 @@ class CalendarShareRepository {
       queryParameters: {'year': year, 'month': month},
     );
 
-    print('📦 [Share API Raw Response Data]: ${response.data}');
     return CalendarShareResponse.fromJson(response.data);
   }
 }

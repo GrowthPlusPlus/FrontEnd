@@ -51,9 +51,7 @@ class MyPageMenuView extends ConsumerWidget {
                   try {
                     try {
                       await ref.read(fcmServiceProvider).deleteFcmToken();
-                    } catch (e) {
-                      debugPrint('FCM 토큰 삭제 실패 (로그아웃은 계속 진행): $e');
-                    }
+                    } catch (e) {}
 
                     await AuthService.logout();
 
@@ -69,9 +67,7 @@ class MyPageMenuView extends ConsumerWidget {
                         (route) => false,
                       );
                     }
-                  } catch (e) {
-                    debugPrint('로그아웃 처리 중 치명적 오류 발생: $e');
-                  }
+                  } catch (e) {}
                 },
               ),
             );

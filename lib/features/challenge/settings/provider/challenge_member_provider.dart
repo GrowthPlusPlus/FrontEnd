@@ -61,18 +61,14 @@ class ChallengeMembers extends _$ChallengeMembers {
 
       // 2. 멤버가 1명 이하(본인뿐)인 경우 ➡️ ChallengeDeleteNotifier 사용해서 삭제 실행
       if (members.length <= 1) {
-        debugPrint('ℹ️ [Provider] 멤버가 1명이므로 챌린지 삭제를 실행합니다. (ID: $challengeId)');
-
         // 작성하신 ChallengeDeleteNotifier 호출
         final isDeleted = await ref
             .read(challengeDeleteNotifierProvider.notifier)
             .removeChallenge(challengeId);
 
         if (isDeleted) {
-          debugPrint('✅ [Provider] 챌린지 삭제 성공 및 홈 리스트 새로고침 완료');
           return true;
         } else {
-          debugPrint('❌ [Provider] 챌린지 삭제 실패');
           return false;
         }
       }
@@ -83,10 +79,8 @@ class ChallengeMembers extends _$ChallengeMembers {
       // 홈 리스트 갱신
       ref.read(homeNotifierProvider.notifier).refresh();
 
-      debugPrint('✅ [Provider] 방장 위임 성공 및 리스트 새로고침 완료');
       return true;
     } catch (e, stackTrace) {
-      debugPrint('❌ [Provider] 처리 실패: $e');
       state = AsyncValue.error(e, stackTrace);
       return false;
     }

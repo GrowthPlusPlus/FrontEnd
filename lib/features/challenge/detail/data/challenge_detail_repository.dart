@@ -19,13 +19,11 @@ class ChallengeDetailRepository {
       final response = await _dio.get('/api/challenge/$challengeId');
 
       if (response.statusCode == 200) {
-        debugPrint('📦 챌린지 상세 응답: ${response.data}');
         return ChallengeDetail.fromJson(response.data as Map<String, dynamic>);
       } else {
         throw Exception('챌린지 상세 조회 실패');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 챌린지 상세 API 에러: ${e.response?.data}');
       throw Exception('챌린지 정보를 불러오지 못했습니다.');
     }
   }

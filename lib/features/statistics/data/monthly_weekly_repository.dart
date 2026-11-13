@@ -31,24 +31,8 @@ class MonthlyWeeklyRepository extends _$MonthlyWeeklyRepository {
       dio.get('/api/users/graph/weekly'), // ✅ daily → weekly
     ]);
 
-    debugPrint('📈 [MonthlyWeekly] ── 월간 API 응답 ──────────────────────');
-    debugPrint('📈 [MonthlyWeekly] status: ${responses[0].statusCode}');
-    debugPrint('📈 [MonthlyWeekly] raw data: ${responses[0].data}');
-
-    debugPrint('📈 [MonthlyWeekly] ── 주간 API 응답 ──────────────────────');
-    debugPrint('📈 [MonthlyWeekly] status: ${responses[1].statusCode}');
-    debugPrint('📈 [MonthlyWeekly] raw data: ${responses[1].data}');
-
     final monthly = WeeklyGraphData.fromJson(responses[0].data);
     final weekly = DailyGraphData.fromJson(responses[1].data);
-
-    debugPrint('📈 [MonthlyWeekly] ── 월간 파싱 결과 ─────────────────────');
-    debugPrint('📈 [MonthlyWeekly] thisMonth: ${monthly.thisMonth}');
-    debugPrint('📈 [MonthlyWeekly] lastMonth: ${monthly.lastMonth}');
-
-    debugPrint('📈 [MonthlyWeekly] ── 주간 파싱 결과 ─────────────────────');
-    debugPrint('📈 [MonthlyWeekly] thisWeek: ${weekly.thisWeek}');
-    debugPrint('📈 [MonthlyWeekly] lastWeek: ${weekly.lastWeek}');
 
     return MonthlyWeeklyData(monthly: monthly, weekly: weekly);
   }
