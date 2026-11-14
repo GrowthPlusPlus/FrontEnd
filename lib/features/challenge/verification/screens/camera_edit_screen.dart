@@ -299,9 +299,7 @@ class _CameraEditScreenState extends State<CameraEditScreen> {
       await file.writeAsBytes(finalData);
 
       if (mounted) Navigator.pop(context, file);
-    } catch (e) {
-      debugPrint('이미지 캡처 에러: $e');
-    }
+    } catch (e) {}
   }
 }
 

@@ -10,7 +10,6 @@ class HomeNotifier extends _$HomeNotifier {
   FutureOr<HomeResponse> build() async {
     final today = _getFormattedDate(DateTime.now());
     // 🔍 빌드 시점에 날짜가 어떻게 찍히는지 확인
-    print('🧐 [HomeNotifier] build() 호출 - 요청 날짜: $today');
 
     return ref
         .watch(homeRepositoryProvider)

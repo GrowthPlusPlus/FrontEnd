@@ -30,19 +30,11 @@ class HaenaemGrass extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
 
-    debugPrint('🌿 [HaenaemGrass] successDays: $successDays');
-    debugPrint('🔥 [HaenaemGrass] currentStreak: $currentStreak');
-    debugPrint('📊 [HaenaemGrass] activity length: ${activity.length}');
-    debugPrint(
-      '📊 [HaenaemGrass] activity (first 10): ${activity.take(10).toList()}',
-    );
-
     final int year = DateTime.now().year;
     final List<int> daysInMonths = List.generate(12, (monthIndex) {
       // 다음 달 1일에서 하루를 빼면 이번 달 마지막 날 = 해당 월의 일수
       return DateTime(year, monthIndex + 2, 0).day;
     });
-    debugPrint('📅 [HaenaemGrass] year: $year, daysInMonths: $daysInMonths');
 
     return StatisticsCard(
       title: "해냄 잔디",

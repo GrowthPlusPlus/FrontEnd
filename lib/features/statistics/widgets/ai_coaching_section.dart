@@ -28,15 +28,9 @@ class AiCoachingSection extends ConsumerWidget {
         ),
         error: (e, stack) {
           // 디버그 콘솔에서 원인을 확인하기 위한 로그
-          debugPrint('❌ AiCoaching 로드 실패: $e');
-          if (e is DioException) {
-            debugPrint('  - type: ${e.type}');
-            debugPrint('  - message: ${e.message}');
-            debugPrint('  - statusCode: ${e.response?.statusCode}');
-            debugPrint('  - responseData: ${e.response?.data}');
-            debugPrint('  - requestUrl: ${e.requestOptions.uri}');
-          }
-          debugPrint(stack.toString());
+
+          if (e is DioException) {}
+
           return SizedBox(
             height: 200,
             child: Center(

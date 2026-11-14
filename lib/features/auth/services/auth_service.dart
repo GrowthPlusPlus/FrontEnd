@@ -112,8 +112,6 @@ class AuthService {
     WidgetRef? ref,
   }) async {
     try {
-      debugPrint("🚀 서버로 네이버 인가 데이터 전송 시작...");
-
       final response = await _dio.post(
         '/api/oauth/naver/token', // 📍 이 주소가 맞는지 백엔드 팀과 꼭 확인하세요!
         data: {
@@ -124,15 +122,10 @@ class AuthService {
         options: Options(contentType: Headers.jsonContentType),
       );
 
-      debugPrint("📥 네이버 로그인 서버 응답 코드: ${response.statusCode}");
-
       if (response.statusCode == 200 && response.data != null) {
         await _handleAuthResponse(response.data, context, ref);
       }
-    } on DioException catch (e) {
-      debugPrint('🌐 네이버 서버 통신 에러: ${e.response?.statusCode}');
-      debugPrint('🌐 내용: ${e.response?.data}');
-    }
+    } on DioException catch (e) {}
   }
 
   // ----------------------------------------
@@ -151,7 +144,6 @@ class AuthService {
       64,
       (_) => chars[random.nextInt(chars.length)],
     ).join();
-    debugPrint("🔒 verifier 생성: $verifier");
 
     // 1-2. Challenge 생성: Verifier를 SHA256으로 해싱 후 Base64Url 인코딩
     final bytes = utf8.encode(verifier); // plain string을 바이트로 변환
@@ -161,7 +153,6 @@ class AuthService {
     final challenge = base64UrlEncode(
       digest.bytes,
     ).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
-    debugPrint('🔒 생성된 Challenge: $challenge');
 
     return {'codeVerifier': verifier, 'challenge': challenge};
   }
@@ -187,9 +178,6 @@ class AuthService {
     WidgetRef? ref,
   }) async {
     try {
-      debugPrint("🚀 서버로 카카오 인가 데이터 전송 시작...");
-      debugPrint("서버 전송 verifier: $codeVerifier");
-
       final response = await _dio.post(
         '/api/oauth/kakao/token',
         data: {
@@ -200,17 +188,13 @@ class AuthService {
         options: Options(contentType: Headers.jsonContentType),
       );
 
-      debugPrint("📥 서버 응답 코드: ${response.statusCode}");
-      debugPrint("📥 서버 응답 데이터: ${response.data}");
-
       if (response.statusCode == 200 && response.data != null) {
         await _handleAuthResponse(response.data, context, ref);
       }
     } on DioException catch (e) {
-      debugPrint(
-        '🌐 서버 통신 에러: ${e.response?.statusCode} → ${e.response?.headers.value('location')}',
-      );
-      debugPrint('내용: ${e.response?.data}');
+      // debugPrint(
+      //   '🌐 서버 통신 에러: ${e.response?.statusCode} → ${e.response?.headers.value('location')}',
+      // );
     }
   }
 
@@ -236,10 +220,7 @@ class AuthService {
         try {
           final detail = await ref.read(myProfileProvider.future);
           ref.read(currentUserProvider.notifier).setUser(detail.user);
-          debugPrint('✅ 로그인 성공 후 유저 정보 갱신 완료: ${detail.user.nickname}');
-        } catch (e) {
-          debugPrint('⚠️ 로그인 후 유저 정보 불러오기 실패: $e');
-        }
+        } catch (e) {}
       }
     }
 
@@ -278,9 +259,7 @@ class AuthService {
           "codeVerifier": result.codeVerifier!,
         };
       }
-    } catch (e) {
-      debugPrint('🚨 구글 인증 에러: $e');
-    }
+    } catch (e) {}
     return null;
   }
 
@@ -292,10 +271,6 @@ class AuthService {
     WidgetRef? ref,
   }) async {
     try {
-      debugPrint(
-        "🚀 서버 요청 데이터: code=$code, codeVerifier=$codeVerifier, clientId=$androidClientId",
-      );
-
       final response = await _dio.post(
         '/api/oauth/google/token',
         data: {
@@ -319,7 +294,7 @@ class AuthService {
         //   await _storage.write(key: 'refreshToken', value: refreshToken);
         // }
 
-        // debugPrint("🎉 로그인 성공! 유저 상태: $userStatus");
+        //
 
         // if (!context.mounted) return;
 
@@ -331,7 +306,7 @@ class AuthService {
         //   );
         // } else if (userStatus == "ACTIVE") {
         //   // 기존 유저 -> 홈 화면(MainScreen)으로 바로 이동
-        //   debugPrint("✅ 기존 유저: 홈 화면으로 이동합니다.");
+        //
         //   Navigator.pushReplacement(
         //     context,
         //     MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -339,12 +314,10 @@ class AuthService {
         // }
       }
     } on DioException catch (e) {
-      debugPrint(
-        '🌐 서버 통신 에러: ${e.response?.statusCode} → ${e.response?.headers.value('location')}',
-      );
-    } catch (e) {
-      debugPrint('🚨 예상치 못한 에러: $e');
-    }
+      // debugPrint(
+      //   '🌐 서버 통신 에러: ${e.response?.statusCode} → ${e.response?.headers.value('location')}',
+      // );
+    } catch (e) {}
   }
 
   // 유효한 Refresh Token으로 새로운 Access Token을 발급 (로그인 유지)
@@ -355,7 +328,6 @@ class AuthService {
 
       if (refreshToken == null) return null;
 
-      debugPrint("🔄 토큰 재발급 요청 시작...");
       final response = await _dio.post(
         '/api/token',
         data: {"refreshToken": refreshToken},
@@ -371,12 +343,10 @@ class AuthService {
         await _storage.write(key: 'accessToken', value: newAccess);
         await _storage.write(key: 'refreshToken', value: newRefresh);
 
-        debugPrint("✅ 토큰 재발급 성공");
         return data['accessToken'];
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        debugPrint("🚨 리프레시 토큰 만료: 다시 로그인 필요");
         await logout(); // 만료된 토큰 청소
       }
     }
@@ -392,7 +362,7 @@ class AuthService {
       if (accessToken != null) {
         // 2. 서버 통신 단계 (추가된 기능)
         // 서버에게 "이 사용자의 리프레시 토큰을 지워줘"라고 요청합니다.
-        debugPrint("🚀 서버 로그아웃 요청 (리프레시 토큰 삭제)");
+
         await _dio.delete(
           '/api/me/logout',
           options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
@@ -401,7 +371,6 @@ class AuthService {
     } on DioException catch (e) {
       // 3. 예외 처리 단계
       // 네트워크가 끊겼거나 서버 에러가 나도 로그를 남기고 넘어갑니다.
-      debugPrint("⚠️ 서버 로그아웃 통신 실패: ${e.response?.statusCode}");
     } finally {
       // 4. 로컬 정리 단계 (기존 logout기능)
       // 서버 성공 여부와 상관없이 '무조건' 내 폰의 토큰을 싹 지웁니다.
@@ -412,8 +381,6 @@ class AuthService {
       if (ref != null) {
         ref.read(currentUserProvider.notifier).clearUser();
       }
-
-      debugPrint("✅ 클라이언트 엑세스 토큰 및 모든 정보 삭제 완료");
     }
   }
 
@@ -424,7 +391,6 @@ class AuthService {
       final String? accessToken = await _storage.read(key: 'accessToken');
 
       if (accessToken != null) {
-        debugPrint("🗑️ 회원 탈퇴 요청 시작");
         // 서버에 계정 삭제 요청 (DELETE)
         // 리프레시 토큰뿐만 아니라 유저의 개인정보 등을 삭제하도록 서버에 명령합니다.
         final response = await _dio.delete(
@@ -432,19 +398,16 @@ class AuthService {
           options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
         );
         // 📍 서버가 진짜 뭐라고 대답했는지 찍어보기
-        debugPrint("📥 탈퇴 응답 데이터: ${response.data}");
 
         // 탈퇴 성공 후 클라이언트 데이터 정리
         await _storage.deleteAll();
-        debugPrint("👋 회원 탈퇴 처리 및 로컬 데이터 정리 완료");
       }
     } on DioException catch (e) {
-      debugPrint(
-        '🌐 회원탈퇴 요청 실패: ${e.response?.statusCode} - ${e.response?.data}',
-      );
+      // debugPrint(
+      //   '🌐 회원탈퇴 요청 실패: ${e.response?.statusCode} - ${e.response?.data}',
+      // );
       rethrow; // 실패 시 사용자에게 알림을 주기 위해 에러를 UI로 던짐
     } catch (e) {
-      debugPrint('🚨 예상치 못한 탈퇴 에러: $e');
       rethrow;
     }
   }

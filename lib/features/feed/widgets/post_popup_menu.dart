@@ -37,20 +37,15 @@ class PostPopupMenu extends ConsumerWidget {
     final appColors = Theme.of(context).extension<AppColorsExtension>()!;
 
     // 💡 Post 객체 내부 데이터 상태 확인용 로그
-    debugPrint('--- [Post Data Check] ---');
-    debugPrint('Post ID: ${post.id}');
-    debugPrint('Challenge ID: ${post.challengeId}'); // 0이 나온다면 매핑 오류 확률 99%
-    debugPrint('Challenge Title: ${post.challengeTitle}');
-    debugPrint('Writer ID: ${post.writer.id}');
-    debugPrint('Post Date: ${post.date}');
-    debugPrint('--------------------------');
+
+    // 0이 나온다면 매핑 오류 확률 99%
 
     // 1. user 전역값 가져오기
     final currentUser = ref.watch(currentUserProvider);
 
     // 서버 판단(isAuthor)을 우선 사용, 값이 없는 API를 대비해 ID 비교는 보조로 유지
     final bool isMine = post.isAuthor || post.writer.id == currentUser?.id;
-    debugPrint('Is Author (server): ${post.isAuthor}');
+
     // 2. [날짜 체크] 오늘 날짜 문자열(yyyy-MM-dd) 생성
     final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
@@ -60,8 +55,6 @@ class PostPopupMenu extends ConsumerWidget {
     final bool isToday = postDateStr.startsWith(todayStr);
 
     // 💡 디버깅을 위해 로그를 한 번 찍어보세요. (문제 확인용)
-    debugPrint('🔍 비교 날짜 - 서버 데이터: "$postDateStr", 오늘 날짜: "$todayStr"');
-    debugPrint('🔍 판정 결과 - isMine: $isMine, isToday: $isToday');
 
     return PopupMenuButton<String>(
       //popUpAnimationStyle: AnimationStyle.none, // 애니메이션 없이 즉시 노출
@@ -301,7 +294,6 @@ class PostPopupMenu extends ConsumerWidget {
       //   }
       //   break;
       case 'view_challenge':
-        debugPrint('보내는 ID: ${post.challengeId}');
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -313,9 +305,6 @@ class PostPopupMenu extends ConsumerWidget {
           ),
         );
 
-        debugPrint(
-          '🚀 [Action] ChallengeDetailScreen으로 이동 (ID: ${post.challengeId})',
-        );
         break;
       case 'report':
         Navigator.push(

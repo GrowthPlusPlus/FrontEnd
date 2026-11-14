@@ -113,7 +113,6 @@ class _FriendEditScreenState extends ConsumerState<FriendEditScreen> {
             if (context.mounted) {
               displayToast(context, '삭제에 실패했습니다. 다시 시도해 주세요.');
             }
-            debugPrint('친구 삭제 실패: $e');
           }
         },
       ),

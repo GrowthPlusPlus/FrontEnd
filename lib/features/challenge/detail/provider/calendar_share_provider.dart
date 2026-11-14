@@ -29,10 +29,6 @@ class CalendarShareNotifier extends _$CalendarShareNotifier {
         month: month,
       );
 
-      print(
-        '[Share API Log] 최초 status: ${response.status}, imageUrl: ${response.imageUrl}',
-      );
-
       int retryCount = 0;
       const maxRetries = 20;
 
@@ -40,9 +36,6 @@ class CalendarShareNotifier extends _$CalendarShareNotifier {
       while (response.status == ShareStatus.processing &&
           (response.imageUrl == null || response.imageUrl!.isEmpty) &&
           retryCount < maxRetries) {
-        print(
-          '[Share API Log] 이미지 생성 중 (PROCESSING)... 2초 후 재요청 ($retryCount)',
-        );
         await Future.delayed(const Duration(seconds: 2));
         response = await repository.requestCalendarShare(
           challengeId: challengeId,
@@ -59,7 +52,6 @@ class CalendarShareNotifier extends _$CalendarShareNotifier {
 
       // 4. imageUrl이 존재하는 경우 (COMPLETED 상태이거나 imageUrl이 정상 수령된 경우)
       if (response.imageUrl != null && response.imageUrl!.isNotEmpty) {
-        print('[Share API Success] 최종 URL 수령: ${response.imageUrl}');
         return response.imageUrl;
       }
 
@@ -72,7 +64,6 @@ class CalendarShareNotifier extends _$CalendarShareNotifier {
     return result.when(
       data: (imageUrl) => imageUrl,
       error: (err, stack) {
-        print('[ShareProvider Error] $err');
         return null;
       },
       loading: () => null,

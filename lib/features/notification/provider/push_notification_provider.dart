@@ -86,21 +86,6 @@ class PushNotificationSettingsNotifier
       final dto = results[0] as PushNotificationSettingsDto;
       final weeklyReminderTimeStr = results[1] as String?;
 
-      // ✅ 임시 로그
-      debugPrint('===== 🔔 푸시 알림 설정 조회 결과 =====');
-      debugPrint('🔔 전체 알림: ${dto.allPushNotificationEnabled}');
-      debugPrint('🔔 친구 알림: ${dto.friendPushNotificationEnabled}');
-      debugPrint('🔔 좋아요: ${dto.allLikesPushNotificationEnabled}');
-      debugPrint('🔔 댓글: ${dto.allCommentsPushNotificationEnabled}');
-      debugPrint(
-        '🔔 멤버 인증: ${dto.allMemberCertificationPushNotificationEnabled}',
-      );
-      debugPrint('🔔 챌린지 초대: ${dto.challengeInvitePushNotificationEnabled}');
-      debugPrint('🔔 동기부여: ${dto.motivationPushNotificationEnabled}');
-      debugPrint('🔔 일일 리마인더: ${dto.dailyReminderPushNotificationEnabled}');
-      debugPrint('🔔 실패 방지 리마인더 시간: $weeklyReminderTimeStr');
-      debugPrint('=======================================');
-
       state = PushNotificationSettings(
         allNotifications: dto.allPushNotificationEnabled,
         friendRequestNotifications: dto.friendPushNotificationEnabled,
@@ -114,9 +99,7 @@ class PushNotificationSettingsNotifier
         dailyReminder: dto.dailyReminderPushNotificationEnabled,
         weeklyReminderTime: weeklyReminderTimeStr ?? '21:00',
       );
-    } catch (e) {
-      debugPrint('알림 설정 초기 로드 실패: $e');
-    }
+    } catch (e) {}
   }
 
   /// DTO → 상태 반영 (전체 알림 토글 시에도 재사용)
@@ -146,7 +129,7 @@ class PushNotificationSettingsNotifier
       _applyDto(dto);
     } catch (e) {
       // 재조회 실패 시 로컬에서 일괄 적용
-      debugPrint('전체 알림 설정 후 재조회 실패, 로컬 반영: $e');
+
       state = state.copyWith(
         allNotifications: value,
         friendRequestNotifications: value,
@@ -244,7 +227,6 @@ class PushNotificationSettingsNotifier
   Future<void> updateWeeklyReminderTime(String timeString) async {
     state = state.copyWith(weeklyReminderTime: timeString);
     final success = await _repo.setWeeklyReminderTime(timeString);
-    if (!success) debugPrint('실패 방지 리마인더 시간 서버 저장 실패');
   }
 }
 

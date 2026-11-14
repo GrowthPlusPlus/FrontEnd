@@ -21,9 +21,6 @@ class SearchChallengeCard {
   });
 
   factory SearchChallengeCard.fromJson(Map<String, dynamic> json) {
-    debugPrint(
-      '❣️❣️❣️ search json: join=${json['join']}, keys=${json.keys.toList()}',
-    );
     return SearchChallengeCard(
       base: ChallengeBase.fromJson(json),
       participantCount: (json['participantNumber']) as int,

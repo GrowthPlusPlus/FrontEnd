@@ -27,31 +27,20 @@ class ChallengeInviteRepository {
     int challengeId,
   ) async {
     try {
-      debugPrint('🚀 [API 요청 시작] /api/challenges/$challengeId/invite');
-
       final response = await _dio.get('/api/challenges/$challengeId/invite');
-
-      debugPrint('📥 [API 응답 코드] ${response.statusCode}');
-      debugPrint('📦 [API 응답 데이터 원본] ${response.data}');
 
       if (response.statusCode == 200) {
         try {
           final result = ChallengeInviteResponse.fromJson(response.data);
-          debugPrint(
-            '친구: ${result.friends.map((f) => '(${f.id}) ${f.nickname}').toList()}',
-          );
-          debugPrint('링크: ${result.challengeLink}');
+
           return result;
         } catch (e) {
-          debugPrint('⚠️ [파싱 에러] 모델 변환 실패: $e');
-          debugPrint('🔍 [파싱 실패 데이터] ${response.data}');
           rethrow;
         }
       } else {
         throw Exception('초대 정보 조회 실패 (Status: ${response.statusCode})');
       }
     } catch (e) {
-      debugPrint('❌ [API 에러 발생] $e');
       rethrow;
     }
   }
@@ -73,29 +62,20 @@ class ChallengeInviteRepository {
     String inviteCode,
   ) async {
     try {
-      debugPrint('🚀 [API 요청 시작] /api/challenges/invites/links/$inviteCode');
-
       final response = await _dio.get(
         '/api/challenges/invites/links/$inviteCode',
       );
-
-      debugPrint('📥 [API 응답 코드] ${response.statusCode}');
-      debugPrint('📦 [API 응답 데이터 원본] ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         // ★ 새로 만든 커스텀 모델로 파싱하여 리턴
         final result = ChallengeDeepLinkResponse.fromJson(
           response.data as Map<String, dynamic>,
         );
-        debugPrint(
-          '🎯 [조회 성공] challengeId: ${result.challengeId}, 이미 참여중인가? ${result.alreadyParticipant}',
-        );
         return result;
       } else {
         throw Exception('초대 코드로 챌린지 정보 조회 실패 (Status: ${response.statusCode})');
       }
     } catch (e) {
-      debugPrint('❌ [API 에러 발생] $e');
       rethrow;
     }
   }

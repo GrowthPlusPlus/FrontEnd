@@ -67,14 +67,7 @@ class UserSearch extends _$UserSearch {
     } catch (e, stack) {
       // 🐛 디버깅 로그 추가: DioException인지 확인하여 상세 에러 출력
       if (e is DioException) {
-        debugPrint('---------- [검색 오류 발생] ----------');
-        debugPrint('상태 코드: ${e.response?.statusCode}');
-        debugPrint('에러 데이터: ${e.response?.data}');
-        debugPrint('에러 메시지: ${e.message}');
-        debugPrint('------------------------------------');
-      } else {
-        debugPrint('시스템 오류: $e');
-      }
+      } else {}
 
       // 에러 상태 반영
       state = AsyncValue.error(e, stack);
@@ -104,14 +97,7 @@ class UserSearch extends _$UserSearch {
     } catch (e) {
       // 🐛 디버깅 로그 추가: 친구 신청 실패 시 상세 원인 파악
       if (e is DioException) {
-        debugPrint('---------- [친구 신청 실패] ----------');
-        debugPrint('대상 닉네임: ${card.user.nickname}');
-        debugPrint('상태 코드: ${e.response?.statusCode}');
-        debugPrint('서버 응답: ${e.response?.data}');
-        debugPrint('------------------------------------');
-      } else {
-        debugPrint('친구 신청 중 알 수 없는 에러: $e');
-      }
+      } else {}
 
       // 에러는 UI에서 토스트를 띄우도록 rethrow
       rethrow;

@@ -139,8 +139,6 @@ class ChallengeInviteCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: IconButton(
                   onPressed: () {
-                    print("====> 이동하려는 챌린지 ID: ${challengeInfo.base.id}");
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(

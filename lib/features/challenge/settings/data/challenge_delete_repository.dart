@@ -23,16 +23,12 @@ class ChallengeDeleteRepository {
   /// - [challengeId]: 삭제할 챌린지 ID
   Future<void> deleteChallenge(int challengeId) async {
     try {
-      debugPrint('🚀 [DELETE Request] /api/challenges/$challengeId');
-
       final response = await _dio.delete('/api/challenges/$challengeId');
 
       if (response.statusCode != 204 && response.statusCode != 200) {
         throw Exception('챌린지 삭제 실패 (Status: ${response.statusCode})');
       }
-      debugPrint('✅ 챌린지 삭제 성공');
     } on DioException catch (e) {
-      debugPrint('❌ 챌린지 삭제 API 에러: ${e.response?.data}');
       throw Exception(e.response?.data['message'] ?? '챌린지 삭제 중 오류가 발생했습니다.');
     }
   }

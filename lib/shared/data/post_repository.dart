@@ -34,7 +34,6 @@ class PostRepository {
         throw Exception('인증글 목록 조회 실패');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 인증글 API 에러: ${e.response?.data}');
       return [];
     }
   }

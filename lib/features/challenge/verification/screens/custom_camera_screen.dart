@@ -56,9 +56,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       if (mounted) {
         setState(() => _isCameraInitialized = true);
       }
-    } catch (e) {
-      debugPrint("카메라 초기화 에러: $e");
-    }
+    } catch (e) {}
   }
 
   // 카메라 전환 (앞/뒤)
@@ -82,10 +80,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       setState(() => _currentFlashMode = nextMode);
 
       // 로그로 상태 확인
-      debugPrint("플래시 모드 변경: $nextMode");
-    } catch (e) {
-      debugPrint("플래시 설정 에러: $e");
-    }
+    } catch (e) {}
   }
 
   // 사진 촬영
@@ -111,9 +106,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       if (result != null && mounted) {
         Navigator.pop(context, result);
       }
-    } catch (e) {
-      debugPrint("사진 촬영 중 에러: $e");
-    }
+    } catch (e) {}
   }
 
   @override

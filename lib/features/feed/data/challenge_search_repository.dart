@@ -33,12 +33,7 @@ class ChallengeSearchRepository {
       if (response.statusCode == 200) {
         // API 응답 구조에 따라 'content' 리스트 파싱
         final List<dynamic> content = response.data['content'] ?? [];
-        if (content.isNotEmpty) {
-          debugPrint(
-            '🔍 첫 번째 항목의 키들: ${(content[0] as Map).keys.toList()}',
-          ); // ✅ 키 목록만 확인
-          debugPrint('🔍 첫 번째 항목 전체: ${content[0]}'); // ✅ 항목 1개만 출력 (훨씬 짧음)
-        }
+
         return content
             .map((json) => SearchChallengeCard.fromJson(json))
             .toList();
@@ -46,7 +41,6 @@ class ChallengeSearchRepository {
         throw Exception('검색 결과 조회 실패');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 검색 API 에러: ${e.response?.data}');
       throw Exception('검색 중 오류가 발생했습니다.');
     }
   }

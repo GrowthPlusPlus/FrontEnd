@@ -26,7 +26,6 @@ class ChallengeRecommendRepository {
       final response = await _dio.post('/api/v1/rag/recommend/combined');
 
       if (response.statusCode == 200) {
-        debugPrint('🔍 추천 응답 키들: ${(response.data as Map).keys.toList()}');
         return RecommendedChallengeResponse.fromJson(
           response.data as Map<String, dynamic>,
         );
@@ -34,7 +33,6 @@ class ChallengeRecommendRepository {
         throw Exception('추천 챌린지 조회 실패');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 추천 API 에러: ${e.response?.data}');
       throw Exception('추천 챌린지를 불러오는 중 오류가 발생했습니다.');
     }
   }

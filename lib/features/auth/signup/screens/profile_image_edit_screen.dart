@@ -483,7 +483,6 @@ class _ProfileImageEditScreenState extends State<ProfileImageEditScreen> {
 
       if (mounted) Navigator.pop(context, file);
     } catch (e) {
-      debugPrint('프로필 이미지 저장 실패: $e');
       if (mounted) {
         setState(() => _isProcessing = false); // 실패해도 로딩 풀어줌
         displayToast(context, '이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');

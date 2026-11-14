@@ -27,11 +27,6 @@ class ReportRepository {
         data: {'reportReason': reportReason, 'detailReason': detailReason},
       );
     } on DioException catch (e) {
-      debugPrint('---------- [인증글 신고 실패] ----------');
-      debugPrint('대상 ID: $articleId');
-      debugPrint('상태 코드: ${e.response?.statusCode}');
-      debugPrint('에러 데이터: ${e.response?.data}');
-      debugPrint('------------------------------------');
       rethrow;
     }
   }
@@ -48,11 +43,6 @@ class ReportRepository {
         data: {'reportReason': reportReason, 'detailReason': detailReason},
       );
     } on DioException catch (e) {
-      debugPrint('---------- [댓글 신고 실패] ----------');
-      debugPrint('대상 ID: $commentId');
-      debugPrint('상태 코드: ${e.response?.statusCode}');
-      debugPrint('에러 데이터: ${e.response?.data}');
-      debugPrint('------------------------------------');
       rethrow;
     }
   }

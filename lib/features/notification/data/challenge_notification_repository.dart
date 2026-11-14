@@ -49,7 +49,6 @@ class ChallengeNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('챌린지 전체 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -66,7 +65,6 @@ class ChallengeNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('챌린지 리마인더 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -83,7 +81,6 @@ class ChallengeNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('챌린지 좋아요 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -100,7 +97,6 @@ class ChallengeNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('챌린지 댓글 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }
@@ -117,7 +113,6 @@ class ChallengeNotificationRepository {
       );
       return true;
     } on DioException catch (e) {
-      debugPrint('챌린지 멤버 인증 알림 설정 실패: ${e.response?.data}');
       return false;
     }
   }

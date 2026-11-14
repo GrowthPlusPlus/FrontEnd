@@ -159,19 +159,13 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
           .read(challengePreviewNotifierProvider.notifier)
           .checkTitle(title);
 
-      debugPrint(
-        '🔍 [AI Notice] title: "$title" → autoVerifiable: ${result.autoVerifiable}, category: ${result.category}',
-      );
-
       // 내가 보낸 이후에 더 최신 요청이 나갔다면, 내 응답은 무시
       if (requestId != _previewRequestId) {
-        debugPrint('🔍 [AI Notice] "$title" (id=$requestId) 응답은 낡은 요청이라 무시');
         return;
       }
 
       if (mounted) setState(() => _autoVerifiable = result.autoVerifiable);
     } catch (e) {
-      debugPrint('🔍 [AI Notice] 검사 실패: $e');
       // 사전 검사 실패는 안내를 못 보여줄 뿐, 생성 흐름에는 영향 없음
       if (mounted) setState(() => _autoVerifiable = null);
     } finally {
@@ -220,13 +214,11 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen> {
 
       // 2️⃣ 기존 챌린지 생성 로직
       final requestData = _buildRequestData();
-      debugPrint('🚀 서버 전송 데이터: ${jsonEncode(requestData)}');
 
       final notifier = ref.read(challengeCreateNotifierProvider.notifier);
       final response = await notifier.create(requestData);
 
       if (response != null && mounted) {
-        debugPrint('✅ 생성된 실제 ID: ${response.id}');
         ref.read(homeNotifierProvider.notifier).refresh();
         ref.invalidate(myInProgressChallengesProvider);
 

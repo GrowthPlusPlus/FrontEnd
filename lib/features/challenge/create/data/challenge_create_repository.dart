@@ -16,7 +16,6 @@ class ChallengeCreateRepository {
   Future<CreatedResponse> createChallenge(Map<String, dynamic> data) async {
     try {
       final response = await _dio.post('/api/challenges/create', data: data);
-      debugPrint('📥 서버 생성 응답 원본: ${response.data}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // ✅ 서버 응답 원본을 그대로 CreatedResponse.fromJson에 전달
@@ -26,13 +25,12 @@ class ChallengeCreateRepository {
         throw Exception('챌린지 생성 실패 (상태 코드: ${response.statusCode})');
       }
     } on DioException catch (e) {
-      debugPrint('❌ 서버 상세 에러: ${e.response?.data}');
       throw Exception(
         '서버 에러: ${e.response?.statusCode} - ${e.response?.data['message'] ?? '잘못된 요청'}',
       );
     } catch (e) {
       // 💡 여기서 모델 파싱 에러(타입 불일치 등)가 잡힙니다.
-      debugPrint('❌ 데이터 파싱 에러 발생: $e');
+
       throw Exception('데이터 처리 중 오류가 발생했습니다.');
     }
   }

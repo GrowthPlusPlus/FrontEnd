@@ -20,17 +20,5 @@ Future<File> compressImageFile(File file) async {
     format: CompressFormat.jpeg,
   );
 
-  // ✅ 압축 전후 크기 비교 로그
-  final int originalSize = await file.length();
-  final int compressedSize = result != null
-      ? await File(result.path).length()
-      : 0;
-
-  debugPrint('🖼️ 압축 전: ${(originalSize / 1024).toStringAsFixed(1)} KB');
-  debugPrint('🖼️ 압축 후: ${(compressedSize / 1024).toStringAsFixed(1)} KB');
-  debugPrint(
-    '🖼️ 압축률: ${((1 - compressedSize / originalSize) * 100).toStringAsFixed(1)}%',
-  );
-
   return result != null ? File(result.path) : file; // 실패 시 원본 반환
 }

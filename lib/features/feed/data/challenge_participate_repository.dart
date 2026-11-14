@@ -22,8 +22,6 @@ class ChallengeParticipateRepository {
   /// 챌린지 참여하기 API
   Future<void> participateChallenge(int challengeId) async {
     try {
-      debugPrint('🚀 [POST Request] /api/challenges/$challengeId/participate');
-
       final response = await _dio.post(
         '/api/challenges/$challengeId/participate',
       );
@@ -32,9 +30,7 @@ class ChallengeParticipateRepository {
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('챌린지 참여에 실패했습니다.');
       }
-      debugPrint('✅ 챌린지 참여 성공');
     } on DioException catch (e) {
-      debugPrint('❌ 챌린지 참여 API 에러: ${e.response?.data}');
       throw Exception(
         e.response?.data?['message'] ?? '이미 참여 중이거나 참여할 수 없는 챌린지입니다.',
       );

@@ -42,27 +42,9 @@ class DistributionRepository extends _$DistributionRepository {
   Future<DistributionData> _fetchDistribution(Dio dio) async {
     final response = await dio.get('/api/users/graph/tag');
 
-    debugPrint('🥧 [Distribution] ── 1. API 원본 응답 ──────────────────');
-    debugPrint('🥧 [Distribution] status: ${response.statusCode}');
-    debugPrint('🥧 [Distribution] raw data: ${response.data}');
-
     final List<dynamic> raw = response.data;
 
-    debugPrint('🥧 [Distribution] ── 2. 정렬 전 ──────────────────────');
-    for (int i = 0; i < raw.length; i++) {
-      debugPrint(
-        '🥧 [Distribution]   [$i] ${raw[i]['tagName']} : ${raw[i]['count']}번',
-      );
-    }
-
     raw.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
-
-    debugPrint('🥧 [Distribution] ── 3. 정렬 후 ──────────────────────');
-    for (int i = 0; i < raw.length; i++) {
-      debugPrint(
-        '🥧 [Distribution]   [$i] ${raw[i]['tagName']} : ${raw[i]['count']}번',
-      );
-    }
 
     const top3Colors = [
       Color(0xFF8979FF), // 1위 보라
@@ -102,21 +84,6 @@ class DistributionRepository extends _$DistributionRepository {
       0,
       (sum, item) => sum + (item['count'] as int),
     );
-
-    debugPrint('🥧 [Distribution] ── 4. 위젯 전달 데이터 ───────────────');
-    debugPrint('🥧 [Distribution] totalCount: $totalCount');
-    for (int i = 0; i < top3.length; i++) {
-      final medal = ['🥇', '🥈', '🥉'][i];
-      debugPrint(
-        '🥧 [Distribution]   $medal ${i + 1}위 | ${top3[i].tag} : ${top3[i].count}번',
-      );
-    }
-    for (int i = 0; i < rest.length; i++) {
-      debugPrint(
-        '🥧 [Distribution]   🔘 ${i + 4}위 | ${rest[i].tag} : ${rest[i].count}번',
-      );
-    }
-    debugPrint('🥧 [Distribution]   🔘 기타 합산: $restCount번 (파이 차트용)');
 
     return DistributionData(
       totalCount: totalCount,

@@ -43,7 +43,6 @@ Dio dio(DioRef ref) {
       final newAccessToken = response.data['accessToken'] as String?;
       final newRefreshToken = response.data['refreshToken'] as String?;
       if (newAccessToken == null) {
-        debugPrint('⚠️ 재발급 응답에 accessToken이 없음: ${response.data}');
         return null;
       }
 
@@ -51,11 +50,11 @@ Dio dio(DioRef ref) {
       if (newRefreshToken != null) {
         await storage.write(key: 'refreshToken', value: newRefreshToken);
       }
-      debugPrint('✅ 토큰 재발급 성공');
+
       return newAccessToken;
     } on DioException catch (err) {
       final status = err.response?.statusCode;
-      debugPrint('❌ 재발급 실패 (status: $status)');
+
       // 서버가 refresh token 자체를 거부했을 때만 토큰 삭제.
       // 네트워크 끊김·타임아웃 같은 일시적 오류로 로그아웃시키지 않기 위함.
       if (status == 401 || status == 403) {
@@ -70,7 +69,7 @@ Dio dio(DioRef ref) {
     InterceptorsWrapper(
       onRequest: (options, handler) async {
         final String? token = await storage.read(key: 'accessToken');
-        debugPrint('🕵️‍♂️ [Interceptor] Storage Read (accessToken): $token');
+
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         } else {

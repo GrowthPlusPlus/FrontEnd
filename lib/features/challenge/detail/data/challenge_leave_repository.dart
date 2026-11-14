@@ -28,14 +28,10 @@ class ChallengeLeaveRepository {
       );
 
       if (response.statusCode == 200 || response.statusCode == 204) {
-        debugPrint('✅ [Success] 챌린지 퇴장 성공: $challengeId');
       } else {
         throw Exception(response.data['message'] ?? '챌린지 나가기에 실패했습니다.');
       }
     } on DioException catch (e) {
-      debugPrint('🚫 [Exception] 챌린지 퇴장 API 에러: $e');
-      debugPrint('🚫 상태코드: ${e.response?.statusCode}');
-      debugPrint('🚫 응답 바디: ${e.response?.data}');
       rethrow;
     }
   }

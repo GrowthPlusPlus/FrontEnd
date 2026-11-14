@@ -34,7 +34,7 @@ class SocialRepository {
       '/api/users/search',
       queryParameters: {'nickname': nickname},
     );
-    debugPrint('검색 유저 응답: ${response.data.toString()}');
+
     return (response.data as List?)?.map((e) {
           // 서버의 relationshipStatus를 FriendState enum으로 변환
           FriendState state = FriendState.stranger;
@@ -66,7 +66,6 @@ class SocialRepository {
   Future<List<FriendRequestCard>> getSentRequests() async {
     // Swagger operationId: getSentRequests
     final response = await _dio.get('/api/users/friend/request/sent');
-    debugPrint(response.data.toString());
 
     return (response.data as List?)?.map((e) {
           return FriendRequestCard(
@@ -94,7 +93,6 @@ class SocialRepository {
   Future<List<FriendRequestCard>> getReceivedRequests() async {
     // Swagger operationId: getReceivedRequests
     final response = await _dio.get('/api/users/friend/request/received');
-    debugPrint(response.data.toString());
 
     return (response.data as List?)?.map((e) {
           return FriendRequestCard(

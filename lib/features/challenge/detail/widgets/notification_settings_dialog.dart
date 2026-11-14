@@ -49,28 +49,6 @@ class _NotificationSettingsDialogState
           .read(challengeNotificationRepositoryProvider)
           .getChallengeNotificationSettings(widget.challengeId);
 
-      // 🔔 임시 로그
-      debugPrint(
-        '===== 🔔 챌린지 알림 설정 조회 결과 (challengeId: ${widget.challengeId}) =====',
-      );
-      debugPrint('🔔 전체 알림: ${dto.challengeAllPushEnabled}');
-      debugPrint('🔔 일일 리마인더: ${dto.dailyReminderPushEnabled}');
-      debugPrint('🔔 일일 리마인더 시간: ${dto.dailyReminderTime}');
-      debugPrint(
-        '🔔 일일 리마인더 전역 차단: ${dto.dailyReminderDisabledByGlobalSetting}',
-      );
-      debugPrint('🔔 좋아요: ${dto.likesPushEnabled}');
-      debugPrint('🔔 좋아요 전역 차단: ${dto.likesDisabledByGlobalSetting}');
-      debugPrint('🔔 댓글: ${dto.commentsPushEnabled}');
-      debugPrint('🔔 댓글 전역 차단: ${dto.commentsDisabledByGlobalSetting}');
-      debugPrint('🔔 멤버 인증: ${dto.memberCertificationPushEnabled}');
-      debugPrint(
-        '🔔 멤버 인증 전역 차단: ${dto.memberCertificationDisabledByGlobalSetting}',
-      );
-      debugPrint(
-        '=================================================================',
-      );
-
       setState(() {
         allNotifications = dto.challengeAllPushEnabled;
         dailyReminder = dto.dailyReminderPushEnabled;
@@ -88,7 +66,6 @@ class _NotificationSettingsDialogState
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('챌린지 알림 설정 로드 실패: $e');
       setState(() => _isLoading = false);
     }
   }

@@ -167,14 +167,6 @@ class _ChallengeDetailScreenState extends ConsumerState<ChallengeMainScreen> {
 
     final bool isMemberTab = _currentTabIndex == 2;
 
-    // 디버깅용 로그 (콘솔에서 확인해 보세요)
-    if (detail != null) {
-      debugPrint('내 ID: ${myInfo?.id}');
-      debugPrint(
-        '오늘 성공 유저 ID들: ${detail.todaySuccessUsers.map((e) => e.id).toList()}',
-      );
-    }
-
     // 데이터가 로딩 중이면 detail이 null이므로 hasDoneToday는 false가 됨
     final bool hasDoneToday =
         detail?.todaySuccessUsers.any((user) {

@@ -50,7 +50,7 @@ class SignupNotifier extends Notifier<SignupState> {
   //     await repository.uploadProfileImage(imageFile); // 💡 Repo 메서드 호출
   //     return true;
   //   } catch (e) {
-  //     debugPrint("🚨 이미지 업로드 실패: $e");
+  //
   //     return false;
   //   }
   // }
@@ -62,7 +62,7 @@ class SignupNotifier extends Notifier<SignupState> {
   //     await repository.updateIntroduction(bio); // 💡 Repo 메서드 호출
   //     return true;
   //   } catch (e) {
-  //     debugPrint("🚨 한 줄 소개 업데이트 실패: $e");
+  //
   //     return false;
   //   }
   // }
@@ -88,10 +88,7 @@ class SignupNotifier extends Notifier<SignupState> {
       }
 
       state = state.copyWith(categorizedTags: grouped);
-      debugPrint("✅ 태그 API 연동 성공: ${_allServerTags.length}개 태그 로드");
-    } catch (e) {
-      debugPrint("🚨 태그 로드 실패: $e");
-    }
+    } catch (e) {}
   }
 
   // // 선택된 태그 이름들을 ID로 변환하여 서버에 전송
@@ -113,7 +110,7 @@ class SignupNotifier extends Notifier<SignupState> {
   //     state = state.copyWith(isLoading: false);
   //     return true;
   //   } catch (e) {
-  //     debugPrint("🚨 태그 제출 실패: $e");
+  //
   //     state = state.copyWith(isLoading: false);
   //     return false;
   //   }
@@ -134,7 +131,7 @@ class SignupNotifier extends Notifier<SignupState> {
   //   Future<bool> submitSignup() async {
   //     // 최종 안전장치: 태그가 유효하지 않으면 서버에 아예 요청을 보내지 않음
   //     if (!state.isTagsValid) {
-  //       debugPrint("🚨 태그가 선택되지 않아 가입 요청을 중단합니다.");
+  //
   //       return false;
   //     }
   //     state = state.copyWith(isLoading: true);
@@ -150,10 +147,10 @@ class SignupNotifier extends Notifier<SignupState> {
   //         profileImage: state.profileImage,
   //       );
 
-  //       debugPrint("🎉 회원가입 서버 전송 성공!");
+  //
   //       return true;
   //     } on DioException catch (e) {
-  //       debugPrint("🌐 가입 요청 에러: ${e.response?.data ?? e.message}");
+  //
   //       return false;
   //     } finally {
   //       state = state.copyWith(isLoading: false);
@@ -164,7 +161,7 @@ class SignupNotifier extends Notifier<SignupState> {
   //   void resetState() {
   //     state = SignupState(); // 모델을 초기 상태로 되돌림
   //     _allServerTags = []; // 캐시된 서버 태그 목록 비우기
-  //     debugPrint("🧹 회원가입 상태 초기화 완료 (성공 화면)");
+  //
   //   }
   // }
 
@@ -182,12 +179,10 @@ class SignupNotifier extends Notifier<SignupState> {
 
       // 응답 메시지에 "존재합니다"가 포함되어 있으면 중복으로 판단
       if (message.contains("동일한 닉네임이 존재합니다")) {
-        debugPrint("🚩 중복 닉네임 감지: $nickname");
         return true;
       }
       return false; // 사용 가능
     } catch (e) {
-      debugPrint("🚨 닉네임 중복 확인 실패: $e");
       // 에러 발생 시 안전하게 중복으로 간주하거나 예외 처리
       return true;
     }
@@ -221,10 +216,8 @@ class SignupNotifier extends Notifier<SignupState> {
       }).toList();
       await repository.updateUserTags(selectedTagIds);
 
-      debugPrint("🎉 모든 정보 저장 완료. 가입 성공!");
       return true;
     } catch (e) {
-      debugPrint("🚨 가입 처리 중 오류: $e");
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -234,6 +227,5 @@ class SignupNotifier extends Notifier<SignupState> {
   void resetState() {
     state = SignupState(); // 모델을 초기 상태로 되돌림
     _allServerTags = []; // 캐시된 서버 태그 목록 비우기
-    debugPrint("🧹 회원가입 상태 초기화 완료 (성공 화면)");
   }
 }
