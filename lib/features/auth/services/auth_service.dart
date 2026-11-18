@@ -30,27 +30,19 @@ class AuthService {
   // 카카오 설정 정보
   static String kakaoRestApiKey = dotenv.env['KAKAO_REST_API_KEY'] ?? '';
   static String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
-  // static const String kakaoRedirectUri = 'http://158.247.216.11:8080/oauth/kakao/callback';
-
-  // ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️
   static const String kakaoRedirectUri =
       'https://haenaem1.duckdns.org/oauth/kakao/callback';
 
   // 네이버 설정 정보
   static String naverClientId = dotenv.env['NAVER_CLIENT_ID'] ?? '';
   static const String naverRedirectUri =
-<<<<<<< HEAD
       'http://haenaem1.duckdns.org/oauth/naver/callback';
-=======
-      'https://haenaem1.duckdns.org/oauth/naver/callback';
->>>>>>> develop
 
   static final Dio _dio = _createDio();
 
   static Dio _createDio() {
     final dio = Dio(
       BaseOptions(
-        // baseUrl: 'http://158.247.216.11:8080',
         baseUrl: 'https://haenaem1.duckdns.org',
         connectTimeout: const Duration(seconds: 5),
       ),

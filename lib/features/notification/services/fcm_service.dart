@@ -71,13 +71,11 @@ class FcmService {
   void listenMessages() {
     // 1. 포그라운드(앱이 켜져 있을 때) 수신
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint("🔔 [FCM] 포그라운드 메시지 수신!");
       _printMessage(message);
     });
 
     // 2. 알림을 클릭해서 앱이 열렸을 때 (백그라운드 상태였을 때)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint("🖱️ [FCM] 사용자가 알림을 클릭함!");
       _printMessage(message);
     });
   }
