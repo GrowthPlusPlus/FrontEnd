@@ -39,7 +39,7 @@ class AuthService {
   // 네이버 설정 정보
   static String naverClientId = dotenv.env['NAVER_CLIENT_ID'] ?? '';
   static const String naverRedirectUri =
-      'http://158.247.216.11:8080/oauth/naver/callback';
+      'http://haenaem1.duckdns.org/oauth/naver/callback';
 
   static final Dio _dio = _createDio();
 
